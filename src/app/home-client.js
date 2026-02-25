@@ -75,68 +75,66 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      {/* Hard override sizing + FIX caching (the v=2 below) */}
-      <style>{`
-        .siteNav {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 10px 16px; /* tight padding so no giant black band */
-          border-bottom: 1px solid #222;
-          gap: 16px;
-        }
-        .logoLink {
-          display: flex;
-          align-items: center;
-          text-decoration: none;
-          line-height: 0;
-        }
-        .logoImg {
-          height: 120px !important;   /* BIG on desktop */
-          width: auto !important;
-          max-width: 520px !important; /* prevents it from eating the whole nav */
-          object-fit: contain !important;
-          display: block !important;
-        }
-        .navLinks {
-          display: flex;
-          gap: 18px;
-          font-size: 12px;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: #bbb;
-          white-space: nowrap;
-        }
-        .navLinks a { color: #bbb; text-decoration: none; }
-        .navLinks a:first-child { color: #fff; }
-
-        @media (max-width: 820px) {
-          .siteNav { flex-wrap: wrap; }
-          .logoImg { height: 88px !important; max-width: 92vw !important; }
-          .navLinks { white-space: normal; flex-wrap: wrap; }
-        }
-
-        @media (max-width: 520px) {
-          .siteNav { flex-direction: column; align-items: flex-start; gap: 10px; }
-          .logoImg { height: 76px !important; }
-        }
-      `}</style>
-
-      <nav className="siteNav">
-        <a className="logoLink" href="/">
-          {/* IMPORTANT: cache bust the logo so you don’t keep seeing the old padded/cached version */}
+      {/* NAV */}
+      <nav
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "10px 16px",
+          borderBottom: "1px solid #222",
+          gap: 24,
+        }}
+      >
+        {/* LOGO — this is the actual fix: flexShrink: 0 prevents it being crushed */}
+        <a
+          href="/"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
+            flexShrink: 0,
+          }}
+        >
           <img
-            className="logoImg"
-            src="/branding/crashdaypics-logo.png?v=2"
+            src="/branding/crashdaypics-logo.png"
             alt="CrashDayPics"
+            style={{
+              height: 120, // make it BIG; it will now actually render big
+              width: "auto",
+              objectFit: "contain",
+              display: "block",
+            }}
           />
         </a>
 
-        <div className="navLinks">
-          <a href="/">Home</a>
-          <a href="/imsa">IMSA</a>
-          <a href="/f1">F1</a>
-          <a href="/contact">Contact</a>
+        {/* spacer pushes links right WITHOUT shrinking logo */}
+        <div style={{ flexGrow: 1 }} />
+
+        <div
+          style={{
+            display: "flex",
+            gap: 18,
+            fontSize: 12,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            color: "#bbb",
+            whiteSpace: "nowrap",
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
+          }}
+        >
+          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>
+            Home
+          </a>
+          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
+            IMSA
+          </a>
+          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
+            F1
+          </a>
+          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>
+            Contact
+          </a>
         </div>
       </nav>
 
