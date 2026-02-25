@@ -68,46 +68,59 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      
-      {/* HEADER */}
+      {/* HEADER (tight + big logo) */}
       <nav
         style={{
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "space-between",
           alignItems: "center",
-          padding: "6px 12px 2px",
+          padding: "6px 14px", // tight: kills the giant black band
           borderBottom: "1px solid #222",
+          gap: 12,
+          flexWrap: "wrap",
         }}
       >
-        <a href="/" style={{ lineHeight: 0 }}>
+        {/* LOGO */}
+        <a href="/" style={{ display: "block", lineHeight: 0, textDecoration: "none" }}>
           <img
             src="/branding/crashdaypics-logo.png"
             alt="CrashDayPics"
             style={{
-              height: "clamp(80px, 18vw, 200px)",
-              width: "auto",
+              // WIDTH-based sizing (helps when PNG has extra transparent vertical padding)
+              width: "clamp(260px, 36vw, 520px)", // ~2–3x bigger than before
+              height: "auto",
               display: "block",
+              objectFit: "contain",
             }}
           />
         </a>
 
+        {/* NAV */}
         <div
           style={{
             display: "flex",
-            gap: 18,
+            gap: 16,
             fontSize: 12,
             letterSpacing: 3,
             textTransform: "uppercase",
             color: "#bbb",
-            marginTop: 4,
             flexWrap: "wrap",
-            justifyContent: "center",
+            justifyContent: "flex-end",
+            alignItems: "center",
           }}
         >
-          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>Home</a>
-          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>IMSA</a>
-          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>F1</a>
-          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>Contact</a>
+          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>
+            Home
+          </a>
+          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
+            IMSA
+          </a>
+          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
+            F1
+          </a>
+          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>
+            Contact
+          </a>
         </div>
       </nav>
 
@@ -116,7 +129,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
             gap: 12,
           }}
         >
@@ -133,13 +146,14 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
                 cursor: "pointer",
                 overflow: "hidden",
               }}
+              aria-label={`Open hero image ${card.file}`}
             >
               <img
                 src={card.series === "imsa" ? `/photos/imsa/${card.file}` : `/photos/f1/${card.file}`}
                 alt={card.file}
                 style={{
                   width: "100%",
-                  height: "clamp(180px, 32vw, 280px)",
+                  height: "clamp(180px, 30vw, 280px)",
                   objectFit: "cover",
                   display: "block",
                 }}
@@ -148,9 +162,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           ))}
         </div>
 
-        <h2 style={{ marginTop: 14, fontSize: 26, fontWeight: 800 }}>
-          Professional Motorsports Photography
-        </h2>
+        <h2 style={{ marginTop: 14, fontSize: 26, fontWeight: 800 }}>Professional Motorsports Photography</h2>
         <p style={{ marginTop: 6, maxWidth: 720, color: "#aaa" }}>
           IMSA and Formula 1 trackside action captured with precision motion and sponsor-forward composition.
         </p>
@@ -158,11 +170,13 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
       {/* IMSA */}
       <section style={{ padding: "20px 16px", borderTop: "1px solid #222" }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
           <a href="/imsa" style={{ textDecoration: "none", color: "#fff" }}>
-            <h3 style={{ margin: 0 }}>IMSA – Featured (Daytona)</h3>
+            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>IMSA – Featured (Daytona)</h3>
           </a>
-          <a href="/imsa/daytona" style={{ color: "#bbb", fontSize: 13 }}>View full gallery →</a>
+          <a href="/imsa/daytona" style={{ color: "#bbb", textDecoration: "none", fontSize: 13 }}>
+            View full gallery →
+          </a>
         </div>
 
         <div
@@ -174,8 +188,26 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           }}
         >
           {imsaList.slice(0, 12).map((name) => (
-            <button key={name} type="button" onClick={() => openFromGrid("imsa", name)} style={{ padding: 0, border: "1px solid #222", borderRadius: 14, background: "transparent", overflow: "hidden" }}>
-              <img src={`/photos/imsa/${name}`} alt={name} style={{ width: "100%", height: "clamp(120px, 22vw, 170px)", objectFit: "cover" }} />
+            <button
+              key={name}
+              type="button"
+              onClick={() => openFromGrid("imsa", name)}
+              style={{
+                padding: 0,
+                border: "1px solid #222",
+                borderRadius: 14,
+                background: "transparent",
+                cursor: "pointer",
+                overflow: "hidden",
+              }}
+              aria-label={`Open ${name}`}
+            >
+              <img
+                src={`/photos/imsa/${name}`}
+                alt={name}
+                style={{ width: "100%", height: "clamp(120px, 22vw, 170px)", objectFit: "cover", display: "block" }}
+                loading="lazy"
+              />
             </button>
           ))}
         </div>
@@ -183,11 +215,13 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
       {/* F1 */}
       <section style={{ padding: "20px 16px", borderTop: "1px solid #222" }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
           <a href="/f1" style={{ textDecoration: "none", color: "#fff" }}>
-            <h3 style={{ margin: 0 }}>Formula 1 – Featured (Imola)</h3>
+            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Formula 1 – Featured (Imola)</h3>
           </a>
-          <a href="/f1/imola" style={{ color: "#bbb", fontSize: 13 }}>View full gallery →</a>
+          <a href="/f1/imola" style={{ color: "#bbb", textDecoration: "none", fontSize: 13 }}>
+            View full gallery →
+          </a>
         </div>
 
         <div
@@ -199,8 +233,26 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           }}
         >
           {f1List.slice(0, 12).map((name) => (
-            <button key={name} type="button" onClick={() => openFromGrid("f1", name)} style={{ padding: 0, border: "1px solid #222", borderRadius: 14, background: "transparent", overflow: "hidden" }}>
-              <img src={`/photos/f1/${name}`} alt={name} style={{ width: "100%", height: "clamp(120px, 22vw, 170px)", objectFit: "cover" }} />
+            <button
+              key={name}
+              type="button"
+              onClick={() => openFromGrid("f1", name)}
+              style={{
+                padding: 0,
+                border: "1px solid #222",
+                borderRadius: 14,
+                background: "transparent",
+                cursor: "pointer",
+                overflow: "hidden",
+              }}
+              aria-label={`Open ${name}`}
+            >
+              <img
+                src={`/photos/f1/${name}`}
+                alt={name}
+                style={{ width: "100%", height: "clamp(120px, 22vw, 170px)", objectFit: "cover", display: "block" }}
+                loading="lazy"
+              />
             </button>
           ))}
         </div>
@@ -209,6 +261,119 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
       <footer style={{ padding: "14px", borderTop: "1px solid #222", textAlign: "center", color: "#777", fontSize: 12 }}>
         © 2026 CrashDayPics
       </footer>
+
+      {/* LIGHTBOX */}
+      {viewer.open && activeList.length > 0 && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image viewer"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) close();
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.92)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 50,
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 12,
+              left: 12,
+              right: 12,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div style={{ color: "#bbb", fontSize: 13 }}>
+              {viewer.index + 1} / {activeList.length} — {activeName}
+            </div>
+
+            <button
+              type="button"
+              onClick={close}
+              style={{
+                background: "#111",
+                border: "1px solid #222",
+                color: "#fff",
+                padding: "10px 12px",
+                borderRadius: 12,
+                cursor: "pointer",
+              }}
+              aria-label="Close"
+            >
+              Close ✕
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={prev}
+            style={{
+              position: "absolute",
+              left: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "#111",
+              border: "1px solid #222",
+              color: "#fff",
+              padding: "12px 14px",
+              borderRadius: 14,
+              cursor: "pointer",
+            }}
+            aria-label="Previous image"
+            title="Previous (←)"
+          >
+            ←
+          </button>
+
+          <button
+            type="button"
+            onClick={next}
+            style={{
+              position: "absolute",
+              right: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "#111",
+              border: "1px solid #222",
+              color: "#fff",
+              padding: "12px 14px",
+              borderRadius: 14,
+              cursor: "pointer",
+            }}
+            aria-label="Next image"
+            title="Next (→)"
+          >
+            →
+          </button>
+
+          <img
+            src={activeSrc}
+            alt={activeName || "Selected image"}
+            style={{
+              maxWidth: "calc(100vw - 120px)",
+              maxHeight: "calc(100vh - 120px)",
+              width: "auto",
+              height: "auto",
+              borderRadius: 18,
+              border: "1px solid #222",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
+              background: "#111",
+            }}
+            draggable={false}
+          />
+        </div>
+      )}
     </div>
   );
 }
