@@ -71,34 +71,27 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
     setViewer({ open: true, series, index: Math.max(0, idx) });
   };
 
-  const linkStyle = (active = false) => ({
-    color: active ? "#fff" : "#bbb",
-    textDecoration: "none",
-  });
-
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      {/* NAV */}
       <nav
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "10px 16px",
+          padding: "8px 16px",          // tighter padding (fixes top/bottom “dead space”)
           borderBottom: "1px solid #222",
           gap: 16,
         }}
       >
-        {/* LOGO: forces big size, no weird wrapping */}
-        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }} aria-label="CrashDayPics Home">
+        {/* LOGO (uses your existing, working file path) */}
+        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img
-            // IMPORTANT: rename file to bust cache if needed
-            src="/branding/crashdaypics-logo-tight.png"
+            src="/branding/crashdaypics-logo.png"
             alt="CrashDayPics"
             style={{
-              height: 78,          // BIG
-              width: 420,          // BIG (controls “tiny logo” problem)
-              maxWidth: "52vw",    // keeps it from bulldozing the menu
+              height: 84,               // BIG (desktop)
+              width: "auto",
+              maxWidth: "55vw",         // prevents it from bulldozing the links
               objectFit: "contain",
               display: "block",
             }}
@@ -112,31 +105,33 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
             fontSize: 12,
             letterSpacing: 3,
             textTransform: "uppercase",
+            color: "#bbb",
             whiteSpace: "nowrap",
           }}
         >
-          <a href="/" style={linkStyle(true)}>Home</a>
-          <a href="/imsa" style={linkStyle(false)}>IMSA</a>
-          <a href="/f1" style={linkStyle(false)}>F1</a>
-          <a href="/contact" style={linkStyle(false)}>Contact</a>
+          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>Home</a>
+          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>IMSA</a>
+          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>F1</a>
+          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>Contact</a>
         </div>
       </nav>
 
-      {/* MOBILE NAV TWEAK */}
+      {/* MOBILE TWEAK: keeps logo big but avoids huge padding / broken layout */}
       <style>{`
         @media (max-width: 720px) {
           nav {
-            flex-direction: column !important;
-            align-items: flex-start !important;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
           }
           nav img {
-            width: min(520px, 92vw) !important;
-            height: auto !important;
+            height: 64px !important;      /* big on mobile */
             max-width: 92vw !important;
           }
           nav > div {
-            flex-wrap: wrap !important;
-            white-space: normal !important;
+            flex-wrap: wrap;
+            white-space: normal;
+            gap: 14px;
           }
         }
       `}</style>
