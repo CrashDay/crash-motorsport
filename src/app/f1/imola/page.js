@@ -3,27 +3,26 @@
 import { useEffect, useMemo, useState } from "react";
 
 export default function F1Imola() {
-  // Put your Imola image filenames here
-  // (Files must be in: public/photos/f1/)
+  // Files must be in: public/photos/f1/
   const images = useMemo(
     () => [
-       "imola1.jpg",
-       "imola2.jpg",
-       "imola3.jpg",
-       "imola4.jpg", 
-       "imola5.jpg",
-       "imola6.jpg",
-       "imola7.jpg",
-       "imola8.jpg",
-       "imola9.jpg",
-       "imola10.jpg",
-       "imola11.jpg",
-       "imola12.jpg",
-       "imola13.jpg",
-       "imola14.jpg",
-       "imola15.jpg",
-       "imola16.jpg",
-       "imola17.jpg",
+      "imola1.jpg",
+      "imola2.jpg",
+      "imola3.jpg",
+      "imola4.jpg",
+      "imola5.jpg",
+      "imola6.jpg",
+      "imola7.jpg",
+      "imola8.jpg",
+      "imola9.jpg",
+      "imola10.jpg",
+      "imola11.jpg",
+      "imola12.jpg",
+      "imola13.jpg",
+      "imola14.jpg",
+      "imola15.jpg",
+      "imola16.jpg",
+      "imola17.jpg",
     ],
     []
   );
@@ -32,8 +31,10 @@ export default function F1Imola() {
   const isOpen = openIndex !== null;
 
   const close = () => setOpenIndex(null);
-  const prev = () => setOpenIndex((i) => (i === null ? i : (i - 1 + images.length) % images.length));
-  const next = () => setOpenIndex((i) => (i === null ? i : (i + 1) % images.length));
+  const prev = () =>
+    setOpenIndex((i) => (i === null ? i : (i - 1 + images.length) % images.length));
+  const next = () =>
+    setOpenIndex((i) => (i === null ? i : (i + 1) % images.length));
 
   useEffect(() => {
     if (!isOpen) return;
@@ -59,9 +60,31 @@ export default function F1Imola() {
   const activeSrc = activeName ? `/photos/f1/${activeName}` : null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      <nav style={{ display: "flex", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #222" }}>
-        <a href="/" style={{ fontSize: 20, fontWeight: 700, color: "#fff", textDecoration: "none" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#000",
+        color: "#fff",
+        fontFamily: "system-ui",
+      }}
+    >
+      <nav
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "16px 24px",
+          borderBottom: "1px solid #222",
+        }}
+      >
+        <a
+          href="/"
+          style={{
+            fontSize: 20,
+            fontWeight: 700,
+            color: "#fff",
+            textDecoration: "none",
+          }}
+        >
           Tony Day Motorsport
         </a>
         <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
@@ -73,11 +96,11 @@ export default function F1Imola() {
         <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>Imola</h1>
 
         {images.length === 0 ? (
-          <div style={{ marginTop: 16, padding: 16, border: "1px solid #222", borderRadius: 16, color: "#bbb", background: "#111" }}>
-            No images yet. Add files to <b>public/photos/f1</b> and list them in the <b>images</b> array.
-          </div>
+          <p style={{ color: "#aaa", marginTop: 12 }}>
+            No photos yet.
+          </p>
         ) : (
-          <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div className="galleryGrid">
             {images.map((name, idx) => (
               <button
                 key={name}
@@ -96,7 +119,13 @@ export default function F1Imola() {
                 <img
                   src={`/photos/f1/${name}`}
                   alt={name}
-                  style={{ width: "100%", height: 220, objectFit: "cover", display: "block" }}
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    aspectRatio: "4 / 3",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
                   loading="lazy"
                 />
               </button>
