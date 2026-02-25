@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useEffect, useMemo, useState } from "react";
 
 export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
@@ -88,13 +86,14 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           gap: 12,
         }}
       >
-        {/* LOGO (replaces Tony Day Motorsport text) */}
+        {/* LOGO */}
         <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img
             src="/branding/crashdaypics-logo.png"
             alt="CrashDayPics"
             style={{
-              height: 44,
+              // Mobile-friendly sizing: 34px on small screens, up to 56px on desktop
+              height: "clamp(34px, 6.5vw, 56px)",
               width: "auto",
               objectFit: "contain",
               display: "block",
@@ -102,7 +101,18 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           />
         </a>
 
-        <div style={{ display: "flex", gap: 18, fontSize: 12, letterSpacing: 3, textTransform: "uppercase", color: "#bbb", flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 18,
+            fontSize: 12,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            color: "#bbb",
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
+          }}
+        >
           <a href="/" style={{ color: "#fff", textDecoration: "none" }}>
             Home
           </a>
