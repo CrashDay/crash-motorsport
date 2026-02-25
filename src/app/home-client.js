@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
+  // viewer lists
   const imsaList = useMemo(() => imsaFeatured || [], [imsaFeatured]);
   const f1List = useMemo(() => f1Featured || [], [f1Featured]);
 
+  // lightbox state: one viewer, two modes
   const [viewer, setViewer] = useState({ open: false, series: null, index: 0 });
 
   const activeList = viewer.series === "imsa" ? imsaList : f1List;
@@ -73,70 +75,72 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      <nav
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "8px 16px",          // tighter padding (fixes top/bottom “dead space”)
-          borderBottom: "1px solid #222",
-          gap: 16,
-        }}
-      >
-        {/* LOGO (uses your existing, working file path) */}
-        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img
-            src="/branding/crashdaypics-logo.png"
-            alt="CrashDayPics"
-            style={{
-              height: 84,               // BIG (desktop)
-              width: "auto",
-              maxWidth: "55vw",         // prevents it from bulldozing the links
-              objectFit: "contain",
-              display: "block",
-            }}
-          />
-        </a>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 18,
-            fontSize: 12,
-            letterSpacing: 3,
-            textTransform: "uppercase",
-            color: "#bbb",
-            whiteSpace: "nowrap",
-          }}
-        >
-          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>Home</a>
-          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>IMSA</a>
-          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>F1</a>
-          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>Contact</a>
-        </div>
-      </nav>
-
-      {/* MOBILE TWEAK: keeps logo big but avoids huge padding / broken layout */}
+      {/* Hard override sizing + FIX caching (the v=2 below) */}
       <style>{`
-        @media (max-width: 720px) {
-          nav {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-          }
-          nav img {
-            height: 64px !important;      /* big on mobile */
-            max-width: 92vw !important;
-          }
-          nav > div {
-            flex-wrap: wrap;
-            white-space: normal;
-            gap: 14px;
-          }
+        .siteNav {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 16px; /* tight padding so no giant black band */
+          border-bottom: 1px solid #222;
+          gap: 16px;
+        }
+        .logoLink {
+          display: flex;
+          align-items: center;
+          text-decoration: none;
+          line-height: 0;
+        }
+        .logoImg {
+          height: 120px !important;   /* BIG on desktop */
+          width: auto !important;
+          max-width: 520px !important; /* prevents it from eating the whole nav */
+          object-fit: contain !important;
+          display: block !important;
+        }
+        .navLinks {
+          display: flex;
+          gap: 18px;
+          font-size: 12px;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: #bbb;
+          white-space: nowrap;
+        }
+        .navLinks a { color: #bbb; text-decoration: none; }
+        .navLinks a:first-child { color: #fff; }
+
+        @media (max-width: 820px) {
+          .siteNav { flex-wrap: wrap; }
+          .logoImg { height: 88px !important; max-width: 92vw !important; }
+          .navLinks { white-space: normal; flex-wrap: wrap; }
+        }
+
+        @media (max-width: 520px) {
+          .siteNav { flex-direction: column; align-items: flex-start; gap: 10px; }
+          .logoImg { height: 76px !important; }
         }
       `}</style>
 
-      {/* HERO */}
+      <nav className="siteNav">
+        <a className="logoLink" href="/">
+          {/* IMPORTANT: cache bust the logo so you don’t keep seeing the old padded/cached version */}
+          <img
+            className="logoImg"
+            src="/branding/crashdaypics-logo.png?v=2"
+            alt="CrashDayPics"
+          />
+        </a>
+
+        <div className="navLinks">
+          <a href="/">Home</a>
+          <a href="/imsa">IMSA</a>
+          <a href="/f1">F1</a>
+          <a href="/contact">Contact</a>
+        </div>
+      </nav>
+
+      {/* HERO (mixed IMSA + F1) */}
       <section style={{ padding: "28px 24px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {heroCards.map((card, i) => (
