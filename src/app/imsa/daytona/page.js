@@ -4,24 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function IMSADaytona() {
   const images = useMemo(
-    () => [
-      "imsa2.JPG",
-      "imsa3.JPG",
-      "imsa4.JPG",
-      "imsa5.JPG",
-      "imsa6.JPG",
-      "imsa7.JPG",
-      "imsa8.JPG",
-      "imsa9.JPG",
-      "imsa10.JPG",
-      "imsa11.JPG",
-      "imsa12.JPG",
-      "imsa13.JPG",
-      "imsa14.JPG",
-      "imsa15.JPG",
-      "imsa16.JPG",
-      "imsaA17.JPG",
-    ],
+    () => Array.from({ length: 16 }, (_, i) => `imsa${i + 2}.JPG`),
     []
   );
 
@@ -73,9 +56,31 @@ export default function IMSADaytona() {
   const activeSrc = activeName ? `/photos/imsa/${activeName}` : null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      <nav style={{ display: "flex", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #222" }}>
-        <a href="/" style={{ fontSize: 20, fontWeight: 700, color: "#fff", textDecoration: "none" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#000",
+        color: "#fff",
+        fontFamily: "system-ui",
+      }}
+    >
+      <nav
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "16px 24px",
+          borderBottom: "1px solid #222",
+        }}
+      >
+        <a
+          href="/"
+          style={{
+            fontSize: 20,
+            fontWeight: 700,
+            color: "#fff",
+            textDecoration: "none",
+          }}
+        >
           Tony Day Motorsport
         </a>
         <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
@@ -110,7 +115,8 @@ export default function IMSADaytona() {
                 alt={name}
                 style={{
                   width: "100%",
-                  height: 220,
+                  height: "auto",
+                  aspectRatio: "4 / 3",
                   objectFit: "cover",
                   display: "block",
                 }}
