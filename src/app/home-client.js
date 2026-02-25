@@ -75,54 +75,90 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      {/* NAV */}
-      <nav
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "10px 16px",
-          borderBottom: "1px solid #222",
-          gap: 24,
-        }}
-      >
-        {/* LOGO — this is the actual fix: flexShrink: 0 prevents it being crushed */}
-        <a
-          href="/"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            textDecoration: "none",
-            flexShrink: 0,
-          }}
-        >
+      {/* Simple responsive CSS (no external files needed) */}
+      <style jsx global>{`
+        .navWrap {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 18px; /* tight padding = no “giant black header” */
+          border-bottom: 1px solid #222;
+          gap: 14px;
+        }
+
+        .navLinks {
+          display: flex;
+          gap: 18px;
+          font-size: 12px;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: #bbb;
+          white-space: nowrap;
+        }
+
+        .heroGrid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+
+        .featuredGrid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+        }
+
+        @media (max-width: 900px) {
+          .heroGrid {
+            grid-template-columns: 1fr;
+          }
+          .heroImg {
+            height: 260px !important;
+          }
+        }
+
+        @media (max-width: 700px) {
+          .navWrap {
+            padding: 8px 12px;
+          }
+          .navLinks {
+            gap: 14px;
+            letter-spacing: 2px;
+            font-size: 11px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+          }
+          .featuredGrid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .thumbImg {
+            height: 150px !important;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .thumbImg {
+            height: 135px !important;
+          }
+        }
+      `}</style>
+
+      <nav className="navWrap">
+        {/* BIG logo, tight header */}
+        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img
             src="/branding/crashdaypics-logo.png"
             alt="CrashDayPics"
             style={{
-              height: 120, // make it BIG; it will now actually render big
+              height: "clamp(72px, 9vw, 140px)", // BIG, but responsive
               width: "auto",
-              objectFit: "contain",
               display: "block",
+              objectFit: "contain",
             }}
           />
         </a>
 
-        {/* spacer pushes links right WITHOUT shrinking logo */}
-        <div style={{ flexGrow: 1 }} />
-
-        <div
-          style={{
-            display: "flex",
-            gap: 18,
-            fontSize: 12,
-            letterSpacing: 3,
-            textTransform: "uppercase",
-            color: "#bbb",
-            whiteSpace: "nowrap",
-            flexWrap: "wrap",
-            justifyContent: "flex-end",
-          }}
-        >
+        <div className="navLinks">
           <a href="/" style={{ color: "#fff", textDecoration: "none" }}>
             Home
           </a>
@@ -139,8 +175,8 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
       </nav>
 
       {/* HERO (mixed IMSA + F1) */}
-      <section style={{ padding: "28px 24px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <section style={{ padding: "22px 18px" }}>
+        <div className="heroGrid">
           {heroCards.map((card, i) => (
             <button
               key={`${card.series}-${card.file}-${i}`}
@@ -159,20 +195,21 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
               <img
                 src={card.series === "imsa" ? `/photos/imsa/${card.file}` : `/photos/f1/${card.file}`}
                 alt={card.file}
-                style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
+                className="heroImg"
+                style={{ width: "100%", height: 300, objectFit: "cover", display: "block" }}
               />
             </button>
           ))}
         </div>
 
-        <h2 style={{ marginTop: 18, fontSize: 28, fontWeight: 800 }}>Professional Motorsports Photography</h2>
+        <h2 style={{ marginTop: 16, fontSize: 28, fontWeight: 800 }}>Professional Motorsports Photography</h2>
         <p style={{ marginTop: 8, maxWidth: 720, color: "#aaa" }}>
           IMSA and Formula 1 trackside action captured with precision motion and sponsor-forward composition.
         </p>
       </section>
 
       {/* IMSA FEATURED */}
-      <section style={{ padding: "28px 24px", borderTop: "1px solid #222" }}>
+      <section style={{ padding: "22px 18px", borderTop: "1px solid #222" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
           <a href="/imsa" style={{ textDecoration: "none", color: "#fff" }}>
             <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>IMSA – Featured (Daytona)</h3>
@@ -182,7 +219,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           </a>
         </div>
 
-        <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="featuredGrid" style={{ marginTop: 14 }}>
           {imsaList.slice(0, 12).map((name) => (
             <button
               key={name}
@@ -201,6 +238,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
               <img
                 src={`/photos/imsa/${name}`}
                 alt={name}
+                className="thumbImg"
                 style={{ width: "100%", height: 170, objectFit: "cover", display: "block" }}
                 loading="lazy"
               />
@@ -210,7 +248,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
       </section>
 
       {/* F1 FEATURED */}
-      <section style={{ padding: "28px 24px", borderTop: "1px solid #222" }}>
+      <section style={{ padding: "22px 18px", borderTop: "1px solid #222" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
           <a href="/f1" style={{ textDecoration: "none", color: "#fff" }}>
             <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Formula 1 – Featured (Imola)</h3>
@@ -220,7 +258,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           </a>
         </div>
 
-        <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="featuredGrid" style={{ marginTop: 14 }}>
           {f1List.slice(0, 12).map((name) => (
             <button
               key={name}
@@ -239,6 +277,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
               <img
                 src={`/photos/f1/${name}`}
                 alt={name}
+                className="thumbImg"
                 style={{ width: "100%", height: 170, objectFit: "cover", display: "block" }}
                 loading="lazy"
               />
@@ -247,7 +286,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
         </div>
       </section>
 
-      <footer style={{ padding: "18px 24px", borderTop: "1px solid #222", color: "#777", fontSize: 12 }}>
+      <footer style={{ padding: "18px 18px", borderTop: "1px solid #222", color: "#777", fontSize: 12 }}>
         © 2026 CrashDayPics
       </footer>
 
