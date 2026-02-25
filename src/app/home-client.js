@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
 
 export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
@@ -75,13 +77,44 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      <nav style={{ display: "flex", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #222" }}>
-        <div style={{ fontSize: 20, fontWeight: 700 }}>Tony Day Motorsport</div>
-        <div style={{ display: "flex", gap: 18, fontSize: 12, letterSpacing: 3, textTransform: "uppercase", color: "#bbb" }}>
-          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>Home</a>
-          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>IMSA</a>
-          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>F1</a>
-          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>Contact</a>
+      <nav
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "12px 16px",
+          borderBottom: "1px solid #222",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        {/* LOGO (replaces Tony Day Motorsport text) */}
+        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <img
+            src="/branding/crashdaypics-logo.png"
+            alt="CrashDayPics"
+            style={{
+              height: 44,
+              width: "auto",
+              objectFit: "contain",
+              display: "block",
+            }}
+          />
+        </a>
+
+        <div style={{ display: "flex", gap: 18, fontSize: 12, letterSpacing: 3, textTransform: "uppercase", color: "#bbb", flexWrap: "wrap" }}>
+          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>
+            Home
+          </a>
+          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
+            IMSA
+          </a>
+          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
+            F1
+          </a>
+          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>
+            Contact
+          </a>
         </div>
       </nav>
 
