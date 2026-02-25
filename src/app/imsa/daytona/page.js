@@ -89,7 +89,7 @@ export default function IMSADaytona() {
           Click any image to open full-screen. Use ← → to navigate, Esc to close.
         </p>
 
-        <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="galleryGrid">
           {images.map((name, idx) => (
             <button
               key={name}
