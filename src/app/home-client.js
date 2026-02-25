@@ -68,16 +68,15 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-
-      {/* BRAND HEADER */}
+      {/* BRAND HEADER (tightened padding) */}
       <nav
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           borderBottom: "1px solid #222",
-          padding: "20px 12px 14px",
-          gap: 12,
+          padding: "10px 12px 10px", // was huge; now tight
+          gap: 6, // was 12; now tighter
         }}
       >
         <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
@@ -85,7 +84,8 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
             src="/branding/crashdaypics-logo.png"
             alt="CrashDayPics"
             style={{
-              height: "clamp(90px, 18vw, 260px)",
+              // smaller range than before, still mobile-friendly
+              height: "clamp(64px, 10vw, 140px)",
               width: "auto",
               objectFit: "contain",
               display: "block",
@@ -96,24 +96,33 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
         <div
           style={{
             display: "flex",
-            gap: 24,
-            fontSize: 13,
+            gap: 20,
+            fontSize: 12,
             letterSpacing: 3,
             textTransform: "uppercase",
             color: "#bbb",
             flexWrap: "wrap",
             justifyContent: "center",
+            paddingBottom: 2, // keeps it snug
           }}
         >
-          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>Home</a>
-          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>IMSA</a>
-          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>F1</a>
-          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>Contact</a>
+          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>
+            Home
+          </a>
+          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
+            IMSA
+          </a>
+          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
+            F1
+          </a>
+          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>
+            Contact
+          </a>
         </div>
       </nav>
 
       {/* HERO */}
-      <section style={{ padding: "28px 16px" }}>
+      <section style={{ padding: "22px 16px" }}>
         <div
           style={{
             display: "grid",
@@ -133,6 +142,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
                 cursor: "pointer",
                 overflow: "hidden",
               }}
+              aria-label={`Open hero image ${card.file}`}
             >
               <img
                 src={card.series === "imsa" ? `/photos/imsa/${card.file}` : `/photos/f1/${card.file}`}
@@ -148,9 +158,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           ))}
         </div>
 
-        <h2 style={{ marginTop: 18, fontSize: 28, fontWeight: 800 }}>
-          Professional Motorsports Photography
-        </h2>
+        <h2 style={{ marginTop: 18, fontSize: 28, fontWeight: 800 }}>Professional Motorsports Photography</h2>
         <p style={{ marginTop: 8, maxWidth: 720, color: "#aaa" }}>
           IMSA and Formula 1 trackside action captured with precision motion and sponsor-forward composition.
         </p>
@@ -158,7 +166,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
       {/* IMSA FEATURED */}
       <section style={{ padding: "28px 16px", borderTop: "1px solid #222" }}>
-        <h3 style={{ fontSize: 20 }}>IMSA – Featured (Daytona)</h3>
+        <h3 style={{ fontSize: 20, margin: 0 }}>IMSA – Featured (Daytona)</h3>
 
         <div
           style={{
@@ -169,8 +177,19 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           }}
         >
           {imsaList.slice(0, 12).map((name) => (
-            <button key={name} onClick={() => openFromGrid("imsa", name)}
-              style={{ padding: 0, border: "1px solid #222", borderRadius: 16, overflow: "hidden" }}>
+            <button
+              key={name}
+              onClick={() => openFromGrid("imsa", name)}
+              style={{
+                padding: 0,
+                border: "1px solid #222",
+                borderRadius: 16,
+                overflow: "hidden",
+                background: "transparent",
+                cursor: "pointer",
+              }}
+              aria-label={`Open ${name}`}
+            >
               <img
                 src={`/photos/imsa/${name}`}
                 alt={name}
@@ -178,6 +197,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
                   width: "100%",
                   height: "clamp(110px, 18vw, 190px)",
                   objectFit: "cover",
+                  display: "block",
                 }}
                 loading="lazy"
               />
@@ -188,7 +208,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
       {/* F1 FEATURED */}
       <section style={{ padding: "28px 16px", borderTop: "1px solid #222" }}>
-        <h3 style={{ fontSize: 20 }}>Formula 1 – Featured (Imola)</h3>
+        <h3 style={{ fontSize: 20, margin: 0 }}>Formula 1 – Featured (Imola)</h3>
 
         <div
           style={{
@@ -199,8 +219,19 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           }}
         >
           {f1List.slice(0, 12).map((name) => (
-            <button key={name} onClick={() => openFromGrid("f1", name)}
-              style={{ padding: 0, border: "1px solid #222", borderRadius: 16, overflow: "hidden" }}>
+            <button
+              key={name}
+              onClick={() => openFromGrid("f1", name)}
+              style={{
+                padding: 0,
+                border: "1px solid #222",
+                borderRadius: 16,
+                overflow: "hidden",
+                background: "transparent",
+                cursor: "pointer",
+              }}
+              aria-label={`Open ${name}`}
+            >
               <img
                 src={`/photos/f1/${name}`}
                 alt={name}
@@ -208,6 +239,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
                   width: "100%",
                   height: "clamp(110px, 18vw, 190px)",
                   objectFit: "cover",
+                  display: "block",
                 }}
                 loading="lazy"
               />
@@ -216,6 +248,118 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
         </div>
       </section>
 
+      {/* LIGHTBOX (unchanged) */}
+      {viewer.open && activeList.length > 0 && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image viewer"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) close();
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.92)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 50,
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 12,
+              left: 12,
+              right: 12,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div style={{ color: "#bbb", fontSize: 13 }}>
+              {viewer.index + 1} / {activeList.length} — {activeName}
+            </div>
+
+            <button
+              type="button"
+              onClick={close}
+              style={{
+                background: "#111",
+                border: "1px solid #222",
+                color: "#fff",
+                padding: "10px 12px",
+                borderRadius: 12,
+                cursor: "pointer",
+              }}
+              aria-label="Close"
+            >
+              Close ✕
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={prev}
+            style={{
+              position: "absolute",
+              left: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "#111",
+              border: "1px solid #222",
+              color: "#fff",
+              padding: "12px 14px",
+              borderRadius: 14,
+              cursor: "pointer",
+            }}
+            aria-label="Previous image"
+            title="Previous (←)"
+          >
+            ←
+          </button>
+
+          <button
+            type="button"
+            onClick={next}
+            style={{
+              position: "absolute",
+              right: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "#111",
+              border: "1px solid #222",
+              color: "#fff",
+              padding: "12px 14px",
+              borderRadius: 14,
+              cursor: "pointer",
+            }}
+            aria-label="Next image"
+            title="Next (→)"
+          >
+            →
+          </button>
+
+          <img
+            src={activeSrc}
+            alt={activeName || "Selected image"}
+            style={{
+              maxWidth: "calc(100vw - 120px)",
+              maxHeight: "calc(100vh - 120px)",
+              width: "auto",
+              height: "auto",
+              borderRadius: 18,
+              border: "1px solid #222",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
+              background: "#111",
+            }}
+            draggable={false}
+          />
+        </div>
+      )}
     </div>
   );
 }
