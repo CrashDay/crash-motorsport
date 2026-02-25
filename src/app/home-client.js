@@ -81,16 +81,16 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
       >
         <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img
-            src="/branding/crashdaypics-logo.png"
-            alt="CrashDayPics"
-            style={{
-              // smaller range than before, still mobile-friendly
-              height: "clamp(64px, 10vw, 140px)",
-              width: "auto",
-              objectFit: "contain",
-              display: "block",
-            }}
-          />
+  src="/branding/crashdaypics-logo.png"
+  alt="CrashDayPics"
+  style={{
+    height: "clamp(80px, 18vw, 240px)",
+    width: "auto",
+    objectFit: "contain",
+    display: "block",
+    marginBottom: 4,
+  }}
+/>
         </a>
 
         <div
