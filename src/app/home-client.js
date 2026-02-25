@@ -93,7 +93,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
             alt="CrashDayPics"
             style={{
               // Mobile-friendly sizing: 34px on small screens, up to 56px on desktop
-              height: "clamp(34px, 6.5vw, 56px)",
+              height: "clamp(44px, 8vw, 78px)",
               width: "auto",
               objectFit: "contain",
               display: "block",
