@@ -75,74 +75,96 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
-      {/* HEADER */}
-      <nav
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "10px 24px",
-          borderBottom: "1px solid #222",
-          gap: 16,
-          flexWrap: "nowrap",
-        }}
-      >
-        {/* LOGO: fixed-height container so header never gets tall */}
-        <a
-          href="/"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            height: 56, // hard cap header height
-            overflow: "hidden", // keeps the header tight even if the image has padding
-            textDecoration: "none",
-          }}
-        >
-          <img
-            src="/branding/crashdaypics-logo.png"
-            alt="CrashDayPics"
-            style={{
-              // Make the logo visually big, but don't let it grow the header
-              height: 92, // intentionally larger than the container
-              width: "auto",
-              display: "block",
-              objectFit: "contain",
-              // This is the magic: nudge up to "eat" transparent padding in the PNG
-              transform: "translateY(-12px)",
-            }}
-          />
+      {/* Inline styles for responsive nav without needing CSS files */}
+      <style>{`
+        .navWrap {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 16px;
+          border-bottom: 1px solid #222;
+          gap: 16px;
+        }
+        .brandLink {
+          display: inline-flex;
+          align-items: center;
+          text-decoration: none;
+          flex: 0 0 auto;
+        }
+        /* KEY: give the brand area a real width so the logo can be big */
+        .brandBox {
+          display: inline-flex;
+          align-items: center;
+          width: min(420px, 52vw);
+          min-width: 220px;
+        }
+        .brandImg {
+          height: 72px;           /* <-- BIGGER */
+          width: 100%;
+          max-width: 420px;
+          object-fit: contain;
+          display: block;
+        }
+        .navLinks {
+          display: flex;
+          gap: 18px;
+          font-size: 12px;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: #bbb;
+          flex: 0 0 auto;
+          white-space: nowrap;
+        }
+        .navLinks a { color: #bbb; text-decoration: none; }
+        .navLinks a:first-child { color: #fff; }
+        .navLinks a:hover { color: #fff; }
+
+        @media (max-width: 720px) {
+          .navWrap {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 10px 14px;
+            gap: 10px;
+          }
+          .brandBox {
+            width: 100%;
+            min-width: 0;
+          }
+          .brandImg {
+            height: 64px;        /* still big on mobile */
+            max-width: 520px;
+          }
+          .navLinks {
+            width: 100%;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 14px;
+          }
+        }
+      `}</style>
+
+      <nav className="navWrap">
+        {/* LOGO */}
+        <a href="/" className="brandLink" aria-label="CrashDayPics Home">
+          <span className="brandBox">
+            <img
+              className="brandImg"
+              src="/branding/crashdaypics-logo.png"
+              alt="CrashDayPics"
+            />
+          </span>
         </a>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 18,
-            fontSize: 12,
-            letterSpacing: 3,
-            textTransform: "uppercase",
-            color: "#bbb",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            whiteSpace: "nowrap",
-          }}
-        >
-          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>
-            Home
-          </a>
-          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
-            IMSA
-          </a>
-          <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
-            F1
-          </a>
-          <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>
-            Contact
-          </a>
+        <div className="navLinks">
+          <a href="/">Home</a>
+          <a href="/imsa">IMSA</a>
+          <a href="/f1">F1</a>
+          <a href="/contact">Contact</a>
         </div>
       </nav>
 
       {/* HERO (mixed IMSA + F1) */}
-      <section style={{ padding: "22px 24px" }}>
+      <section style={{ padding: "28px 24px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {heroCards.map((card, i) => (
             <button
