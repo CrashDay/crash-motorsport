@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 
 export default function IMSADaytona() {
   const images = useMemo(
-    () => Array.from({ length: 16 }, (_, i) => `imsa${i + 2}.JPG`),
-    []
-  );
+  () => Array.from({ length: 16 }, (_, i) => `imsa${i + 2}.jpg`),
+  []
+);
 
   const [openIndex, setOpenIndex] = useState(null);
 
