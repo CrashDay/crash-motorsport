@@ -23,6 +23,7 @@ export default function F1Imola() {
       "imola15.jpg",
       "imola16.jpg",
       "imola17.jpg",
+      "imola18.jpg",
     ],
     []
   );
@@ -88,7 +89,7 @@ export default function F1Imola() {
           Tony Day Motorsport
         </a>
         <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
-          ← Back to F1
+          &lt;- Back to F1
         </a>
       </nav>
 
@@ -166,7 +167,7 @@ export default function F1Imola() {
             }}
           >
             <div style={{ color: "#bbb", fontSize: 13 }}>
-              {openIndex + 1} / {images.length} — {activeName}
+              {openIndex + 1} / {images.length} - {activeName}
             </div>
 
             <button
@@ -182,7 +183,7 @@ export default function F1Imola() {
               }}
               aria-label="Close"
             >
-              Close ✕
+              Close X
             </button>
           </div>
 
@@ -202,9 +203,9 @@ export default function F1Imola() {
               cursor: "pointer",
             }}
             aria-label="Previous image"
-            title="Previous (←)"
+            title="Previous (<-)"
           >
-            ←
+            &lt;-
           </button>
 
           <button
@@ -223,9 +224,9 @@ export default function F1Imola() {
               cursor: "pointer",
             }}
             aria-label="Next image"
-            title="Next (→)"
+            title="Next (->)"
           >
-            →
+            -&gt;
           </button>
 
           <img

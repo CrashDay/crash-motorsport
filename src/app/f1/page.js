@@ -1,250 +1,78 @@
-"use client";
+import fs from "fs";
+import path from "path";
 
-import { useEffect, useMemo, useState } from "react";
+export const dynamic = "force-dynamic"; // new random on refresh
 
-export default function F1Imola() {
-  // Files must be in: public/photos/f1/
-  const images = useMemo(
-    () => [
-      "imola1.jpg",
-      "imola2.jpg",
-      "imola3.jpg",
-      "imola4.jpg",
-      "imola5.jpg",
-      "imola6.jpg",
-      "imola7.jpg",
-      "imola8.jpg",
-      "imola9.jpg",
-      "imola10.jpg",
-      "imola11.jpg",
-      "imola12.jpg",
-      "imola13.jpg",
-      "imola14.jpg",
-      "imola15.jpg",
-      "imola16.jpg",
-      "imola17.jpg",
-    ],
-    []
-  );
+function pickRandomImageFromPublic(relDir) {
+  const absDir = path.join(process.cwd(), "public", relDir);
 
-  const [openIndex, setOpenIndex] = useState(null);
-  const isOpen = openIndex !== null;
+  let files = [];
+  try {
+    files = fs.readdirSync(absDir);
+  } catch {
+    return null;
+  }
 
-  const close = () => setOpenIndex(null);
-  const prev = () =>
-    setOpenIndex((i) => (i === null ? i : (i - 1 + images.length) % images.length));
-  const next = () =>
-    setOpenIndex((i) => (i === null ? i : (i + 1) % images.length));
+  const images = files.filter((f) => {
+    const lower = f.toLowerCase();
+    return (
+      !lower.startsWith(".") &&
+      !lower.includes("ds_store") &&
+      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp"))
+    );
+  });
 
-  useEffect(() => {
-    if (!isOpen) return;
+  if (!images.length) return null;
 
-    const onKeyDown = (e) => {
-      if (e.key === "Escape") close();
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
-    };
+  const pick = images[Math.floor(Math.random() * images.length)];
+  return `/${relDir}/${pick}`; // served from /photos/...
+}
 
-    window.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
-  const activeName = openIndex !== null ? images[openIndex] : null;
-  const activeSrc = activeName ? `/photos/f1/${activeName}` : null;
+export default function F1Index() {
+  // Imola tile cover randomly picked from public/photos/f1
+  const coverSrc = pickRandomImageFromPublic("photos/f1");
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#000",
-        color: "#fff",
-        fontFamily: "system-ui",
-      }}
-    >
-      <nav
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: "16px 24px",
-          borderBottom: "1px solid #222",
-        }}
-      >
-        <a
-          href="/"
-          style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: "#fff",
-            textDecoration: "none",
-          }}
-        >
+    <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
+      <nav style={{ display: "flex", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #222" }}>
+        <a href="/" style={{ fontSize: 20, fontWeight: 700, color: "#fff", textDecoration: "none" }}>
           Tony Day Motorsport
         </a>
-        <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
-          ← Back to F1
-        </a>
+
+        <div style={{ display: "flex", gap: 18, fontSize: 12, letterSpacing: 3, textTransform: "uppercase", color: "#bbb" }}>
+          <a href="/" style={{ color: "#bbb", textDecoration: "none" }}>Home</a>
+          <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>IMSA</a>
+          <a href="/f1" style={{ color: "#fff", textDecoration: "none" }}>F1</a>
+        </div>
       </nav>
 
       <section style={{ padding: "28px 24px" }}>
-        <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>Imola</h1>
+        <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>F1</h1>
+        <p style={{ color: "#aaa", marginTop: 8 }}>Motion-first trackside work from F1 events.</p>
 
-        {images.length === 0 ? (
-          <p style={{ color: "#aaa", marginTop: 12 }}>
-            No photos yet.
-          </p>
-        ) : (
-          <div className="galleryGrid">
-            {images.map((name, idx) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => setOpenIndex(idx)}
-                style={{
-                  padding: 0,
-                  border: "1px solid #222",
-                  borderRadius: 16,
-                  background: "transparent",
-                  cursor: "pointer",
-                  overflow: "hidden",
-                }}
-                aria-label={`Open ${name}`}
-              >
+        <div style={{ marginTop: 24 }}>
+          <a href="/f1/imola" style={{ textDecoration: "none", color: "#fff" }}>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: 18, overflow: "hidden", width: 320 }}>
+              {coverSrc ? (
                 <img
-                  src={`/photos/f1/${name}`}
-                  alt={name}
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    aspectRatio: "4 / 3",
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                  loading="lazy"
+                  src={coverSrc}
+                  alt="Random Imola cover"
+                  style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
                 />
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
+              ) : (
+                <div style={{ height: 180, background: "#222", display: "flex", alignItems: "center", justifyContent: "center", color: "#777" }}>
+                  Add images to /public/photos/f1
+                </div>
+              )}
 
-      {isOpen && images.length > 0 && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Image viewer"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) close();
-          }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.92)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 50,
-            padding: 16,
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              right: 12,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
-            <div style={{ color: "#bbb", fontSize: 13 }}>
-              {openIndex + 1} / {images.length} — {activeName}
+              <div style={{ padding: 14 }}>
+                <div style={{ fontWeight: 800 }}>Imola</div>
+                <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>View gallery -&gt;</div>
+              </div>
             </div>
-
-            <button
-              type="button"
-              onClick={close}
-              style={{
-                background: "#111",
-                border: "1px solid #222",
-                color: "#fff",
-                padding: "10px 12px",
-                borderRadius: 12,
-                cursor: "pointer",
-              }}
-              aria-label="Close"
-            >
-              Close ✕
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={prev}
-            style={{
-              position: "absolute",
-              left: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "#111",
-              border: "1px solid #222",
-              color: "#fff",
-              padding: "12px 14px",
-              borderRadius: 14,
-              cursor: "pointer",
-            }}
-            aria-label="Previous image"
-            title="Previous (←)"
-          >
-            ←
-          </button>
-
-          <button
-            type="button"
-            onClick={next}
-            style={{
-              position: "absolute",
-              right: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "#111",
-              border: "1px solid #222",
-              color: "#fff",
-              padding: "12px 14px",
-              borderRadius: 14,
-              cursor: "pointer",
-            }}
-            aria-label="Next image"
-            title="Next (→)"
-          >
-            →
-          </button>
-
-          <img
-            src={activeSrc}
-            alt={activeName || "Selected image"}
-            style={{
-              maxWidth: "calc(100vw - 120px)",
-              maxHeight: "calc(100vh - 120px)",
-              width: "auto",
-              height: "auto",
-              borderRadius: 18,
-              border: "1px solid #222",
-              boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
-              background: "#111",
-            }}
-            draggable={false}
-          />
+          </a>
         </div>
-      )}
+      </section>
     </div>
   );
 }
