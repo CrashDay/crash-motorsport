@@ -83,7 +83,12 @@ export default function SebringLeaflet() {
   const [err, setErr] = useState("");
   const [pickMode, setPickMode] = useState(false);
   const [bounds, setBounds] = useState(null);
-  const [viewBounds, setViewBounds] = useState(null);
+  const [viewBounds, setViewBounds] = useState({
+    north: 27.457711,
+    south: 27.448115,
+    east: -81.345778,
+    west: -81.35951,
+  });
 
   const corner3Bounds = {
     north: 27.45436,
