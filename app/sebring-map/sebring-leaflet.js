@@ -14,17 +14,7 @@ function FitToGeoJSON({ data }) {
       const layer = geoJSON(data);
       const bounds = layer.getBounds();
       if (bounds.isValid()) {
-        const isMobile = map.getSize().x < 720;
-        const padding = isMobile ? [6, 6] : [8, 8];
-        map.fitBounds(bounds, { padding, maxZoom: 18 });
-
-        if (isMobile) {
-          const targetZoom = 17;
-          const z = map.getZoom();
-          if (z < targetZoom) {
-            map.setZoom(targetZoom);
-          }
-        }
+        map.fitBounds(bounds, { padding: [8, 8], maxZoom: 18 });
       }
     } catch {
       // ignore fit errors
@@ -93,6 +83,7 @@ export default function SebringLeaflet() {
   const [err, setErr] = useState("");
   const [pickMode, setPickMode] = useState(false);
   const [bounds, setBounds] = useState(null);
+  const [viewBounds, setViewBounds] = useState(null);
 
   const corner3Bounds = {
     north: 27.45436,
@@ -176,11 +167,11 @@ export default function SebringLeaflet() {
         </div>
       ) : null}
 
-      <div
-        style={{
-          position: "absolute",
-          zIndex: 9999,
-          top: 12,
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 9999,
+            top: 12,
           left: 12,
           background: "rgba(0,0,0,0.75)",
           color: "#fff",
@@ -214,6 +205,25 @@ export default function SebringLeaflet() {
           </button>
         </div>
         {bounds ? (
+          <div style={{ marginTop: 8 }}>
+            <button
+              type="button"
+              onClick={() => setViewBounds(bounds)}
+              style={{
+                background: "#1b1b1b",
+                border: "1px solid #333",
+                color: "#fff",
+                padding: "6px 8px",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontSize: 12,
+              }}
+            >
+              Use bounds for view
+            </button>
+          </div>
+        ) : null}
+        {bounds ? (
           <div style={{ marginTop: 8, lineHeight: 1.4 }}>
             <div>North: {bounds.north.toFixed(6)}</div>
             <div>South: {bounds.south.toFixed(6)}</div>
@@ -229,7 +239,33 @@ export default function SebringLeaflet() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
-        {data ? <FitToGeoJSON data={data} /> : null}
+        {viewBounds ? (
+          <FitToGeoJSON
+            data={{
+              type: "FeatureCollection",
+              features: [
+                {
+                  type: "Feature",
+                  properties: {},
+                  geometry: {
+                    type: "Polygon",
+                    coordinates: [
+                      [
+                        [viewBounds.west, viewBounds.south],
+                        [viewBounds.east, viewBounds.south],
+                        [viewBounds.east, viewBounds.north],
+                        [viewBounds.west, viewBounds.north],
+                        [viewBounds.west, viewBounds.south],
+                      ],
+                    ],
+                  },
+                },
+              ],
+            }}
+          />
+        ) : data ? (
+          <FitToGeoJSON data={data} />
+        ) : null}
         <BoundsPicker enabled={pickMode} onChange={setBounds} />
 
         <Rectangle bounds={corner3Rect} pathOptions={{ color: "#ff8c00", weight: 2 }} />
