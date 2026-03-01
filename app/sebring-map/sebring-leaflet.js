@@ -14,7 +14,17 @@ function FitToGeoJSON({ data }) {
       const layer = geoJSON(data);
       const bounds = layer.getBounds();
       if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [8, 8], maxZoom: 18 });
+        const isMobile = map.getSize().x < 720;
+        const padding = isMobile ? [6, 6] : [8, 8];
+        map.fitBounds(bounds, { padding, maxZoom: 18 });
+
+        if (isMobile) {
+          const targetZoom = 17;
+          const z = map.getZoom();
+          if (z < targetZoom) {
+            map.setZoom(targetZoom);
+          }
+        }
       }
     } catch {
       // ignore fit errors
