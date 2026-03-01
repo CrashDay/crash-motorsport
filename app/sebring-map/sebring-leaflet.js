@@ -5,6 +5,31 @@ import { MapContainer, TileLayer, GeoJSON, Rectangle, CircleMarker, Popup, useMa
 import { geoJSON } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+function FitToBounds({ bounds }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !bounds) return;
+
+    const fit = () => {
+      map.invalidateSize();
+      map.fitBounds(bounds, { padding: [8, 8], maxZoom: 18 });
+    };
+
+    if (map._loaded) {
+      fit();
+    } else {
+      map.whenReady(fit);
+    }
+
+    const onResize = () => fit();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [map, bounds]);
+
+  return null;
+}
+
 function FitToGeoJSON({ data }) {
   const map = useMap();
 
@@ -106,6 +131,13 @@ export default function SebringLeaflet() {
     (corner3Bounds.north + corner3Bounds.south) / 2,
     (corner3Bounds.east + corner3Bounds.west) / 2,
   ];
+
+  const viewLatLngBounds = viewBounds
+    ? [
+        [viewBounds.south, viewBounds.west],
+        [viewBounds.north, viewBounds.east],
+      ]
+    : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -244,30 +276,8 @@ export default function SebringLeaflet() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
-        {viewBounds ? (
-          <FitToGeoJSON
-            data={{
-              type: "FeatureCollection",
-              features: [
-                {
-                  type: "Feature",
-                  properties: {},
-                  geometry: {
-                    type: "Polygon",
-                    coordinates: [
-                      [
-                        [viewBounds.west, viewBounds.south],
-                        [viewBounds.east, viewBounds.south],
-                        [viewBounds.east, viewBounds.north],
-                        [viewBounds.west, viewBounds.north],
-                        [viewBounds.west, viewBounds.south],
-                      ],
-                    ],
-                  },
-                },
-              ],
-            }}
-          />
+        {viewLatLngBounds ? (
+          <FitToBounds bounds={viewLatLngBounds} />
         ) : data ? (
           <FitToGeoJSON data={data} />
         ) : null}
