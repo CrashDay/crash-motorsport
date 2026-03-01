@@ -61,7 +61,7 @@ function BoundsPicker({ enabled, onChange }) {
 export default function SebringLeaflet() {
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
-  const [pickMode, setPickMode] = useState(true);
+  const [pickMode, setPickMode] = useState(false);
   const [bounds, setBounds] = useState(null);
 
   const corner3Bounds = {
