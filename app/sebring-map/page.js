@@ -1,9 +1,7 @@
-﻿"use client";
+﻿export const dynamic = "force-dynamic";
 
-import dynamic from "next/dynamic";
-
-const SebringLeaflet = dynamic(() => import("./sebring-leaflet"), { ssr: false });
+import SebringDiagramClient from "./sebring-diagram-client";
 
 export default function Page() {
-  return <SebringLeaflet />;
+  return <SebringDiagramClient />;
 }
