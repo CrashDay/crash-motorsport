@@ -1,12 +1,85 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Rectangle, CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+
+function BoundsPicker({ enabled, onChange }) {
+  const [start, setStart] = useState(null);
+  const [end, setEnd] = useState(null);
+  const [dragging, setDragging] = useState(false);
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+    if (enabled) {
+      map.dragging.disable();
+    } else {
+      map.dragging.enable();
+    }
+    return () => {
+      map.dragging.enable();
+    };
+  }, [map, enabled]);
+
+  useMapEvents({
+    mousedown(e) {
+      if (!enabled) return;
+      setStart(e.latlng);
+      setEnd(e.latlng);
+      setDragging(true);
+    },
+    mousemove(e) {
+      if (!enabled || !dragging) return;
+      setEnd(e.latlng);
+    },
+    mouseup() {
+      if (!enabled || !dragging) return;
+      setDragging(false);
+    },
+  });
+
+  useEffect(() => {
+    if (!start || !end) return;
+    const north = Math.max(start.lat, end.lat);
+    const south = Math.min(start.lat, end.lat);
+    const east = Math.max(start.lng, end.lng);
+    const west = Math.min(start.lng, end.lng);
+    onChange({ north, south, east, west });
+  }, [start, end, onChange]);
+
+  if (!start || !end) return null;
+
+  const bounds = [
+    [Math.min(start.lat, end.lat), Math.min(start.lng, end.lng)],
+    [Math.max(start.lat, end.lat), Math.max(start.lng, end.lng)],
+  ];
+
+  return <Rectangle bounds={bounds} pathOptions={{ color: "#00e5ff", weight: 2 }} />;
+}
 
 export default function SebringLeaflet() {
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
+  const [pickMode, setPickMode] = useState(true);
+  const [bounds, setBounds] = useState(null);
+
+  const corner3Bounds = {
+    north: 27.45436,
+    south: 27.45317,
+    east: -81.3489,
+    west: -81.349479,
+  };
+
+  const corner3Rect = [
+    [corner3Bounds.south, corner3Bounds.west],
+    [corner3Bounds.north, corner3Bounds.east],
+  ];
+
+  const corner3Center = [
+    (corner3Bounds.north + corner3Bounds.south) / 2,
+    (corner3Bounds.east + corner3Bounds.west) / 2,
+  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -66,12 +139,59 @@ export default function SebringLeaflet() {
   }, []);
 
   return (
-    <div style={{ height: "100vh", width: "100%" }}>
+    <div style={{ height: "100vh", width: "100%", position: "relative" }}>
       {err ? (
         <div style={{ position: "absolute", zIndex: 9999, background: "white", padding: 12 }}>
           GeoJSON load failed: {err}
         </div>
       ) : null}
+
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 9999,
+          top: 12,
+          left: 12,
+          background: "rgba(0,0,0,0.75)",
+          color: "#fff",
+          padding: "10px 12px",
+          borderRadius: 10,
+          fontSize: 12,
+          maxWidth: 280,
+        }}
+      >
+        <div style={{ fontWeight: 700, marginBottom: 6 }}>Bounds Picker</div>
+        <div style={{ color: "#bbb" }}>
+          {pickMode
+            ? "Click and drag to draw a rectangle. The bounds will appear below."
+            : "Picker is off."}
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={() => setPickMode((v) => !v)}
+            style={{
+              background: "#111",
+              border: "1px solid #333",
+              color: "#fff",
+              padding: "6px 8px",
+              borderRadius: 8,
+              cursor: "pointer",
+              fontSize: 12,
+            }}
+          >
+            {pickMode ? "Disable picker" : "Enable picker"}
+          </button>
+        </div>
+        {bounds ? (
+          <div style={{ marginTop: 8, lineHeight: 1.4 }}>
+            <div>North: {bounds.north.toFixed(6)}</div>
+            <div>South: {bounds.south.toFixed(6)}</div>
+            <div>East: {bounds.east.toFixed(6)}</div>
+            <div>West: {bounds.west.toFixed(6)}</div>
+          </div>
+        ) : null}
+      </div>
 
       <MapContainer center={[27.4564, -81.3483]} zoom={14} style={{ height: "100%", width: "100%" }}>
         <TileLayer
@@ -79,6 +199,21 @@ export default function SebringLeaflet() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
+        <BoundsPicker enabled={pickMode} onChange={setBounds} />
+
+        <Rectangle bounds={corner3Rect} pathOptions={{ color: "#ff8c00", weight: 2 }} />
+        <CircleMarker center={corner3Center} radius={7} pathOptions={{ color: "#ff8c00", fillColor: "#ff8c00", fillOpacity: 0.9 }}>
+          <Popup maxWidth={480} minWidth={320}>
+            <div style={{ width: 460, overflow: "hidden", borderRadius: 10 }}>
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>Corner 3 - Inside</div>
+              <img
+                src="/photos/imsa/sebring1.jpg"
+                alt="Corner 3 - Inside"
+                style={{ width: "100%", height: 300, objectFit: "cover", display: "block" }}
+              />
+            </div>
+          </Popup>
+        </CircleMarker>
       </MapContainer>
     </div>
   );
