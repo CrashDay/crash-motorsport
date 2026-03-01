@@ -270,7 +270,13 @@ export default function SebringLeaflet() {
         ) : null}
       </div>
 
-      <MapContainer center={[27.4564, -81.3483]} zoom={14} style={{ height: "100%", width: "100%" }}>
+      <MapContainer
+        center={[27.4564, -81.3483]}
+        zoom={14}
+        bounds={viewLatLngBounds || undefined}
+        boundsOptions={{ padding: [8, 8], maxZoom: 18 }}
+        style={{ height: "100%", width: "100%" }}
+      >
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
