@@ -370,7 +370,6 @@ export default function SebringLeaflet() {
         <BoundsPicker enabled={pickMode} onChange={setBounds} />
         <MapDebug viewLatLngBounds={viewLatLngBounds} />
 
-        <Rectangle bounds={corner3Rect} pathOptions={{ color: "#ff8c00", weight: 2 }} />
         <CircleMarker center={corner3Center} radius={7} pathOptions={{ color: "#ff8c00", fillColor: "#ff8c00", fillOpacity: 0.9 }}>
           <Popup maxWidth={720} minWidth={220}>
             <div style={{ width: "min(600px, 90vw)", overflow: "hidden", borderRadius: 12 }}>
