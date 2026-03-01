@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, GeoJSON, Rectangle, CircleMarker, Popup, useMa
 import { geoJSON } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-function FitToBounds({ bounds }) {
+function FitToBounds({ bounds, lockZoom }) {
   const map = useMap();
 
   useEffect(() => {
@@ -13,7 +13,11 @@ function FitToBounds({ bounds }) {
 
     const fit = () => {
       map.invalidateSize();
-      map.fitBounds(bounds, { padding: [8, 8], maxZoom: 18 });
+      map.fitBounds(bounds, { padding: [0, 0], maxZoom: 18 });
+      if (lockZoom) {
+        const z = map.getZoom();
+        map.setMinZoom(z);
+      }
     };
 
     if (map._loaded) {
@@ -25,7 +29,7 @@ function FitToBounds({ bounds }) {
     const onResize = () => fit();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [map, bounds]);
+  }, [map, bounds, lockZoom]);
 
   return null;
 }
@@ -47,6 +51,80 @@ function FitToGeoJSON({ data }) {
   }, [map, data]);
 
   return null;
+}
+
+function MapDebug({ viewLatLngBounds }) {
+  const map = useMap();
+  const [info, setInfo] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!map) return;
+
+    const format = () => {
+      const b = map.getBounds();
+      const z = map.getZoom();
+      const view = viewLatLngBounds
+        ? `viewBounds: [${viewLatLngBounds[0][0].toFixed(6)}, ${viewLatLngBounds[0][1].toFixed(6)}] to [${viewLatLngBounds[1][0].toFixed(6)}, ${viewLatLngBounds[1][1].toFixed(6)}]`
+        : "viewBounds: null";
+      return `zoom: ${z}\nmapBounds: N ${b.getNorth().toFixed(6)} S ${b.getSouth().toFixed(6)} E ${b.getEast().toFixed(6)} W ${b.getWest().toFixed(6)}\n${view}`;
+    };
+
+    const update = () => setInfo(format());
+    update();
+    map.on("moveend zoomend", update);
+    return () => {
+      map.off("moveend zoomend", update);
+    };
+  }, [map, viewLatLngBounds]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(info);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        zIndex: 9999,
+        top: 12,
+        right: 12,
+        background: "rgba(0,0,0,0.75)",
+        color: "#fff",
+        padding: "8px 10px",
+        borderRadius: 8,
+        fontSize: 11,
+        whiteSpace: "pre-line",
+        maxWidth: 280,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
+        <div style={{ fontWeight: 700 }}>Debug</div>
+        <button
+          type="button"
+          onClick={copy}
+          style={{
+            background: "#111",
+            border: "1px solid #333",
+            color: "#fff",
+            padding: "4px 6px",
+            borderRadius: 6,
+            cursor: "pointer",
+            fontSize: 11,
+          }}
+        >
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      {info}
+    </div>
+  );
 }
 
 function BoundsPicker({ enabled, onChange }) {
@@ -109,10 +187,10 @@ export default function SebringLeaflet() {
   const [pickMode, setPickMode] = useState(false);
   const [bounds, setBounds] = useState(null);
   const [viewBounds, setViewBounds] = useState({
-    north: 27.457711,
+    north: 27.457426,
     south: 27.448115,
-    east: -81.345778,
-    west: -81.35951,
+    east: -81.345928,
+    west: -81.359682,
   });
 
   const corner3Bounds = {
@@ -274,7 +352,9 @@ export default function SebringLeaflet() {
         center={[27.4564, -81.3483]}
         zoom={14}
         bounds={viewLatLngBounds || undefined}
-        boundsOptions={{ padding: [8, 8], maxZoom: 18 }}
+        boundsOptions={{ padding: [0, 0], maxZoom: 18 }}
+        maxBounds={viewLatLngBounds || undefined}
+        maxBoundsViscosity={0.9}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
@@ -283,11 +363,12 @@ export default function SebringLeaflet() {
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
         {viewLatLngBounds ? (
-          <FitToBounds bounds={viewLatLngBounds} />
+          <FitToBounds bounds={viewLatLngBounds} lockZoom />
         ) : data ? (
           <FitToGeoJSON data={data} />
         ) : null}
         <BoundsPicker enabled={pickMode} onChange={setBounds} />
+        <MapDebug viewLatLngBounds={viewLatLngBounds} />
 
         <Rectangle bounds={corner3Rect} pathOptions={{ color: "#ff8c00", weight: 2 }} />
         <CircleMarker center={corner3Center} radius={7} pathOptions={{ color: "#ff8c00", fillColor: "#ff8c00", fillOpacity: 0.9 }}>
