@@ -203,13 +203,13 @@ export default function SebringLeaflet() {
 
         <Rectangle bounds={corner3Rect} pathOptions={{ color: "#ff8c00", weight: 2 }} />
         <CircleMarker center={corner3Center} radius={7} pathOptions={{ color: "#ff8c00", fillColor: "#ff8c00", fillOpacity: 0.9 }}>
-          <Popup maxWidth={480} minWidth={320}>
-            <div style={{ width: 460, overflow: "hidden", borderRadius: 10 }}>
+          <Popup maxWidth={640} minWidth={360}>
+            <div style={{ width: 600, overflow: "hidden", borderRadius: 12 }}>
               <div style={{ fontWeight: 700, marginBottom: 6 }}>Corner 3 - Inside</div>
               <img
                 src="/photos/imsa/sebring1.jpg"
                 alt="Corner 3 - Inside"
-                style={{ width: "100%", height: 300, objectFit: "cover", display: "block" }}
+                style={{ width: "100%", height: 380, objectFit: "cover", display: "block" }}
               />
             </div>
           </Popup>
