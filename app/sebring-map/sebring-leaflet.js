@@ -2,7 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Rectangle, CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
+import { geoJSON } from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+function FitToGeoJSON({ data }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !data) return;
+    try {
+      const layer = geoJSON(data);
+      const bounds = layer.getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [8, 8], maxZoom: 18 });
+      }
+    } catch {
+      // ignore fit errors
+    }
+  }, [map, data]);
+
+  return null;
+}
 
 function BoundsPicker({ enabled, onChange }) {
   const [start, setStart] = useState(null);
@@ -199,6 +219,7 @@ export default function SebringLeaflet() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
+        {data ? <FitToGeoJSON data={data} /> : null}
         <BoundsPicker enabled={pickMode} onChange={setBounds} />
 
         <Rectangle bounds={corner3Rect} pathOptions={{ color: "#ff8c00", weight: 2 }} />
