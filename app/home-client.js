@@ -168,6 +168,9 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
             F1
           </a>
+          <a href="/sebring-map" style={{ color: "#bbb", textDecoration: "none" }}>
+            Map
+          </a>
           <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>
             Contact
           </a>
