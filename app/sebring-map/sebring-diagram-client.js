@@ -139,6 +139,13 @@ function lineToPathD(line, project) {
 export default function SebringDiagramClient() {
   const [geo, setGeo] = useState(null);
   const [err, setErr] = useState("");
+  const [pins, setPins] = useState([]);
+  const [pinsError, setPinsError] = useState("");
+  const [pinsLoading, setPinsLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [viewer, setViewer] = useState({ open: false, pin: null, assets: [], index: 0, loading: false, error: "" });
+  const [auth, setAuth] = useState({ loading: true, connected: false, error: "" });
+  const useMock = process.env.NEXT_PUBLIC_USE_MOCK_LIGHTROOM === "true";
 
   // Simple pan/zoom state
   const [scale, setScale] = useState(1);
@@ -166,6 +173,110 @@ export default function SebringDiagramClient() {
       cancelled = true;
     };
   }, []);
+
+  const loadPins = async () => {
+    setPinsLoading(true);
+    setPinsError("");
+    try {
+      const res = await fetch("/api/tracks/sebring/pins");
+      if (!res.ok) throw new Error(`Pins HTTP ${res.status}`);
+      const data = await res.json();
+      setPins(data.pins || []);
+    } catch (e) {
+      setPinsError(String(e?.message || e));
+    } finally {
+      setPinsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPins();
+  }, []);
+
+  const loadAuthStatus = async () => {
+    if (useMock) {
+      setAuth({ loading: false, connected: false, error: "" });
+      return;
+    }
+    try {
+      const res = await fetch("/api/auth/adobe/status");
+      if (!res.ok) throw new Error(`Auth HTTP ${res.status}`);
+      const data = await res.json();
+      setAuth({ loading: false, connected: !!data.connected, error: "" });
+    } catch (e) {
+      setAuth({ loading: false, connected: false, error: String(e?.message || e) });
+    }
+  };
+
+  useEffect(() => {
+    loadAuthStatus();
+  }, []);
+
+  const syncMock = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/sync/mock-lightroom?trackId=sebring", { method: "POST" });
+      if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
+      await loadPins();
+    } catch (e) {
+      setPinsError(String(e?.message || e));
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const syncLightroom = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/sync/lightroom?trackId=sebring", { method: "POST" });
+      if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
+      await loadPins();
+    } catch (e) {
+      setPinsError(String(e?.message || e));
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const startConnect = () => {
+    window.location.href = "/api/auth/adobe/start?redirect=/sebring-map";
+  };
+
+  const openPin = async (pin) => {
+    setViewer({ open: true, pin, assets: [], index: 0, loading: true, error: "" });
+    try {
+      const res = await fetch(`/api/pins/${pin.pin_id}/assets`);
+      if (!res.ok) throw new Error(`Assets HTTP ${res.status}`);
+      const data = await res.json();
+      const assets = data.assets || [];
+      setViewer({ open: true, pin, assets, index: 0, loading: false, error: "" });
+    } catch (e) {
+      setViewer({ open: true, pin, assets: [], index: 0, loading: false, error: String(e?.message || e) });
+    }
+  };
+
+  const closeViewer = () => setViewer({ open: false, pin: null, assets: [], index: 0, loading: false, error: "" });
+
+  const next = () => setViewer((v) => {
+    if (!v.assets.length) return v;
+    return { ...v, index: (v.index + 1) % v.assets.length };
+  });
+
+  const prev = () => setViewer((v) => {
+    if (!v.assets.length) return v;
+    return { ...v, index: (v.index - 1 + v.assets.length) % v.assets.length };
+  });
+
+  useEffect(() => {
+    if (!viewer.open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeViewer();
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewer.open]);
 
   const { paths, boundsOk } = useMemo(() => {
     if (!geo) return { paths: [], boundsOk: false };
@@ -237,8 +348,49 @@ export default function SebringDiagramClient() {
         </button>
 
         <div style={{ padding: "8px 10px", borderRadius: 10, background: PANEL_BG, border: `1px solid ${PANEL_BORDER}` }}>
-          Wheel = zoom • Drag = pan
+          Wheel = zoom * Drag = pan
         </div>
+
+        <button
+          onClick={useMock ? syncMock : syncLightroom}
+          disabled={syncing || (!useMock && !auth.connected)}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: `1px solid ${PANEL_BORDER}`,
+            background: syncing ? "rgba(0,0,0,0.03)" : PANEL_BG,
+            color: TEXT,
+            cursor: syncing ? "default" : "pointer",
+          }}
+        >
+          {syncing ? "Syncing..." : useMock ? "Sync mock Lightroom" : "Sync Lightroom"}
+        </button>
+
+        {!useMock ? (
+          <button
+            onClick={startConnect}
+            style={{
+              padding: "8px 10px",
+              borderRadius: 10,
+              border: `1px solid ${PANEL_BORDER}`,
+              background: PANEL_BG,
+              color: TEXT,
+              cursor: "pointer",
+            }}
+          >
+            {auth.connected ? "Reconnect Lightroom" : "Connect Lightroom"}
+          </button>
+        ) : null}
+
+        <div style={{ padding: "8px 10px", borderRadius: 10, background: PANEL_BG, border: `1px solid ${PANEL_BORDER}` }}>
+          {pinsLoading ? "Loading pins..." : `Pins: ${pins.length}`}
+        </div>
+
+        {!useMock ? (
+          <div style={{ padding: "8px 10px", borderRadius: 10, background: PANEL_BG, border: `1px solid ${PANEL_BORDER}` }}>
+            {auth.loading ? "Lightroom: checking..." : auth.connected ? "Lightroom: connected" : "Lightroom: disconnected"}
+          </div>
+        ) : null}
       </div>
 
       {err ? (
@@ -249,7 +401,13 @@ export default function SebringDiagramClient() {
 
       {!err && geo && !boundsOk ? (
         <div style={{ position: "absolute", zIndex: 10, top: 60, left: 12, background: "white", color: "black", padding: 12, borderRadius: 10, border: `1px solid ${PANEL_BORDER}` }}>
-          Loaded GeoJSON, but couldn’t extract linework (LineString/MultiLineString). If your export is only a Polygon boundary, we can re-export the circuit loop relation.
+          Loaded GeoJSON, but could not extract linework (LineString/MultiLineString).
+        </div>
+      ) : null}
+
+      {pinsError ? (
+        <div style={{ position: "absolute", zIndex: 10, top: 60, right: 12, background: "white", color: "black", padding: 12, borderRadius: 10, border: `1px solid ${PANEL_BORDER}` }}>
+          Pins error: {pinsError}
         </div>
       ) : null}
 
@@ -264,10 +422,8 @@ export default function SebringDiagramClient() {
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
       >
-        {/* background */}
         <rect x="0" y="0" width={W} height={H} fill={BG} />
 
-        {/* pan/zoom group */}
         <g transform={`translate(${pan.x} ${pan.y}) scale(${scale})`}>
           {paths.map((d, idx) => (
             <path
@@ -281,8 +437,136 @@ export default function SebringDiagramClient() {
               opacity="0.95"
             />
           ))}
+
+          {pins.map((pin) => {
+            const isStack = pin.photo_count > 1;
+            const x = pin.anchor_x ?? 0;
+            const y = pin.anchor_y ?? 0;
+            return (
+              <g
+                key={pin.pin_id}
+                transform={`translate(${x} ${y})`}
+                onClick={() => openPin(pin)}
+                style={{ cursor: "pointer" }}
+              >
+                {isStack ? (
+                  <circle r={16} cx={4} cy={-4} fill="#1b1b1b" opacity="0.7" />
+                ) : null}
+                <circle r={14} fill="#ff8c00" stroke="#111" strokeWidth="2" />
+                <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="700" fill="#111">
+                  {pin.photo_count > 0 ? pin.photo_count : ""}
+                </text>
+                <title>{pin.title || pin.region_id}</title>
+              </g>
+            );
+          })}
         </g>
       </svg>
+
+      {viewer.open ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closeViewer();
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.92)",
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", color: "#bbb", fontSize: 12 }}>
+            <div>{viewer.pin?.title || viewer.pin?.region_id}</div>
+            <button
+              type="button"
+              onClick={closeViewer}
+              style={{ background: "#111", border: "1px solid #222", color: "#fff", padding: "8px 10px", borderRadius: 10, cursor: "pointer" }}
+            >
+              Close
+            </button>
+          </div>
+
+          {viewer.loading ? (
+            <div style={{ color: "#bbb" }}>Loading photos...</div>
+          ) : viewer.error ? (
+            <div style={{ color: "#f5a" }}>{viewer.error}</div>
+          ) : viewer.assets.length ? (
+            <ViewerBody viewer={viewer} onNext={next} onPrev={prev} setViewer={setViewer} />
+          ) : (
+            <div style={{ color: "#bbb" }}>No photos for this pin.</div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ViewerBody({ viewer, onNext, onPrev, setViewer }) {
+  const touchRef = useRef({ startX: 0, startY: 0, active: false });
+
+  const onTouchStart = (e) => {
+    if (e.touches.length !== 1) return;
+    touchRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY, active: true };
+  };
+
+  const onTouchEnd = (e) => {
+    if (!touchRef.current.active) return;
+    const dx = e.changedTouches[0].clientX - touchRef.current.startX;
+    const dy = e.changedTouches[0].clientY - touchRef.current.startY;
+    touchRef.current.active = false;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+      if (dx < 0) onNext();
+      else onPrev();
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: "92vw", maxHeight: "88vh", display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+      <div style={{ position: "relative" }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <img
+          src={viewer.assets[viewer.index].full_url}
+          alt={viewer.assets[viewer.index].alt_text_snapshot || "Selected photo"}
+          style={{ maxWidth: "92vw", maxHeight: "72vh", borderRadius: 12, border: "1px solid #222", display: "block" }}
+          draggable={false}
+        />
+        <button
+          type="button"
+          onClick={onPrev}
+          style={{ position: "absolute", left: -50, top: "50%", transform: "translateY(-50%)", background: "#111", border: "1px solid #222", color: "#fff", padding: "10px 12px", borderRadius: 10, cursor: "pointer" }}
+        >
+          Prev
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          style={{ position: "absolute", right: -50, top: "50%", transform: "translateY(-50%)", background: "#111", border: "1px solid #222", color: "#fff", padding: "10px 12px", borderRadius: 10, cursor: "pointer" }}
+        >
+          Next
+        </button>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6, maxWidth: "92vw" }}>
+        {viewer.assets.map((asset, i) => (
+          <button
+            key={asset.asset_id}
+            type="button"
+            onClick={() => setViewer((v) => ({ ...v, index: i }))}
+            style={{ border: i === viewer.index ? "2px solid #ff8c00" : "1px solid #333", padding: 0, borderRadius: 8, background: "transparent", cursor: "pointer" }}
+          >
+            <img
+              src={asset.thumb_url}
+              alt={asset.alt_text_snapshot || "Thumbnail"}
+              style={{ width: 110, height: 70, objectFit: "cover", borderRadius: 6, display: "block" }}
+            />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

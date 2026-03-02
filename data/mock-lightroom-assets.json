@@ -1,0 +1,82 @@
+[
+  {
+    "asset_id": "mock-001",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:12:00Z",
+    "alt_text": "Turn 3 inside battle - #24",
+    "thumb_url": "https://picsum.photos/seed/sebring-001/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-001/1400/900"
+  },
+  {
+    "asset_id": "mock-002",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:14:30Z",
+    "alt_text": "t3 inside! Acura dive",
+    "thumb_url": "https://picsum.photos/seed/sebring-002/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-002/1400/900"
+  },
+  {
+    "asset_id": "mock-003",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:17:05Z",
+    "alt_text": "TURN3 INSIDE close-up",
+    "thumb_url": "https://picsum.photos/seed/sebring-003/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-003/1400/900"
+  },
+  {
+    "asset_id": "mock-004",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:20:00Z",
+    "alt_text": "Turn 3 Inside - Porsche #7",
+    "thumb_url": "https://picsum.photos/seed/sebring-004/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-004/1400/900"
+  },
+  {
+    "asset_id": "mock-005",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:22:00Z",
+    "alt_text": "Turn 5 exit",
+    "thumb_url": "https://picsum.photos/seed/sebring-005/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-005/1400/900"
+  },
+  {
+    "asset_id": "mock-006",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:25:10Z",
+    "alt_text": "back straight pass",
+    "thumb_url": "https://picsum.photos/seed/sebring-006/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-006/1400/900"
+  },
+  {
+    "asset_id": "mock-007",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:29:00Z",
+    "alt_text": "pit lane detail",
+    "thumb_url": "https://picsum.photos/seed/sebring-007/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-007/1400/900"
+  },
+  {
+    "asset_id": "mock-008",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:33:45Z",
+    "alt_text": "turn 3 inside warmup",
+    "thumb_url": "https://picsum.photos/seed/sebring-008/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-008/1400/900"
+  },
+  {
+    "asset_id": "mock-009",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:36:00Z",
+    "alt_text": "sunset paddock",
+    "thumb_url": "https://picsum.photos/seed/sebring-009/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-009/1400/900"
+  },
+  {
+    "asset_id": "mock-010",
+    "track_id": "sebring",
+    "capture_time": "2026-02-01T14:40:00Z",
+    "alt_text": "Turn 3 inside - night lights",
+    "thumb_url": "https://picsum.photos/seed/sebring-010/400/260",
+    "full_url": "https://picsum.photos/seed/sebring-010/1400/900"
+  }
+]
