@@ -146,6 +146,7 @@ export default function SebringDiagramClient() {
   const [viewer, setViewer] = useState({ open: false, pin: null, assets: [], index: 0, loading: false, error: "" });
   const [auth, setAuth] = useState({ loading: true, connected: false, error: "" });
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK_LIGHTROOM === "true";
+  const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
 
   // Simple pan/zoom state
   const [scale, setScale] = useState(1);
@@ -216,6 +217,19 @@ export default function SebringDiagramClient() {
     setSyncing(true);
     try {
       const res = await fetch("/api/sync/mock-lightroom?trackId=sebring", { method: "POST" });
+      if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
+      await loadPins();
+    } catch (e) {
+      setPinsError(String(e?.message || e));
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const syncLocalExports = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/sync/local-exports?trackId=sebring", { method: "POST" });
       if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
       await loadPins();
     } catch (e) {
@@ -352,8 +366,8 @@ export default function SebringDiagramClient() {
         </div>
 
         <button
-          onClick={useMock ? syncMock : syncLightroom}
-          disabled={syncing || (!useMock && !auth.connected)}
+          onClick={useLocalExports ? syncLocalExports : useMock ? syncMock : syncLightroom}
+          disabled={syncing || (!useMock && !useLocalExports && !auth.connected)}
           style={{
             padding: "8px 10px",
             borderRadius: 10,
@@ -363,10 +377,16 @@ export default function SebringDiagramClient() {
             cursor: syncing ? "default" : "pointer",
           }}
         >
-          {syncing ? "Syncing..." : useMock ? "Sync mock Lightroom" : "Sync Lightroom"}
+          {syncing
+            ? "Syncing..."
+            : useLocalExports
+              ? "Sync local exports"
+              : useMock
+                ? "Sync mock Lightroom"
+                : "Sync Lightroom"}
         </button>
 
-        {!useMock ? (
+        {!useMock && !useLocalExports ? (
           <button
             onClick={startConnect}
             style={{
@@ -386,7 +406,7 @@ export default function SebringDiagramClient() {
           {pinsLoading ? "Loading pins..." : `Pins: ${pins.length}`}
         </div>
 
-        {!useMock ? (
+        {!useMock && !useLocalExports ? (
           <div style={{ padding: "8px 10px", borderRadius: 10, background: PANEL_BG, border: `1px solid ${PANEL_BORDER}` }}>
             {auth.loading ? "Lightroom: checking..." : auth.connected ? "Lightroom: connected" : "Lightroom: disconnected"}
           </div>
@@ -442,6 +462,7 @@ export default function SebringDiagramClient() {
             const isStack = pin.photo_count > 1;
             const x = pin.anchor_x ?? 0;
             const y = pin.anchor_y ?? 0;
+            const clipId = `flag-clip-${pin.pin_id}`;
             return (
               <g
                 key={pin.pin_id}
@@ -450,10 +471,41 @@ export default function SebringDiagramClient() {
                 style={{ cursor: "pointer" }}
               >
                 {isStack ? (
-                  <circle r={16} cx={4} cy={-4} fill="#1b1b1b" opacity="0.7" />
+                  <circle r={10} cx={3} cy={-3} fill="#1b1b1b" opacity="0.7" />
                 ) : null}
-                <circle r={14} fill="#ff8c00" stroke="#111" strokeWidth="2" />
-                <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="700" fill="#111">
+                <circle r={9} fill="#ff8c00" stroke="#111" strokeWidth="2" />
+                <g transform="translate(-2,-14)">
+                  <defs>
+                    <clipPath id={clipId}>
+                      <path d="M -6 0 C -1 -3 3 4 6 2 L 6 8 C 2 11 -2 5 -6 8 Z" />
+                    </clipPath>
+                  </defs>
+                  <path
+                    d="M -6 0 C -1 -3 3 4 6 2 L 6 8 C 2 11 -2 5 -6 8 Z"
+                    fill="#111"
+                    stroke="#111"
+                    strokeWidth="1"
+                  />
+                  <g clipPath={`url(#${clipId})`}>
+                    {Array.from({ length: 24 }).map((_, idx) => {
+                      const col = idx % 6;
+                      const row = Math.floor(idx / 6);
+                      const isWhite = (row + col) % 2 === 0;
+                      return (
+                        <rect
+                          key={idx}
+                          x={-6 + col * 2}
+                          y={row * 2}
+                          width="2"
+                          height="2"
+                          fill={isWhite ? "#fff" : "#111"}
+                        />
+                      );
+                    })}
+                  </g>
+                  <line x1="-8" y1="0" x2="-8" y2="10" stroke="#111" strokeWidth="2" />
+                </g>
+                <text x="0" y="3" textAnchor="middle" fontSize="8" fontWeight="700" fill="#111">
                   {pin.photo_count > 0 ? pin.photo_count : ""}
                 </text>
                 <title>{pin.title || pin.region_id}</title>
