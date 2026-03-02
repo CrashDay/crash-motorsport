@@ -259,7 +259,7 @@ export default function SebringDiagramClient() {
   const openPin = async (pin) => {
     setViewer({ open: true, pin, assets: [], index: 0, loading: true, error: "" });
     try {
-      const res = await fetch(`/api/pins/${pin.pin_id}/assets`);
+      const res = await fetch(`/api/pins/${encodeURIComponent(pin.pin_id)}/assets`);
       if (!res.ok) throw new Error(`Assets HTTP ${res.status}`);
       const data = await res.json();
       const assets = data.assets || [];
