@@ -289,8 +289,12 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
         </div>
       </section>
 
-      <footer style={{ padding: "18px 18px", borderTop: "1px solid #222", color: "#777", fontSize: 12 }}>
-        © 2026 CrashDayPics
+      <footer style={{ padding: "18px 18px", borderTop: "1px solid #222", color: "#777", fontSize: 12, display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>© 2026 CrashDayPics</div>
+        <div style={{ display: "flex", gap: 14 }}>
+          <a href="/privacy" style={{ color: "#777", textDecoration: "none" }}>Privacy Policy</a>
+          <a href="/terms" style={{ color: "#777", textDecoration: "none" }}>Terms of Use</a>
+        </div>
       </footer>
 
       {/* LIGHTBOX */}
