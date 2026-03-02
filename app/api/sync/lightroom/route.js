@@ -16,6 +16,8 @@ import {
   fetchXmp,
   extractAltTextFromXmp,
 } from "@/lib/lightroom-client";
+import { getProjectorForTrack } from "@/lib/geo-projector";
+import { upsertGpsPin } from "@/lib/db";
 
 function pickCaptureTime(asset) {
   return (
@@ -52,6 +54,7 @@ export async function POST(request) {
 
   const db = getDb();
   const now = new Date().toISOString();
+  const projector = getProjectorForTrack(trackId);
 
   let catalogResp;
   try {
@@ -115,6 +118,15 @@ export async function POST(request) {
       // ignore XMP fetch errors; fall back to metadata description
     }
 
+    const gpsCandidate =
+      assetDetail?.payload?.gps ||
+      assetDetail?.payload?.location ||
+      assetDetail?.payload?.coordinate ||
+      null;
+    const gpsLat = Number(gpsCandidate?.latitude ?? assetDetail?.payload?.latitude);
+    const gpsLon = Number(gpsCandidate?.longitude ?? assetDetail?.payload?.longitude);
+    const hasGps = Number.isFinite(gpsLat) && Number.isFinite(gpsLon);
+
     const captureTime = pickCaptureTime(assetDetail);
 
     upsertPhotoAsset(db, {
@@ -128,31 +140,50 @@ export async function POST(request) {
       catalog_id: catalog.id,
     });
 
-    const regionId = getRegionIdFromAltText(trackId, altText);
-    if (regionId) {
-      matched += 1;
-      matchedAssetIds.push(assetId);
-      const region = getRegionById(regionId);
-      if (region) {
-        if (!regionPinId) {
-          regionPinId = upsertRegionPin(db, {
-            track_id: trackId,
-            region_id: regionId,
-            anchor_x: region.anchor?.x ?? 0,
-            anchor_y: region.anchor?.y ?? 0,
-            title: region.label,
+    if (hasGps && projector) {
+      const pos = projector(gpsLon, gpsLat);
+      const gpsPinId = `gps:${assetId}`;
+      upsertGpsPin(db, {
+        pin_id: gpsPinId,
+        track_id: trackId,
+        anchor_x: pos.x,
+        anchor_y: pos.y,
+        title: "GPS",
+      });
+      upsertPinAsset(db, {
+        pin_id: gpsPinId,
+        asset_id: assetId,
+        sort_order: Date.parse(captureTime) || 0,
+        added_at: now,
+      });
+      pinned += 1;
+    } else {
+      const regionId = getRegionIdFromAltText(trackId, altText);
+      if (regionId) {
+        matched += 1;
+        matchedAssetIds.push(assetId);
+        const region = getRegionById(regionId);
+        if (region) {
+          if (!regionPinId) {
+            regionPinId = upsertRegionPin(db, {
+              track_id: trackId,
+              region_id: regionId,
+              anchor_x: region.anchor?.x ?? 0,
+              anchor_y: region.anchor?.y ?? 0,
+              title: region.label,
+            });
+          }
+          const sortOrder = Number.isFinite(Date.parse(captureTime))
+            ? Date.parse(captureTime)
+            : 0;
+          upsertPinAsset(db, {
+            pin_id: regionPinId,
+            asset_id: assetId,
+            sort_order: sortOrder,
+            added_at: now,
           });
+          pinned += 1;
         }
-        const sortOrder = Number.isFinite(Date.parse(captureTime))
-          ? Date.parse(captureTime)
-          : 0;
-        upsertPinAsset(db, {
-          pin_id: regionPinId,
-          asset_id: assetId,
-          sort_order: sortOrder,
-          added_at: now,
-        });
-        pinned += 1;
       }
     }
   }
