@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="180" viewBox="0 0 1600 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e1728"/>
+      <stop offset="100%" stop-color="#060b14"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1600" height="180" fill="url(#bg)"/>
+  <rect x="24" y="18" width="1552" height="144" rx="14" fill="none" stroke="#86b2ff" stroke-opacity="0.45" stroke-width="2"/>
+  <text x="800" y="106" text-anchor="middle" fill="#f2f6ff" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700" letter-spacing="1.2">Sebring International Raceway</text>
+</svg>

@@ -1,7 +1,7 @@
-﻿export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";
 
-import SebringDiagramClient from "./sebring-diagram-client";
+import SebringPageClient from "./sebring-page-client";
 
 export default function Page() {
-  return <SebringDiagramClient />;
+  return <SebringPageClient />;
 }

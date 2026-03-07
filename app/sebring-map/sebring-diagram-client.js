@@ -136,6 +136,7 @@ function lineToPathD(line, project) {
   return d;
 }
 
+
 export default function SebringDiagramClient() {
   const [geo, setGeo] = useState(null);
   const [err, setErr] = useState("");
@@ -512,6 +513,7 @@ export default function SebringDiagramClient() {
               </g>
             );
           })}
+
         </g>
       </svg>
 
