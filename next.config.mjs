@@ -8,11 +8,6 @@ const nextConfig = {
       "./public/branding/**/*",
       "./app/audio/**/*",
     ],
-    "/daniels-park": [
-      "./public/photos/**/*",
-      "./public/branding/**/*",
-      "./app/audio/**/*",
-    ],
   },
 };
 
