@@ -223,6 +223,8 @@ function CornerPicker({ enabled, activeCorner, onPick }) {
 }
 
 export default function SebringLeaflet() {
+  const showCornerPickerTools = false;
+  const showDebugWindow = false;
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK_LIGHTROOM === "true";
   const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
   const [data, setData] = useState(null);
@@ -676,141 +678,145 @@ export default function SebringLeaflet() {
           </div>
         ) : null}
 
-        <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>Corner Picker</div>
-        <div style={{ color: "#b8c4d8" }}>{cornerPickMode ? `Click map to set ${activeCorner}` : "Corner picker is off."}</div>
-        <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
-          <button
-            type="button"
-            onClick={() => {
-              setCornerPickMode((v) => {
-                const next = !v;
-                if (next) setPickMode(false);
-                return next;
-              });
-            }}
-            style={{
-              background: "#101827",
-              border: "1px solid #2a3a57",
-              color: "#fff",
-              padding: "6px 8px",
-              borderRadius: 8,
-              cursor: "pointer",
-              fontSize: 12,
-            }}
-          >
-            {cornerPickMode ? "Disable corner picker" : "Enable corner picker"}
-          </button>
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <select
-            value={activeCorner}
-            onChange={(e) => setActiveCorner(e.target.value)}
-            style={{
-              width: "100%",
-              background: "#101827",
-              border: "1px solid #2a3a57",
-              color: "#fff",
-              borderRadius: 8,
-              padding: "6px 8px",
-              fontSize: 12,
-            }}
-          >
-            {CORNER_ORDER.map((c) => (
-              <option key={c.short} value={c.short}>
-                {c.short} - {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div style={{ marginTop: 8, maxHeight: 140, overflowY: "auto", lineHeight: 1.35 }}>
-          {CORNER_ORDER.map((c) => {
-            const pos = corners[c.short];
-            return (
-              <div key={c.short} style={{ marginBottom: 2 }}>
-                {c.short}: {pos ? `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}` : "unset"}
+        {showCornerPickerTools ? (
+          <>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Corner Picker</div>
+            <div style={{ color: "#b8c4d8" }}>{cornerPickMode ? `Click map to set ${activeCorner}` : "Corner picker is off."}</div>
+            <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setCornerPickMode((v) => {
+                    const next = !v;
+                    if (next) setPickMode(false);
+                    return next;
+                  });
+                }}
+                style={{
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
+              >
+                {cornerPickMode ? "Disable corner picker" : "Enable corner picker"}
+              </button>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <select
+                value={activeCorner}
+                onChange={(e) => setActiveCorner(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "6px 8px",
+                  fontSize: 12,
+                }}
+              >
+                {CORNER_ORDER.map((c) => (
+                  <option key={c.short} value={c.short}>
+                    {c.short} - {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginTop: 8, maxHeight: 140, overflowY: "auto", lineHeight: 1.35 }}>
+              {CORNER_ORDER.map((c) => {
+                const pos = corners[c.short];
+                return (
+                  <div key={c.short} style={{ marginBottom: 2 }}>
+                    {c.short}: {pos ? `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}` : "unset"}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <button
+                type="button"
+                onClick={copyCorners}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
+              >
+                {cornerCopied ? "Copied" : "Copy corner JSON"}
+              </button>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <button
+                type="button"
+                onClick={() => setShowImport((v) => !v)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
+              >
+                {showImport ? "Hide import" : "Import corner JSON"}
+              </button>
+            </div>
+            {showImport ? (
+              <div style={{ marginTop: 8 }}>
+                <textarea
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  placeholder='Paste JSON from "Copy corner JSON"'
+                  style={{
+                    width: "100%",
+                    minHeight: 90,
+                    background: "#0b1422",
+                    border: "1px solid #2a3a57",
+                    color: "#dfe9ff",
+                    borderRadius: 8,
+                    padding: 8,
+                    fontSize: 11,
+                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+                    resize: "vertical",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={importCorners}
+                  style={{
+                    marginTop: 6,
+                    width: "100%",
+                    background: "#15233a",
+                    border: "1px solid #325080",
+                    color: "#fff",
+                    padding: "6px 8px",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontSize: 12,
+                  }}
+                >
+                  Import now
+                </button>
               </div>
-            );
-          })}
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <button
-            type="button"
-            onClick={copyCorners}
-            style={{
-              width: "100%",
-              background: "#101827",
-              border: "1px solid #2a3a57",
-              color: "#fff",
-              padding: "6px 8px",
-              borderRadius: 8,
-              cursor: "pointer",
-              fontSize: 12,
-            }}
-          >
-            {cornerCopied ? "Copied" : "Copy corner JSON"}
-          </button>
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <button
-            type="button"
-            onClick={() => setShowImport((v) => !v)}
-            style={{
-              width: "100%",
-              background: "#101827",
-              border: "1px solid #2a3a57",
-              color: "#fff",
-              padding: "6px 8px",
-              borderRadius: 8,
-              cursor: "pointer",
-              fontSize: 12,
-            }}
-          >
-            {showImport ? "Hide import" : "Import corner JSON"}
-          </button>
-        </div>
-        {showImport ? (
-          <div style={{ marginTop: 8 }}>
-            <textarea
-              value={importText}
-              onChange={(e) => setImportText(e.target.value)}
-              placeholder='Paste JSON from "Copy corner JSON"'
-              style={{
-                width: "100%",
-                minHeight: 90,
-                background: "#0b1422",
-                border: "1px solid #2a3a57",
-                color: "#dfe9ff",
-                borderRadius: 8,
-                padding: 8,
-                fontSize: 11,
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-                resize: "vertical",
-              }}
-            />
-            <button
-              type="button"
-              onClick={importCorners}
-              style={{
-                marginTop: 6,
-                width: "100%",
-                background: "#15233a",
-                border: "1px solid #325080",
-                color: "#fff",
-                padding: "6px 8px",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontSize: 12,
-              }}
-            >
-              Import now
-            </button>
-          </div>
-        ) : null}
-        {importMsg ? (
-          <div style={{ marginTop: 8, color: importMsg.startsWith("Import failed") ? "#ff9a9a" : "#9dd8a3" }}>
-            {importMsg}
-          </div>
+            ) : null}
+            {importMsg ? (
+              <div style={{ marginTop: 8, color: importMsg.startsWith("Import failed") ? "#ff9a9a" : "#9dd8a3" }}>
+                {importMsg}
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
 
@@ -833,7 +839,7 @@ export default function SebringLeaflet() {
         {viewLatLngBounds ? <FitToBounds bounds={viewLatLngBounds} lockZoom /> : data ? <FitToGeoJSON data={data} /> : null}
         <BoundsPicker enabled={pickMode} onChange={setBounds} />
         <CornerPicker enabled={cornerPickMode} activeCorner={activeCorner} onPick={onCornerPick} />
-        <MapDebug viewLatLngBounds={viewLatLngBounds} />
+        {showDebugWindow ? <MapDebug viewLatLngBounds={viewLatLngBounds} /> : null}
 
         {cornerMarkers.map((corner) => (
           <Marker
