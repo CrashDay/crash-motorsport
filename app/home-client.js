@@ -147,10 +147,10 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
         {/* BIG logo, tight header */}
         <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
-            <span style={{ fontSize: "clamp(28px, 4.2vw, 52px)", fontWeight: 900, letterSpacing: 0.3 }}>
+            <span style={{ fontSize: "clamp(22px, 3.4vw, 42px)", fontWeight: 900, letterSpacing: 0.2 }}>
               CrashDayPics
             </span>
-            <span style={{ marginTop: 4, fontSize: "clamp(11px, 1.2vw, 14px)", color: "#aaa", letterSpacing: 1.2 }}>
+            <span style={{ marginTop: 4, fontSize: "clamp(10px, 1vw, 13px)", color: "#aaa", letterSpacing: 1 }}>
               Mapped by corner, light and speed.
             </span>
           </div>
