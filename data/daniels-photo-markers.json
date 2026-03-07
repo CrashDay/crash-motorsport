@@ -1,8 +1,8 @@
 [
   {
     "id": "dp-1",
-    "lat": 39.4923,
-    "lng": -104.9171,
+    "lat": 39.493083000000006,
+    "lng": -104.92698700000001,
     "photos": [
       {
         "id": "daniels_park:daniels_park-01.jpg",
@@ -39,7 +39,14 @@
         "name": "daniels_park-06.jpg",
         "thumbUrl": "/photos/daniels_park/daniels_park-06.jpg",
         "fullUrl": "/photos/daniels_park/daniels_park-06.jpg"
-      },
+      }
+    ]
+  },
+  {
+    "id": "dp-2",
+    "lat": 39.484997000000014,
+    "lng": -104.92613200000004,
+    "photos": [
       {
         "id": "daniels_park:daniels_park-07.jpg",
         "name": "daniels_park-07.jpg",
@@ -117,7 +124,14 @@
         "name": "daniels_park-19.jpg",
         "thumbUrl": "/photos/daniels_park/daniels_park-19.jpg",
         "fullUrl": "/photos/daniels_park/daniels_park-19.jpg"
-      },
+      }
+    ]
+  },
+  {
+    "id": "dp-3",
+    "lat": 39.481132,
+    "lng": -104.92446,
+    "photos": [
       {
         "id": "daniels_park:daniels_park-20.jpg",
         "name": "daniels_park-20.jpg",
@@ -129,7 +143,14 @@
         "name": "daniels_park-21.jpg",
         "thumbUrl": "/photos/daniels_park/daniels_park-21.jpg",
         "fullUrl": "/photos/daniels_park/daniels_park-21.jpg"
-      },
+      }
+    ]
+  },
+  {
+    "id": "dp-4",
+    "lat": 39.476707,
+    "lng": -104.922163,
+    "photos": [
       {
         "id": "daniels_park:daniels_park-22.jpg",
         "name": "daniels_park-22.jpg",
@@ -147,7 +168,14 @@
         "name": "daniels_park-24.jpg",
         "thumbUrl": "/photos/daniels_park/daniels_park-24.jpg",
         "fullUrl": "/photos/daniels_park/daniels_park-24.jpg"
-      },
+      }
+    ]
+  },
+  {
+    "id": "dp-5",
+    "lat": 39.472727,
+    "lng": -104.921075,
+    "photos": [
       {
         "id": "daniels_park:daniels_park-25.jpg",
         "name": "daniels_park-25.jpg",
