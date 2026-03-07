@@ -145,17 +145,15 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
 
       <nav className="navWrap">
         {/* BIG logo, tight header */}
-        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img
-            src="/branding/crashdaypics-logo.png"
-            alt="CrashDayPics"
-            style={{
-              height: "clamp(72px, 9vw, 140px)", // BIG, but responsive
-              width: "auto",
-              display: "block",
-              objectFit: "contain",
-            }}
-          />
+        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
+            <span style={{ fontSize: "clamp(28px, 4.2vw, 52px)", fontWeight: 900, letterSpacing: 0.3 }}>
+              CrashDayPics
+            </span>
+            <span style={{ marginTop: 4, fontSize: "clamp(11px, 1.2vw, 14px)", color: "#aaa", letterSpacing: 1.2 }}>
+              Mapped by corner, light and speed.
+            </span>
+          </div>
         </a>
 
         <div className="navLinks">
