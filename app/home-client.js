@@ -95,6 +95,55 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           color: #bbb;
           white-space: nowrap;
         }
+        .mapsMenu {
+          position: relative;
+          display: inline-block;
+        }
+        .mapsButton {
+          color: #bbb;
+          text-decoration: none;
+          background: transparent;
+          border: 0;
+          padding: 0;
+          font: inherit;
+          letter-spacing: inherit;
+          text-transform: inherit;
+          cursor: pointer;
+        }
+        .mapsDropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          min-width: 260px;
+          background: #0f1724;
+          border: 1px solid #22304a;
+          border-radius: 10px;
+          padding: 8px 0;
+          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-4px);
+          transition: opacity 120ms ease, transform 120ms ease, visibility 120ms ease;
+          z-index: 1000;
+        }
+        .mapsMenu:hover .mapsDropdown,
+        .mapsMenu:focus-within .mapsDropdown {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+        .mapsItem {
+          display: block;
+          color: #dfe8ff;
+          text-decoration: none;
+          padding: 10px 12px;
+          letter-spacing: 0.3px;
+          text-transform: none;
+          font-size: 13px;
+        }
+        .mapsItem:hover {
+          background: rgba(128, 168, 255, 0.12);
+        }
 
         .heroGrid {
           display: grid;
@@ -166,9 +215,19 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
           <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
             F1
           </a>
-          <a href="/sebring-map" style={{ color: "#bbb", textDecoration: "none" }}>
-            Map
-          </a>
+          <div className="mapsMenu">
+            <button type="button" className="mapsButton" aria-haspopup="true">
+              Maps
+            </button>
+            <div className="mapsDropdown">
+              <a className="mapsItem" href="/sebring-map">
+                Sebring International Raceway
+              </a>
+              <a className="mapsItem" href="/daniels-park">
+                Daniels Park
+              </a>
+            </div>
+          </div>
           <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>
             Contact
           </a>
