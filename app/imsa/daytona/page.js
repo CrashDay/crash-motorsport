@@ -72,16 +72,15 @@ export default function IMSADaytona() {
           borderBottom: "1px solid #222",
         }}
       >
-        <a
-          href="/"
-          style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: "#fff",
-            textDecoration: "none",
-          }}
-        >
-          Tony Day Motorsport
+        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
+            <span style={{ fontSize: "clamp(22px, 3.4vw, 42px)", fontWeight: 900, letterSpacing: 0.2 }}>
+              CrashDayPics
+            </span>
+            <span style={{ marginTop: 4, fontSize: "clamp(10px, 1vw, 13px)", color: "#aaa", letterSpacing: 1 }}>
+              Mapped by corner, light and speed.
+            </span>
+          </div>
         </a>
         <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
           ← Back to IMSA
