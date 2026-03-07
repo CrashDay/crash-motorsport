@@ -25,6 +25,25 @@ const CORNER_ORDER = [
   { short: "T17", name: "Turn 17" },
 ];
 const CORNER_STORAGE_KEY = "sebring_corner_coords_v1";
+const DEFAULT_CORNERS = {
+  T1: { lat: 27.450638, lng: -81.348975 },
+  T2: { lat: 27.453151, lng: -81.349018 },
+  T3: { lat: 27.45437, lng: -81.349146 },
+  T4: { lat: 27.454741, lng: -81.349608 },
+  T5: { lat: 27.454789, lng: -81.350616 },
+  T6: { lat: 27.45376, lng: -81.351957 },
+  T7: { lat: 27.452818, lng: -81.358545 },
+  T8: { lat: 27.454617, lng: -81.357279 },
+  T9: { lat: 27.455427, lng: -81.355058 },
+  T10: { lat: 27.456988, lng: -81.35258 },
+  T11: { lat: 27.456579, lng: -81.351013 },
+  T12: { lat: 27.456693, lng: -81.349522 },
+  T13: { lat: 27.456655, lng: -81.34817 },
+  T14: { lat: 27.45298, lng: -81.347634 },
+  T15: { lat: 27.450343, lng: -81.346282 },
+  T16: { lat: 27.448276, lng: -81.346689 },
+  T17: { lat: 27.4492, lng: -81.357783 },
+};
 
 function cornerIcon(short) {
   return icon({
@@ -233,14 +252,14 @@ export default function SebringLeaflet() {
   const [cornerPickMode, setCornerPickMode] = useState(false);
   const [activeCorner, setActiveCorner] = useState(CORNER_ORDER[0].short);
   const [corners, setCorners] = useState(() => {
-    if (typeof window === "undefined") return {};
+    if (typeof window === "undefined") return DEFAULT_CORNERS;
     try {
       const raw = window.localStorage.getItem(CORNER_STORAGE_KEY);
-      if (!raw) return {};
+      if (!raw) return DEFAULT_CORNERS;
       const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === "object" ? parsed : {};
+      return parsed && typeof parsed === "object" ? { ...DEFAULT_CORNERS, ...parsed } : DEFAULT_CORNERS;
     } catch {
-      return {};
+      return DEFAULT_CORNERS;
     }
   });
   const [cornerCopied, setCornerCopied] = useState(false);
