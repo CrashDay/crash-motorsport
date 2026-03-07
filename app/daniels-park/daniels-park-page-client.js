@@ -6,6 +6,6 @@ const DanielsParkClient = dynamic(() => import("./DanielsParkClient"), {
   ssr: false,
 });
 
-export default function DanielsParkPageClient() {
-  return <DanielsParkClient />;
+export default function DanielsParkPageClient(props) {
+  return <DanielsParkClient {...props} />;
 }
