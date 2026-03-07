@@ -223,7 +223,7 @@ function CornerPicker({ enabled, activeCorner, onPick }) {
 }
 
 export default function SebringLeaflet() {
-  const showCornerPickerTools = false;
+  const showCornerPickerTools = true;
   const showDebugWindow = false;
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK_LIGHTROOM === "true";
   const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
