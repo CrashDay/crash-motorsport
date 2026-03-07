@@ -4,7 +4,16 @@ import HomeClient from "./home-client";
 
 export const dynamic = "force-dynamic"; // re-pick on refresh
 
-function listImages(relDir) {
+const IMSA_ALBUMS = [
+  { title: "Daytona 24 Hours - 2024", href: "/imsa/daytona", prefix: "imsa" },
+  { title: "Sebring 12 Hours - 2023", href: "/imsa/sebring-12-hours-2023", prefix: "sebring2023-" },
+];
+
+const F1_ALBUMS = [
+  { title: "Imola", href: "/f1/imola", prefix: "" },
+];
+
+function listImages(relDir, prefix = "") {
   const absDir = path.join(process.cwd(), "public", relDir);
   let files = [];
   try {
@@ -18,7 +27,8 @@ function listImages(relDir) {
       return (
         !lower.startsWith(".") &&
         !lower.includes("ds_store") &&
-        (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp"))
+        (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) &&
+        (!prefix || lower.startsWith(prefix.toLowerCase()))
       );
     })
     .sort();
@@ -33,9 +43,36 @@ function sampleUnique(arr, n) {
   return copy.slice(0, Math.min(n, copy.length));
 }
 
+function pickRandom(arr) {
+  if (!arr.length) return null;
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export default function Page() {
-  const imsaAll = listImages("photos/imsa");
-  const f1All = listImages("photos/f1");
+  const imsaAlbumPool = IMSA_ALBUMS.map((album) => ({
+    ...album,
+    images: listImages("photos/imsa", album.prefix),
+  })).filter((album) => album.images.length > 0);
+
+  const f1AlbumPool = F1_ALBUMS.map((album) => ({
+    ...album,
+    images: listImages("photos/f1", album.prefix),
+  })).filter((album) => album.images.length > 0);
+
+  const imsaAlbum = pickRandom(imsaAlbumPool) || {
+    title: "IMSA",
+    href: "/imsa",
+    images: listImages("photos/imsa"),
+  };
+
+  const f1Album = pickRandom(f1AlbumPool) || {
+    title: "F1",
+    href: "/f1",
+    images: listImages("photos/f1"),
+  };
+
+  const imsaAll = imsaAlbum.images;
+  const f1All = f1Album.images;
 
   // HERO: mix IMSA + F1
   const heroCards = [];
@@ -57,5 +94,13 @@ export default function Page() {
   const imsaFeatured = sampleUnique(imsaAll, 24); // homepage uses first 12
   const f1Featured = sampleUnique(f1All, 24);     // homepage uses first 12
 
-  return <HomeClient heroCards={heroCards} imsaFeatured={imsaFeatured} f1Featured={f1Featured} />;
+  return (
+    <HomeClient
+      heroCards={heroCards}
+      imsaFeatured={imsaFeatured}
+      f1Featured={f1Featured}
+      imsaAlbum={{ title: imsaAlbum.title, href: imsaAlbum.href }}
+      f1Album={{ title: f1Album.title, href: f1Album.href }}
+    />
+  );
 }

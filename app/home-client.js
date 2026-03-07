@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
+export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAlbum, f1Album }) {
   // viewer lists
   const imsaList = useMemo(() => imsaFeatured || [], [imsaFeatured]);
   const f1List = useMemo(() => f1Featured || [], [f1Featured]);
@@ -272,9 +272,11 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
       <section style={{ padding: "22px 18px", borderTop: "1px solid #222" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
           <a href="/imsa" style={{ textDecoration: "none", color: "#fff" }}>
-            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>IMSA – Featured (Daytona)</h3>
+            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+              IMSA - Featured ({imsaAlbum?.title || "Gallery"})
+            </h3>
           </a>
-          <a href="/imsa/daytona" style={{ color: "#bbb", textDecoration: "none", fontSize: 13 }}>
+          <a href={imsaAlbum?.href || "/imsa"} style={{ color: "#bbb", textDecoration: "none", fontSize: 13 }}>
             View full gallery →
           </a>
         </div>
@@ -311,9 +313,11 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured }) {
       <section style={{ padding: "22px 18px", borderTop: "1px solid #222" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
           <a href="/f1" style={{ textDecoration: "none", color: "#fff" }}>
-            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Formula 1 – Featured (Imola)</h3>
+            <h3 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>
+              Formula 1 - Featured ({f1Album?.title || "Gallery"})
+            </h3>
           </a>
-          <a href="/f1/imola" style={{ color: "#bbb", textDecoration: "none", fontSize: 13 }}>
+          <a href={f1Album?.href || "/f1"} style={{ color: "#bbb", textDecoration: "none", fontSize: 13 }}>
             View full gallery →
           </a>
         </div>

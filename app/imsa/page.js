@@ -110,7 +110,7 @@ export default function IMSAIndex() {
               )}
 
               <div style={{ padding: 14 }}>
-                <div style={{ fontWeight: 800 }}>24 Hours of Daytona - 2024</div>
+                <div style={{ fontWeight: 800 }}>Daytona 24 Hours - 2024</div>
                 <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
                   {daytonaImages.length ? `${daytonaImages.length} photos` : "View gallery -&gt;"}
                 </div>

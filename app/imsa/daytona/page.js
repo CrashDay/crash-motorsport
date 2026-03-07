@@ -88,7 +88,7 @@ export default function IMSADaytona() {
       </nav>
 
       <section style={{ padding: "28px 24px" }}>
-        <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>Daytona</h1>
+        <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>Daytona 24 Hours - 2024</h1>
         <p style={{ color: "#aaa", marginTop: 8, maxWidth: 760 }}>
           Click any image to open full-screen. Use ← → to navigate, Esc to close.
         </p>
