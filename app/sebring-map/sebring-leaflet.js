@@ -564,7 +564,7 @@ export default function SebringLeaflet() {
         style={{
           position: "absolute",
           zIndex: 9999,
-          top: 12,
+          bottom: 12,
           left: 12,
           background: "rgba(7,11,18,0.86)",
           color: "#fff",
@@ -573,6 +573,8 @@ export default function SebringLeaflet() {
           fontSize: 12,
           border: "1px solid rgba(153, 181, 255, 0.2)",
           maxWidth: 280,
+          maxHeight: "calc(100vh - 120px)",
+          overflowY: "auto",
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 6 }}>Tools</div>
