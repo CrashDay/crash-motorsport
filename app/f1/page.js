@@ -3,6 +3,26 @@ import path from "path";
 
 export const dynamic = "force-dynamic"; // new random on refresh
 
+function listImagesFromPublic(relDir) {
+  const absDir = path.join(process.cwd(), "public", relDir);
+
+  let files = [];
+  try {
+    files = fs.readdirSync(absDir);
+  } catch {
+    return [];
+  }
+
+  return files.filter((f) => {
+    const lower = f.toLowerCase();
+    return (
+      !lower.startsWith(".") &&
+      !lower.includes("ds_store") &&
+      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp"))
+    );
+  });
+}
+
 function pickRandomImageFromPublic(relDir) {
   const absDir = path.join(process.cwd(), "public", relDir);
 
@@ -29,6 +49,7 @@ function pickRandomImageFromPublic(relDir) {
 }
 
 export default function F1Index() {
+  const imolaImages = listImagesFromPublic("photos/f1");
   // Imola tile cover randomly picked from public/photos/f1
   const coverSrc = pickRandomImageFromPublic("photos/f1");
 
@@ -74,7 +95,9 @@ export default function F1Index() {
 
               <div style={{ padding: 14 }}>
                 <div style={{ fontWeight: 800 }}>Imola</div>
-                <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>View gallery -&gt;</div>
+                <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
+                  {imolaImages.length ? `${imolaImages.length} photos` : "View gallery -&gt;"}
+                </div>
               </div>
             </div>
           </a>
