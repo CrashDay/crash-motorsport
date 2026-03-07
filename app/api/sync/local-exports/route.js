@@ -28,7 +28,9 @@ export async function POST(request) {
     return NextResponse.json({ error: "trackId is required" }, { status: 400 });
   }
 
-  const root = path.join(process.cwd(), "public", "photos");
+  const root = process.env.LOCAL_EXPORTS_ROOT
+    ? path.resolve(process.env.LOCAL_EXPORTS_ROOT)
+    : path.join(process.cwd(), "data", "local-exports");
   const folders = ["imsa", "f1"];
   const files = [];
 

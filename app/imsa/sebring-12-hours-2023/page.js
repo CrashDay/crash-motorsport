@@ -19,8 +19,6 @@ function listSebring2023Images() {
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
 }
 
-export const dynamic = "force-dynamic";
-
 export default function IMSASebring2023Page() {
   const images = listSebring2023Images();
   return <SebringGalleryClient images={images} />;

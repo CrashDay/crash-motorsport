@@ -2,8 +2,6 @@ import fs from "fs";
 import path from "path";
 import { readGpsFromExiftool } from "@/lib/exiftool-gps";
 
-export const dynamic = "force-dynamic";
-
 import DanielsParkPageClient from "./daniels-park-page-client";
 
 const IMAGE_EXT_RE = /\.(jpe?g|png|webp)$/i;

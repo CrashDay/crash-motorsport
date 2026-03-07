@@ -1,8 +1,6 @@
 import fs from "fs";
 import path from "path";
 
-export const dynamic = "force-dynamic"; // new random on refresh
-
 function pickRandomImageFromPublic(relDir, prefix = "") {
   const absDir = path.join(process.cwd(), "public", relDir);
 
