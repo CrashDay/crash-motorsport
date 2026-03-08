@@ -3,6 +3,9 @@ import { sql } from "@vercel/postgres";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import { getAreaAssetsByTrack, getDb } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const TRACKS = {
   sebring: {
     id: "sebring",
@@ -54,9 +57,12 @@ export async function GET(request) {
   const trackId = String(searchParams.get("trackId") || "").trim().toLowerCase();
 
   if (!trackId) {
-    return NextResponse.json({
-      tracks: Object.values(TRACKS).map((t) => ({ id: t.id, name: t.name })),
-    });
+    return NextResponse.json(
+      {
+        tracks: Object.values(TRACKS).map((t) => ({ id: t.id, name: t.name })),
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   }
 
   const track = TRACKS[trackId];
@@ -94,8 +100,11 @@ export async function GET(request) {
         : [],
   }));
 
-  return NextResponse.json({
-    track: { id: track.id, name: track.name },
-    areas,
-  });
+  return NextResponse.json(
+    {
+      track: { id: track.id, name: track.name },
+      areas,
+    },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }

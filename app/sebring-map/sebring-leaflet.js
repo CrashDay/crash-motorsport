@@ -816,7 +816,7 @@ export default function SebringLeaflet() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/photo-areas?trackId=sebring")
+    fetch("/api/photo-areas?trackId=sebring", { cache: "no-store" })
       .then((r) => r.json())
       .then((payload) => {
         if (cancelled) return;
@@ -1510,3 +1510,4 @@ export default function SebringLeaflet() {
     </div>
   );
 }
+

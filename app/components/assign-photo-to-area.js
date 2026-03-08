@@ -14,7 +14,7 @@ export default function AssignPhotoToArea({ asset }) {
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    fetch("/api/photo-areas")
+    fetch("/api/photo-areas", { cache: "no-store" })
       .then((r) => r.json())
       .then((payload) => {
         if (cancelled) return;
@@ -34,7 +34,7 @@ export default function AssignPhotoToArea({ asset }) {
     if (!open || !trackId) return;
     let cancelled = false;
     setMsg("");
-    fetch(`/api/photo-areas?trackId=${encodeURIComponent(trackId)}`)
+    fetch(`/api/photo-areas?trackId=${encodeURIComponent(trackId)}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((payload) => {
         if (cancelled) return;
@@ -181,3 +181,4 @@ export default function AssignPhotoToArea({ asset }) {
     </>
   );
 }
+
