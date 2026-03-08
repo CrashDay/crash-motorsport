@@ -54,13 +54,14 @@ function cornerIcon(short) {
   });
 }
 
-function FitToBounds({ bounds, lockZoom }) {
+function FitToBounds({ bounds, lockZoom, version = 0 }) {
   const map = useMap();
 
   useEffect(() => {
     if (!map || !bounds) return;
 
     const fit = () => {
+      map.setMaxBounds(bounds);
       map.invalidateSize();
       map.fitBounds(bounds, { padding: [0, 0], maxZoom: 18 });
       if (lockZoom) {
@@ -78,7 +79,7 @@ function FitToBounds({ bounds, lockZoom }) {
     const onResize = () => fit();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [map, bounds, lockZoom]);
+  }, [map, bounds, lockZoom, version]);
 
   return null;
 }
@@ -281,6 +282,7 @@ export default function SebringLeaflet() {
     east: -81.345928,
     west: -81.359682,
   });
+  const [viewBoundsVersion, setViewBoundsVersion] = useState(0);
 
   const corner3Bounds = {
     north: 27.45436,
@@ -674,7 +676,10 @@ export default function SebringLeaflet() {
           <div style={{ marginTop: 8 }}>
             <button
               type="button"
-              onClick={() => setViewBounds(bounds)}
+              onClick={() => {
+                setViewBounds({ ...bounds });
+                setViewBoundsVersion((v) => v + 1);
+              }}
               style={{
                 background: "#101827",
                 border: "1px solid #2a3a57",
@@ -843,10 +848,6 @@ export default function SebringLeaflet() {
       <MapContainer
         center={[27.4564, -81.3483]}
         zoom={14}
-        bounds={viewLatLngBounds || undefined}
-        boundsOptions={{ padding: [0, 0], maxZoom: 18 }}
-        maxBounds={viewLatLngBounds || undefined}
-        maxBoundsViscosity={0.9}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
@@ -856,7 +857,7 @@ export default function SebringLeaflet() {
           maxZoom={20}
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
-        {viewLatLngBounds ? <FitToBounds bounds={viewLatLngBounds} lockZoom /> : data ? <FitToGeoJSON data={data} /> : null}
+        {viewLatLngBounds ? <FitToBounds bounds={viewLatLngBounds} lockZoom version={viewBoundsVersion} /> : data ? <FitToGeoJSON data={data} /> : null}
         <BoundsPicker enabled={pickMode} onChange={setBounds} />
         <CornerPicker enabled={cornerPickMode} activeCorner={activeCorner} onPick={onCornerPick} />
         {showDebugWindow ? <MapDebug viewLatLngBounds={viewLatLngBounds} /> : null}
