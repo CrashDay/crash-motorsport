@@ -52,6 +52,7 @@ export async function POST(request) {
   const assetName = String(asset.name || "").trim();
   const thumbUrl = String(asset.thumbUrl || "").trim();
   const fullUrl = String(asset.fullUrl || "").trim();
+  const canonicalAssetId = [assetId, fullUrl || thumbUrl].filter(Boolean).join("::");
 
   if (!trackId || !VALID_TRACKS[trackId]) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
@@ -59,7 +60,7 @@ export async function POST(request) {
   if (!areaId || !VALID_TRACKS[trackId].has(areaId)) {
     return NextResponse.json({ error: "Invalid areaId" }, { status: 400 });
   }
-  if (!assetId || !thumbUrl || !fullUrl) {
+  if (!assetId || !thumbUrl || !fullUrl || !canonicalAssetId) {
     return NextResponse.json({ error: "asset.id, asset.thumbUrl, and asset.fullUrl are required" }, { status: 400 });
   }
 
@@ -69,7 +70,7 @@ export async function POST(request) {
       await ensurePostgresSchema();
       await sql`
         INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at)
-        VALUES (${trackId}, ${areaId}, ${assetId}, ${assetName || assetId}, ${thumbUrl}, ${fullUrl}, ${assignedAt})
+        VALUES (${trackId}, ${areaId}, ${canonicalAssetId}, ${assetName || assetId}, ${thumbUrl}, ${fullUrl}, ${assignedAt})
         ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
           asset_name = EXCLUDED.asset_name,
           thumb_url = EXCLUDED.thumb_url,
@@ -81,7 +82,7 @@ export async function POST(request) {
       assignAreaAsset(db, {
         track_id: trackId,
         area_id: areaId,
-        asset_id: assetId,
+        asset_id: canonicalAssetId,
         asset_name: assetName || assetId,
         thumb_url: thumbUrl,
         full_url: fullUrl,
