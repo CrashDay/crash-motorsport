@@ -1,10 +1,34 @@
 import { NextResponse } from "next/server";
+import { sql } from "@vercel/postgres";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import { assignAreaAsset, getDb, removeAreaAsset } from "@/lib/db";
 
 const VALID_TRACKS = {
   sebring: new Set(sebringAreas.map((a) => a.id)),
 };
+
+let postgresReady = false;
+
+async function ensurePostgresSchema() {
+  if (postgresReady) return;
+  await sql`
+    CREATE TABLE IF NOT EXISTS photo_area_assets (
+      track_id TEXT NOT NULL,
+      area_id TEXT NOT NULL,
+      asset_id TEXT NOT NULL,
+      asset_name TEXT,
+      thumb_url TEXT,
+      full_url TEXT,
+      assigned_at TEXT NOT NULL,
+      PRIMARY KEY (track_id, area_id, asset_id)
+    )
+  `;
+  postgresReady = true;
+}
+
+function hasPostgresConfig() {
+  return Boolean(process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL);
+}
 
 export async function POST(request) {
   let body = null;
@@ -33,19 +57,34 @@ export async function POST(request) {
   }
 
   try {
-    const db = getDb();
-    assignAreaAsset(db, {
-      track_id: trackId,
-      area_id: areaId,
-      asset_id: assetId,
-      asset_name: assetName || assetId,
-      thumb_url: thumbUrl,
-      full_url: fullUrl,
-      assigned_at: new Date().toISOString(),
-    });
-  } catch {
+    const assignedAt = new Date().toISOString();
+    if (hasPostgresConfig()) {
+      await ensurePostgresSchema();
+      await sql`
+        INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at)
+        VALUES (${trackId}, ${areaId}, ${assetId}, ${assetName || assetId}, ${thumbUrl}, ${fullUrl}, ${assignedAt})
+        ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
+          asset_name = EXCLUDED.asset_name,
+          thumb_url = EXCLUDED.thumb_url,
+          full_url = EXCLUDED.full_url,
+          assigned_at = EXCLUDED.assigned_at
+      `;
+    } else {
+      const db = getDb();
+      assignAreaAsset(db, {
+        track_id: trackId,
+        area_id: areaId,
+        asset_id: assetId,
+        asset_name: assetName || assetId,
+        thumb_url: thumbUrl,
+        full_url: fullUrl,
+        assigned_at: assignedAt,
+      });
+    }
+  } catch (error) {
+    console.error("[photo-area-assignments:POST] storage error", error);
     return NextResponse.json(
-      { error: "Assignment storage unavailable in this environment" },
+      { error: "Assignment storage unavailable in this environment. Configure Vercel Postgres for durable persistence." },
       { status: 503 }
     );
   }
@@ -76,11 +115,20 @@ export async function DELETE(request) {
   }
 
   try {
-    const db = getDb();
-    removeAreaAsset(db, { track_id: trackId, area_id: areaId, asset_id: assetId });
-  } catch {
+    if (hasPostgresConfig()) {
+      await ensurePostgresSchema();
+      await sql`
+        DELETE FROM photo_area_assets
+        WHERE track_id = ${trackId} AND area_id = ${areaId} AND asset_id = ${assetId}
+      `;
+    } else {
+      const db = getDb();
+      removeAreaAsset(db, { track_id: trackId, area_id: areaId, asset_id: assetId });
+    }
+  } catch (error) {
+    console.error("[photo-area-assignments:DELETE] storage error", error);
     return NextResponse.json(
-      { error: "Assignment storage unavailable in this environment" },
+      { error: "Assignment storage unavailable in this environment. Configure Vercel Postgres for durable persistence." },
       { status: 503 }
     );
   }
