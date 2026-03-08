@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, Rectangle, CircleMarker, Popup, Marker, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Rectangle, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -73,6 +73,18 @@ const DEFAULT_PHOTO_AREAS = [
       west: -81.349908,
     },
     center: [27.449986, -81.349339],
+    photos: [],
+  },
+  {
+    id: "area-1772985408146-draft",
+    title: "Turn 7 (Hairpin) Inside",
+    bounds: {
+      north: 27.453018,
+      south: 27.452675,
+      east: -81.357579,
+      west: -81.358126,
+    },
+    center: [27.452846, -81.357853],
     photos: [],
   },
 ];
@@ -1110,6 +1122,18 @@ export default function SebringLeaflet() {
           </Marker>
         ))}
 
+        <Rectangle
+          bounds={[
+            [corner3Bounds.south, corner3Bounds.west],
+            [corner3Bounds.north, corner3Bounds.east],
+          ]}
+          interactive
+          pathOptions={{ color: "#ff8c00", weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
+        >
+          <Tooltip sticky direction="top" opacity={0.95}>
+            Turn 3 - Inside
+          </Tooltip>
+        </Rectangle>
         <CircleMarker center={corner3Center} radius={7} pathOptions={{ color: "#ff8c00", fillColor: "#ff8c00", fillOpacity: 0.9 }}>
           <Popup maxWidth={720} minWidth={220}>
             <div style={{ width: "min(600px, 90vw)", overflow: "hidden", borderRadius: 12 }}>
@@ -1130,9 +1154,13 @@ export default function SebringLeaflet() {
                 [area.bounds.south, area.bounds.west],
                 [area.bounds.north, area.bounds.east],
               ]}
-              interactive={false}
+              interactive
               pathOptions={{ color: "#ff8c00", weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
-            />
+            >
+              <Tooltip sticky direction="top" opacity={0.95}>
+                {area.title}
+              </Tooltip>
+            </Rectangle>
             {Array.isArray(area.photos) && area.photos.length > 0 ? (
               <CircleMarker
                 center={area.center}
