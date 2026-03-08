@@ -10,7 +10,8 @@ const IMSA_ALBUMS = [
 ];
 
 const F1_ALBUMS = [
-  { title: "Imola", href: "/f1/imola", prefix: "" },
+  { title: "Imola - 2024", href: "/f1/imola", prefix: "imola" },
+  { title: "Monaco - 2024", href: "/f1/monaco-2024", prefix: "monaco" },
 ];
 
 function listImages(relDir, prefix = "") {

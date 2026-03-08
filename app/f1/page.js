@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-function listImagesFromPublic(relDir) {
+function listImagesFromPublic(relDir, prefix = "") {
   const absDir = path.join(process.cwd(), "public", relDir);
 
   let files = [];
@@ -16,12 +16,13 @@ function listImagesFromPublic(relDir) {
     return (
       !lower.startsWith(".") &&
       !lower.includes("ds_store") &&
-      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp"))
+      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) &&
+      (!prefix || lower.startsWith(prefix.toLowerCase()))
     );
   });
 }
 
-function pickRandomImageFromPublic(relDir) {
+function pickRandomImageFromPublic(relDir, prefix = "") {
   const absDir = path.join(process.cwd(), "public", relDir);
 
   let files = [];
@@ -36,7 +37,8 @@ function pickRandomImageFromPublic(relDir) {
     return (
       !lower.startsWith(".") &&
       !lower.includes("ds_store") &&
-      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp"))
+      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) &&
+      (!prefix || lower.startsWith(prefix.toLowerCase()))
     );
   });
 
@@ -47,9 +49,10 @@ function pickRandomImageFromPublic(relDir) {
 }
 
 export default function F1Index() {
-  const imolaImages = listImagesFromPublic("photos/f1");
-  // Imola tile cover randomly picked from public/photos/f1
-  const coverSrc = pickRandomImageFromPublic("photos/f1");
+  const imolaImages = listImagesFromPublic("photos/f1", "imola");
+  const monacoImages = listImagesFromPublic("photos/f1", "monaco");
+  const imolaCoverSrc = pickRandomImageFromPublic("photos/f1", "imola");
+  const monacoCoverSrc = pickRandomImageFromPublic("photos/f1", "monaco");
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
@@ -89,12 +92,12 @@ export default function F1Index() {
         <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>F1</h1>
         <p style={{ color: "#aaa", marginTop: 8 }}>Motion-first trackside work from F1 events.</p>
 
-        <div style={{ marginTop: 24 }}>
+        <div style={{ marginTop: 24, display: "flex", gap: 20, flexWrap: "wrap" }}>
           <a href="/f1/imola" style={{ textDecoration: "none", color: "#fff" }}>
             <div style={{ background: "#111", border: "1px solid #222", borderRadius: 18, overflow: "hidden", width: 320 }}>
-              {coverSrc ? (
+              {imolaCoverSrc ? (
                 <img
-                  src={coverSrc}
+                  src={imolaCoverSrc}
                   alt="Random Imola cover"
                   style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
                 />
@@ -105,9 +108,32 @@ export default function F1Index() {
               )}
 
               <div style={{ padding: 14 }}>
-                <div style={{ fontWeight: 800 }}>Imola</div>
+                <div style={{ fontWeight: 800 }}>Imola - 2024</div>
                 <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
                   {imolaImages.length ? `${imolaImages.length} photos` : "View gallery -&gt;"}
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a href="/f1/monaco-2024" style={{ textDecoration: "none", color: "#fff" }}>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: 18, overflow: "hidden", width: 320 }}>
+              {monacoCoverSrc ? (
+                <img
+                  src={monacoCoverSrc}
+                  alt="Random Monaco 2024 cover"
+                  style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
+                />
+              ) : (
+                <div style={{ height: 180, background: "#222", display: "flex", alignItems: "center", justifyContent: "center", color: "#777" }}>
+                  Add Monaco images to /public/photos/f1
+                </div>
+              )}
+
+              <div style={{ padding: 14 }}>
+                <div style={{ fontWeight: 800 }}>Monaco - 2024</div>
+                <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
+                  {monacoImages.length ? `${monacoImages.length} photos` : "View gallery -&gt;"}
                 </div>
               </div>
             </div>

@@ -2,55 +2,32 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-export default function F1Imola() {
-  // Files must be in: public/photos/f1/
+export default function F1Monaco2024() {
   const images = useMemo(
     () => [
-      "imola1.jpg",
-      "imola2.jpg",
-      "imola3.jpg",
-      "imola4.jpg",
-      "imola5.jpg",
-      "imola6.jpg",
-      "imola7.jpg",
-      "imola8.jpg",
-      "imola9.jpg",
-      "imola10.jpg",
-      "imola11.jpg",
-      "imola12.jpg",
-      "imola13.jpg",
-      "imola14.jpg",
-      "imola15.jpg",
-      "imola16.jpg",
-      "imola17.jpg",
-      "imola18.jpg",
-      "imola19.jpg",
-      "imola20.jpg",
-      "imola21.jpg",
-      "imola22.jpg",
-      "imola23.jpg",
-      "imola24.jpg",
-      "imola25.jpg",
-      "imola26.jpg",
-      "imola27.jpg",
-      "imola28.jpg",
-      "imola29.jpg",
-      "imola30.jpg",
-      "imola31.jpg",
-      "imola32.jpg",
-      "imola33.jpg",
-      "imola34.jpg",
-      "imola35.jpg",
-      "imola36.jpg",
-      "imola37.jpg",
-      "imola38.jpg",
-      "imola39.jpg",
-      "imola40.jpg",
-      "imola41.jpg",
-      "imola42.jpg",
-      "imola43.jpg",
-      "imola44.jpg",
-      "imola45.jpg",
+      "Monaco.jpg",
+      "Monaco-2.jpg",
+      "Monaco-4.jpg",
+      "Monaco-5.jpg",
+      "Monaco-6.jpg",
+      "Monaco-7.jpg",
+      "Monaco-8.jpg",
+      "Monaco-9.jpg",
+      "Monaco-10.jpg",
+      "Monaco-11.jpg",
+      "Monaco-12.jpg",
+      "Monaco-13.jpg",
+      "Monaco-14.jpg",
+      "Monaco-15.jpg",
+      "Monaco-16.jpg",
+      "Monaco-17.jpg",
+      "Monaco-18.jpg",
+      "Monaco-19.jpg",
+      "Monaco-20.jpg",
+      "Monaco-21.jpg",
+      "Monaco-22.jpg",
+      "Monaco-23.jpg",
+      "Monaco-24.jpg",
     ],
     []
   );
@@ -115,17 +92,15 @@ export default function F1Imola() {
           </div>
         </a>
         <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
-          &lt;- Back to F1
+          {"<- Back to F1"}
         </a>
       </nav>
 
       <section style={{ padding: "28px 24px" }}>
-        <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>Imola - 2024</h1>
+        <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>Monaco - 2024</h1>
 
         {images.length === 0 ? (
-          <p style={{ color: "#aaa", marginTop: 12 }}>
-            No photos yet.
-          </p>
+          <p style={{ color: "#aaa", marginTop: 12 }}>No photos yet.</p>
         ) : (
           <div className="galleryGrid">
             {images.map((name, idx) => (
@@ -231,7 +206,7 @@ export default function F1Imola() {
             aria-label="Previous image"
             title="Previous (<-)"
           >
-            &lt;-
+            {"<-"}
           </button>
 
           <button
@@ -252,7 +227,7 @@ export default function F1Imola() {
             aria-label="Next image"
             title="Next (->)"
           >
-            -&gt;
+            {"->"}
           </button>
 
           <img
@@ -267,11 +242,33 @@ export default function F1Imola() {
               border: "1px solid #222",
               boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
               background: "#111",
+              objectFit: "contain",
             }}
             draggable={false}
           />
         </div>
       )}
+
+      <style jsx>{`
+        .galleryGrid {
+          margin-top: 16px;
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        @media (max-width: 1100px) {
+          .galleryGrid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 760px) {
+          .galleryGrid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+      `}</style>
     </div>
   );
 }
