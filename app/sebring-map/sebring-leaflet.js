@@ -63,6 +63,18 @@ const DEFAULT_PHOTO_AREAS = [
     center: [27.451152, -81.348326],
     photos: [],
   },
+  {
+    id: "area-1772984895437-draft",
+    title: "Turn 1 Outside South",
+    bounds: {
+      north: 27.450057,
+      south: 27.449914,
+      east: -81.348771,
+      west: -81.349908,
+    },
+    center: [27.449986, -81.349339],
+    photos: [],
+  },
 ];
 const DEFAULT_CORNERS = {
   T1: { lat: 27.450638, lng: -81.348975 },
