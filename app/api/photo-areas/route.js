@@ -25,8 +25,15 @@ export async function GET(request) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
   }
 
-  const db = getDb();
-  const assignedByArea = getAreaAssetsByTrack(db, trackId);
+  let assignedByArea = {};
+  try {
+    const db = getDb();
+    assignedByArea = getAreaAssetsByTrack(db, trackId);
+  } catch {
+    // In environments without writable local DB (e.g. some serverless deployments),
+    // return static areas so assignment UI still works for area selection.
+    assignedByArea = {};
+  }
   const areas = track.areas.map((a) => ({
     ...a,
     photos: assignedByArea[a.id]?.length
