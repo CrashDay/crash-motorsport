@@ -1,6 +1,6 @@
-import fs from "fs";
-import path from "path";
 import HomeClient from "./home-client";
+import imsaImages from "@/data/imsa-images.json";
+import f1Images from "@/data/f1-images.json";
 
 export const dynamic = "force-dynamic"; // re-pick on refresh
 
@@ -14,25 +14,10 @@ const F1_ALBUMS = [
   { title: "Monaco - 2024", href: "/f1/monaco-2024", prefix: "monaco" },
 ];
 
-function listImages(relDir, prefix = "") {
-  const absDir = path.join(process.cwd(), "public", relDir);
-  let files = [];
-  try {
-    files = fs.readdirSync(absDir);
-  } catch {
-    return [];
-  }
-  return files
-    .filter((f) => {
-      const lower = f.toLowerCase();
-      return (
-        !lower.startsWith(".") &&
-        !lower.includes("ds_store") &&
-        (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) &&
-        (!prefix || lower.startsWith(prefix.toLowerCase()))
-      );
-    })
-    .sort();
+function selectByPrefix(images, prefix = "") {
+  if (!prefix) return images.slice();
+  const p = prefix.toLowerCase();
+  return images.filter((name) => name.toLowerCase().startsWith(p));
 }
 
 function sampleUnique(arr, n) {
@@ -52,24 +37,24 @@ function pickRandom(arr) {
 export default function Page() {
   const imsaAlbumPool = IMSA_ALBUMS.map((album) => ({
     ...album,
-    images: listImages("photos/imsa", album.prefix),
+    images: selectByPrefix(imsaImages, album.prefix),
   })).filter((album) => album.images.length > 0);
 
   const f1AlbumPool = F1_ALBUMS.map((album) => ({
     ...album,
-    images: listImages("photos/f1", album.prefix),
+    images: selectByPrefix(f1Images, album.prefix),
   })).filter((album) => album.images.length > 0);
 
   const imsaAlbum = pickRandom(imsaAlbumPool) || {
     title: "IMSA",
     href: "/imsa",
-    images: listImages("photos/imsa"),
+    images: imsaImages.slice(),
   };
 
   const f1Album = pickRandom(f1AlbumPool) || {
     title: "F1",
     href: "/f1",
-    images: listImages("photos/f1"),
+    images: f1Images.slice(),
   };
 
   const imsaAll = imsaAlbum.images;

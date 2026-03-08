@@ -1,60 +1,23 @@
-import fs from "fs";
-import path from "path";
+import imsaImages from "@/data/imsa-images.json";
 
-function pickRandomImageFromPublic(relDir, prefix = "") {
-  const absDir = path.join(process.cwd(), "public", relDir);
-
-  let files = [];
-  try {
-    files = fs.readdirSync(absDir);
-  } catch {
-    return null;
-  }
-
-  const images = files.filter((f) => {
-    const lower = f.toLowerCase();
-    return (
-      !lower.startsWith(".") &&
-      !lower.includes("ds_store") &&
-      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) &&
-      (!prefix || lower.startsWith(prefix.toLowerCase()))
-    );
-  });
-
-  if (!images.length) return null;
-
-  const pick = images[Math.floor(Math.random() * images.length)];
-  return `/${relDir}/${pick}`; // served from /photos/...
+function listImages(prefix = "") {
+  if (!prefix) return imsaImages.slice();
+  const p = prefix.toLowerCase();
+  return imsaImages.filter((f) => f.toLowerCase().startsWith(p));
 }
 
-function listImagesFromPublic(relDir, prefix = "") {
-  const absDir = path.join(process.cwd(), "public", relDir);
-
-  let files = [];
-  try {
-    files = fs.readdirSync(absDir);
-  } catch {
-    return [];
-  }
-
-  const images = files.filter((f) => {
-    const lower = f.toLowerCase();
-    return (
-      !lower.startsWith(".") &&
-      !lower.includes("ds_store") &&
-      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) &&
-      (!prefix || lower.startsWith(prefix.toLowerCase()))
-    );
-  });
-
-  return images.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+function pickRandomImage(prefix = "") {
+  const images = listImages(prefix);
+  if (!images.length) return null;
+  const pick = images[Math.floor(Math.random() * images.length)];
+  return `/photos/imsa/${pick}`;
 }
 
 export default function IMSAIndex() {
-  const daytonaImages = listImagesFromPublic("photos/imsa", "imsa");
-  const daytonaCoverSrc = pickRandomImageFromPublic("photos/imsa", "imsa");
-  const sebring2023Images = listImagesFromPublic("photos/imsa", "sebring2023-");
-  const sebringCoverSrc = pickRandomImageFromPublic("photos/imsa", "sebring2023");
+  const daytonaImages = listImages("imsa");
+  const daytonaCoverSrc = pickRandomImage("imsa");
+  const sebring2023Images = listImages("sebring2023-");
+  const sebringCoverSrc = pickRandomImage("sebring2023");
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>

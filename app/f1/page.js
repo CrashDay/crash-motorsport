@@ -1,58 +1,23 @@
-import fs from "fs";
-import path from "path";
+import f1Images from "@/data/f1-images.json";
 
-function listImagesFromPublic(relDir, prefix = "") {
-  const absDir = path.join(process.cwd(), "public", relDir);
-
-  let files = [];
-  try {
-    files = fs.readdirSync(absDir);
-  } catch {
-    return [];
-  }
-
-  return files.filter((f) => {
-    const lower = f.toLowerCase();
-    return (
-      !lower.startsWith(".") &&
-      !lower.includes("ds_store") &&
-      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) &&
-      (!prefix || lower.startsWith(prefix.toLowerCase()))
-    );
-  });
+function listImages(prefix = "") {
+  if (!prefix) return f1Images.slice();
+  const p = prefix.toLowerCase();
+  return f1Images.filter((f) => f.toLowerCase().startsWith(p));
 }
 
-function pickRandomImageFromPublic(relDir, prefix = "") {
-  const absDir = path.join(process.cwd(), "public", relDir);
-
-  let files = [];
-  try {
-    files = fs.readdirSync(absDir);
-  } catch {
-    return null;
-  }
-
-  const images = files.filter((f) => {
-    const lower = f.toLowerCase();
-    return (
-      !lower.startsWith(".") &&
-      !lower.includes("ds_store") &&
-      (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) &&
-      (!prefix || lower.startsWith(prefix.toLowerCase()))
-    );
-  });
-
+function pickRandomImage(prefix = "") {
+  const images = listImages(prefix);
   if (!images.length) return null;
-
   const pick = images[Math.floor(Math.random() * images.length)];
-  return `/${relDir}/${pick}`; // served from /photos/...
+  return `/photos/f1/${pick}`;
 }
 
 export default function F1Index() {
-  const imolaImages = listImagesFromPublic("photos/f1", "imola");
-  const monacoImages = listImagesFromPublic("photos/f1", "monaco");
-  const imolaCoverSrc = pickRandomImageFromPublic("photos/f1", "imola");
-  const monacoCoverSrc = pickRandomImageFromPublic("photos/f1", "monaco");
+  const imolaImages = listImages("imola");
+  const monacoImages = listImages("monaco");
+  const imolaCoverSrc = pickRandomImage("imola");
+  const monacoCoverSrc = pickRandomImage("monaco");
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
