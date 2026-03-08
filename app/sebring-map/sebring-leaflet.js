@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Rectangle, CircleMarker, Popup, Marker, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -25,6 +25,21 @@ const CORNER_ORDER = [
   { short: "T17", name: "Turn 17" },
 ];
 const CORNER_STORAGE_KEY = "sebring_corner_coords_v1";
+const PHOTO_AREA_STORAGE_KEY = "sebring_photo_areas_v1";
+const DEFAULT_PHOTO_AREAS = [
+  {
+    id: "area-1772982986829-6a537i",
+    title: "Turn 3 Outside North",
+    bounds: {
+      north: 27.454798,
+      south: 27.454617,
+      east: -81.349061,
+      west: -81.34964,
+    },
+    center: [27.454707, -81.34935],
+    photos: [],
+  },
+];
 const DEFAULT_CORNERS = {
   T1: { lat: 27.450638, lng: -81.348975 },
   T2: { lat: 27.453151, lng: -81.349018 },
@@ -229,7 +244,7 @@ function BoundsPicker({ enabled, onChange }) {
     [Math.max(start.lat, end.lat), Math.max(start.lng, end.lng)],
   ];
 
-  return <Rectangle bounds={bounds} pathOptions={{ color: "#00e5ff", weight: 2 }} />;
+  return <Rectangle bounds={bounds} interactive={false} pathOptions={{ color: "#00e5ff", weight: 2 }} />;
 }
 
 function CornerPicker({ enabled, activeCorner, onPick }) {
@@ -283,6 +298,26 @@ export default function SebringLeaflet() {
     west: -81.359682,
   });
   const [viewBoundsVersion, setViewBoundsVersion] = useState(0);
+  const [photoAreaName, setPhotoAreaName] = useState("New photo area");
+  const [photoAreaMsg, setPhotoAreaMsg] = useState("");
+  const [photoAreaCopied, setPhotoAreaCopied] = useState(false);
+  const [photoAreas, setPhotoAreas] = useState(() => {
+    if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
+    try {
+      const raw = window.localStorage.getItem(PHOTO_AREA_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      const localAreas = Array.isArray(parsed) ? parsed : [];
+      const merged = [...DEFAULT_PHOTO_AREAS];
+      for (const area of localAreas) {
+        if (!area || typeof area !== "object") continue;
+        if (merged.some((d) => d.id === area.id)) continue;
+        merged.push(area);
+      }
+      return merged;
+    } catch {
+      return DEFAULT_PHOTO_AREAS;
+    }
+  });
 
   const corner3Bounds = {
     north: 27.45436,
@@ -295,6 +330,43 @@ export default function SebringLeaflet() {
     (corner3Bounds.north + corner3Bounds.south) / 2,
     (corner3Bounds.east + corner3Bounds.west) / 2,
   ];
+
+  const createPhotoAreaFromBounds = () => {
+    if (!bounds) return;
+    const title = (photoAreaName || "").trim() || `Photo area ${photoAreas.length + 1}`;
+    const north = Number(bounds.north.toFixed(6));
+    const south = Number(bounds.south.toFixed(6));
+    const east = Number(bounds.east.toFixed(6));
+    const west = Number(bounds.west.toFixed(6));
+    const center = [
+      Number(((north + south) / 2).toFixed(6)),
+      Number(((east + west) / 2).toFixed(6)),
+    ];
+    const next = {
+      id: `area-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title,
+      bounds: { north, south, east, west },
+      center,
+      photos: [],
+    };
+    setPhotoAreas((prev) => [...prev, next]);
+    setPhotoAreaMsg(`Created: ${title}`);
+  };
+
+  const deletePhotoArea = (id) => {
+    setPhotoAreas((prev) => prev.filter((a) => a.id !== id));
+    setPhotoAreaMsg("Area deleted");
+  };
+
+  const copyPhotoAreaJson = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(photoAreas, null, 2));
+      setPhotoAreaCopied(true);
+      setTimeout(() => setPhotoAreaCopied(false), 1200);
+    } catch {
+      setPhotoAreaCopied(false);
+    }
+  };
 
   const viewLatLngBounds = viewBounds
     ? [
@@ -469,6 +541,14 @@ export default function SebringLeaflet() {
   }, [corners]);
 
   useEffect(() => {
+    try {
+      window.localStorage.setItem(PHOTO_AREA_STORAGE_KEY, JSON.stringify(photoAreas));
+    } catch {
+      // ignore storage write failures
+    }
+  }, [photoAreas]);
+
+  useEffect(() => {
     let cancelled = false;
 
     fetch("/maps/sebring.geojson")
@@ -567,7 +647,7 @@ export default function SebringLeaflet() {
           position: "absolute",
           zIndex: 9999,
           bottom: 12,
-          left: 12,
+          right: 12,
           background: "rgba(7,11,18,0.86)",
           color: "#fff",
           padding: "10px 12px",
@@ -649,6 +729,7 @@ export default function SebringLeaflet() {
         <div style={{ color: "#b8c4d8" }}>
           {pickMode ? "Click and drag to draw a rectangle. The bounds will appear below." : "Picker is off."}
         </div>
+        {pickMode ? <div style={{ marginTop: 4, color: "#9fb2d6" }}>Disable picker to interact with map markers and popups.</div> : null}
         <div style={{ marginTop: 8 }}>
           <button
             type="button"
@@ -700,6 +781,98 @@ export default function SebringLeaflet() {
             <div>South: {bounds.south.toFixed(6)}</div>
             <div>East: {bounds.east.toFixed(6)}</div>
             <div>West: {bounds.west.toFixed(6)}</div>
+          </div>
+        ) : null}
+        {bounds ? (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Create Photo Area</div>
+            <input
+              type="text"
+              value={photoAreaName}
+              onChange={(e) => setPhotoAreaName(e.target.value)}
+              placeholder="Area name"
+              style={{
+                width: "100%",
+                background: "#101827",
+                border: "1px solid #2a3a57",
+                color: "#fff",
+                borderRadius: 8,
+                padding: "6px 8px",
+                fontSize: 12,
+              }}
+            />
+            <button
+              type="button"
+              onClick={createPhotoAreaFromBounds}
+              style={{
+                marginTop: 6,
+                width: "100%",
+                background: "#15233a",
+                border: "1px solid #325080",
+                color: "#fff",
+                padding: "6px 8px",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontSize: 12,
+              }}
+            >
+              Create area from current bounds
+            </button>
+            {photoAreaMsg ? (
+              <div style={{ marginTop: 6, color: "#9dd8a3" }}>{photoAreaMsg}</div>
+            ) : null}
+          </div>
+        ) : null}
+        <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {photoAreas.length}</div>
+        {photoAreas.length ? (
+          <div style={{ marginTop: 8 }}>
+            <button
+              type="button"
+              onClick={copyPhotoAreaJson}
+              style={{
+                width: "100%",
+                background: "#101827",
+                border: "1px solid #2a3a57",
+                color: "#fff",
+                padding: "6px 8px",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontSize: 12,
+              }}
+            >
+              {photoAreaCopied ? "Copied" : "Copy area JSON"}
+            </button>
+          </div>
+        ) : null}
+        {photoAreas.length ? (
+          <div style={{ marginTop: 8, maxHeight: 140, overflowY: "auto" }}>
+            {photoAreas.map((area) => {
+              const count = Array.isArray(area.photos) ? area.photos.length : 0;
+              return (
+                <div key={`tool-${area.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ color: "#dfe9ff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{area.title}</div>
+                    <div style={{ color: "#9fb2d6", fontSize: 11 }}>{count} photo{count === 1 ? "" : "s"}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => deletePhotoArea(area.id)}
+                    style={{
+                      background: "#1f1020",
+                      border: "1px solid #6f2b5a",
+                      color: "#fff",
+                      padding: "4px 6px",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      fontSize: 11,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })}
           </div>
         ) : null}
 
@@ -891,6 +1064,40 @@ export default function SebringLeaflet() {
             </div>
           </Popup>
         </CircleMarker>
+
+        {photoAreas.map((area) => (
+          <Fragment key={area.id}>
+            <Rectangle
+              bounds={[
+                [area.bounds.south, area.bounds.west],
+                [area.bounds.north, area.bounds.east],
+              ]}
+              interactive={false}
+              pathOptions={{ color: "#ff8c00", weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
+            />
+            {Array.isArray(area.photos) && area.photos.length > 0 ? (
+              <CircleMarker
+                center={area.center}
+                radius={7}
+                pathOptions={{ color: "#ff8c00", fillColor: "#ff8c00", fillOpacity: 0.9 }}
+              >
+                <Popup maxWidth={420} minWidth={220}>
+                  <div style={{ width: "min(360px, 90vw)" }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>{area.title}</div>
+                    <div style={{ fontSize: 12, color: "#9fb2d6", lineHeight: 1.35 }}>
+                      N {area.bounds.north.toFixed(6)} S {area.bounds.south.toFixed(6)}
+                      <br />
+                      E {area.bounds.east.toFixed(6)} W {area.bounds.west.toFixed(6)}
+                    </div>
+                    <div style={{ marginTop: 8, color: "#dfe9ff", fontSize: 12 }}>
+                      {area.photos.length} photo{area.photos.length === 1 ? "" : "s"} in this area
+                    </div>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            ) : null}
+          </Fragment>
+        ))}
       </MapContainer>
 
       <style jsx global>{`
