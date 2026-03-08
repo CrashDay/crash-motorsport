@@ -32,16 +32,23 @@ export async function POST(request) {
     return NextResponse.json({ error: "asset.id, asset.thumbUrl, and asset.fullUrl are required" }, { status: 400 });
   }
 
-  const db = getDb();
-  assignAreaAsset(db, {
-    track_id: trackId,
-    area_id: areaId,
-    asset_id: assetId,
-    asset_name: assetName || assetId,
-    thumb_url: thumbUrl,
-    full_url: fullUrl,
-    assigned_at: new Date().toISOString(),
-  });
+  try {
+    const db = getDb();
+    assignAreaAsset(db, {
+      track_id: trackId,
+      area_id: areaId,
+      asset_id: assetId,
+      asset_name: assetName || assetId,
+      thumb_url: thumbUrl,
+      full_url: fullUrl,
+      assigned_at: new Date().toISOString(),
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Assignment storage unavailable in this environment" },
+      { status: 503 }
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }
@@ -68,7 +75,14 @@ export async function DELETE(request) {
     return NextResponse.json({ error: "assetId is required" }, { status: 400 });
   }
 
-  const db = getDb();
-  removeAreaAsset(db, { track_id: trackId, area_id: areaId, asset_id: assetId });
+  try {
+    const db = getDb();
+    removeAreaAsset(db, { track_id: trackId, area_id: areaId, asset_id: assetId });
+  } catch {
+    return NextResponse.json(
+      { error: "Assignment storage unavailable in this environment" },
+      { status: 503 }
+    );
+  }
   return NextResponse.json({ ok: true });
 }

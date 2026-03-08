@@ -75,8 +75,14 @@ export default function AssignPhotoToArea({ asset }) {
           },
         }),
       });
-      const payload = await res.json();
-      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+      const raw = await res.text();
+      let payload = null;
+      try {
+        payload = raw ? JSON.parse(raw) : null;
+      } catch {
+        payload = null;
+      }
+      if (!res.ok) throw new Error(payload?.error || raw || `HTTP ${res.status}`);
       setMsg("Assigned");
     } catch (e) {
       setMsg(`Failed: ${String(e?.message || e)}`);
