@@ -34,7 +34,14 @@ async function ensurePostgresSchema() {
 }
 
 function hasPostgresConfig() {
-  return Boolean(process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL);
+  const connection =
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_URL;
+  if (connection && !process.env.POSTGRES_URL) {
+    process.env.POSTGRES_URL = connection;
+  }
+  return Boolean(connection);
 }
 
 function groupAssignedRows(rows) {
