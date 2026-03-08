@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
 
 export default function F1Imola() {
   // Files must be in: public/photos/f1/
@@ -86,6 +87,9 @@ export default function F1Imola() {
 
   const activeName = openIndex !== null ? images[openIndex] : null;
   const activeSrc = activeName ? `/photos/f1/${activeName}` : null;
+  const activeAsset = activeName
+    ? { id: `f1:${activeName}`, name: activeName, thumbUrl: activeSrc, fullUrl: activeSrc }
+    : null;
 
   return (
     <div
@@ -196,21 +200,24 @@ export default function F1Imola() {
               {openIndex + 1} / {images.length} - {activeName}
             </div>
 
-            <button
-              type="button"
-              onClick={close}
-              style={{
-                background: "#111",
-                border: "1px solid #222",
-                color: "#fff",
-                padding: "10px 12px",
-                borderRadius: 12,
-                cursor: "pointer",
-              }}
-              aria-label="Close"
-            >
-              Close X
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              {activeAsset ? <AssignPhotoToArea asset={activeAsset} /> : null}
+              <button
+                type="button"
+                onClick={close}
+                style={{
+                  background: "#111",
+                  border: "1px solid #222",
+                  color: "#fff",
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  cursor: "pointer",
+                }}
+                aria-label="Close"
+              >
+                Close X
+              </button>
+            </div>
           </div>
 
           <button

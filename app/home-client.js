@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import AssignPhotoToArea from "./components/assign-photo-to-area";
 
 export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAlbum, f1Album }) {
   // viewer lists
@@ -17,6 +18,15 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
       ? viewer.series === "imsa"
         ? `/photos/imsa/${activeName}`
         : `/photos/f1/${activeName}`
+      : null;
+  const activeAsset =
+    viewer.open && activeName
+      ? {
+          id: `${viewer.series}:${activeName}`,
+          name: activeName,
+          thumbUrl: activeSrc,
+          fullUrl: activeSrc,
+        }
       : null;
 
   const close = () => setViewer({ open: false, series: null, index: 0 });
@@ -394,21 +404,24 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
               {viewer.index + 1} / {activeList.length} — {activeName}
             </div>
 
-            <button
-              type="button"
-              onClick={close}
-              style={{
-                background: "#111",
-                border: "1px solid #222",
-                color: "#fff",
-                padding: "10px 12px",
-                borderRadius: 12,
-                cursor: "pointer",
-              }}
-              aria-label="Close"
-            >
-              Close ✕
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              {activeAsset ? <AssignPhotoToArea asset={activeAsset} /> : null}
+              <button
+                type="button"
+                onClick={close}
+                style={{
+                  background: "#111",
+                  border: "1px solid #222",
+                  color: "#fff",
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  cursor: "pointer",
+                }}
+                aria-label="Close"
+              >
+                Close ✕
+              </button>
+            </div>
           </div>
 
           <button

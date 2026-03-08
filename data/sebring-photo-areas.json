@@ -1,0 +1,73 @@
+[
+  {
+    "id": "builtin-turn3-inside",
+    "title": "Turn 3 Inside",
+    "bounds": {
+      "north": 27.45436,
+      "south": 27.45317,
+      "east": -81.3489,
+      "west": -81.349479
+    },
+    "center": [27.453765, -81.3491895],
+    "defaultPhoto": {
+      "id": "builtin-photo-turn3",
+      "src": "/photos/imsa/sebring1.jpg",
+      "alt": "Turn 3 Inside"
+    }
+  },
+  {
+    "id": "area-1772982986829-6a537i",
+    "title": "Turn 3 Outside North",
+    "bounds": {
+      "north": 27.454798,
+      "south": 27.454617,
+      "east": -81.349061,
+      "west": -81.34964
+    },
+    "center": [27.454707, -81.34935]
+  },
+  {
+    "id": "area-1772984280521-draft",
+    "title": "Turn 3 Outside East",
+    "bounds": {
+      "north": 27.454494,
+      "south": 27.453894,
+      "east": -81.348685,
+      "west": -81.348835
+    },
+    "center": [27.454194, -81.34876]
+  },
+  {
+    "id": "area-1772984574066-draft",
+    "title": "Turn 1 Outside East",
+    "bounds": {
+      "north": 27.451856,
+      "south": 27.450447,
+      "east": -81.348256,
+      "west": -81.348395
+    },
+    "center": [27.451152, -81.348326]
+  },
+  {
+    "id": "area-1772984895437-draft",
+    "title": "Turn 1 Outside South",
+    "bounds": {
+      "north": 27.450057,
+      "south": 27.449914,
+      "east": -81.348771,
+      "west": -81.349908
+    },
+    "center": [27.449986, -81.349339]
+  },
+  {
+    "id": "area-1772985408146-draft",
+    "title": "Turn 7 (Hairpin) Inside",
+    "bounds": {
+      "north": 27.453018,
+      "south": 27.452675,
+      "east": -81.357579,
+      "west": -81.358126
+    },
+    "center": [27.452846, -81.357853]
+  }
+]

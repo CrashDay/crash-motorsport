@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
 
 export default function SebringGalleryClient({ images }) {
   const [openIndex, setOpenIndex] = useState(null);
@@ -45,6 +46,9 @@ export default function SebringGalleryClient({ images }) {
 
   const activeName = openIndex !== null ? images[openIndex] : null;
   const activeSrc = activeName ? `/photos/imsa/${activeName}` : null;
+  const activeAsset = activeName
+    ? { id: `imsa:${activeName}`, name: activeName, thumbUrl: activeSrc, fullUrl: activeSrc }
+    : null;
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
@@ -144,21 +148,24 @@ export default function SebringGalleryClient({ images }) {
               {openIndex + 1} / {images.length} - {activeName}
             </div>
 
-            <button
-              type="button"
-              onClick={close}
-              style={{
-                background: "#111",
-                border: "1px solid #222",
-                color: "#fff",
-                padding: "10px 12px",
-                borderRadius: 12,
-                cursor: "pointer",
-              }}
-              aria-label="Close"
-            >
-              Close
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              {activeAsset ? <AssignPhotoToArea asset={activeAsset} /> : null}
+              <button
+                type="button"
+                onClick={close}
+                style={{
+                  background: "#111",
+                  border: "1px solid #222",
+                  color: "#fff",
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  cursor: "pointer",
+                }}
+                aria-label="Close"
+              >
+                Close
+              </button>
+            </div>
           </div>
 
           <button

@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, Rectangle, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -107,6 +107,118 @@ const DEFAULT_CORNERS = {
   T16: { lat: 27.448276, lng: -81.346689 },
   T17: { lat: 27.4492, lng: -81.357783 },
 };
+const TURN3_INSIDE_AREA = {
+  id: "builtin-turn3-inside",
+  title: "Turn 3 Inside",
+  bounds: {
+    north: 27.45436,
+    south: 27.45317,
+    east: -81.3489,
+    west: -81.349479,
+  },
+};
+
+const AREA_VISUAL_MODES = [
+  { id: "soft_fill", label: "Soft Fill" },
+  { id: "dashed_glow", label: "Dashed Glow" },
+  { id: "corner_brackets", label: "Corner Brackets" },
+  { id: "heat_blur", label: "Heat Blur" },
+];
+const AREA_COLOR = "#5da2ff";
+
+function toLatLngBounds(bounds) {
+  return [
+    [bounds.south, bounds.west],
+    [bounds.north, bounds.east],
+  ];
+}
+
+function bracketLines(bounds) {
+  const latSpan = bounds.north - bounds.south;
+  const lngSpan = bounds.east - bounds.west;
+  const latCut = latSpan * 0.22;
+  const lngCut = lngSpan * 0.22;
+  return [
+    [[bounds.north, bounds.west], [bounds.north - latCut, bounds.west]],
+    [[bounds.north, bounds.west], [bounds.north, bounds.west + lngCut]],
+    [[bounds.north, bounds.east], [bounds.north - latCut, bounds.east]],
+    [[bounds.north, bounds.east], [bounds.north, bounds.east - lngCut]],
+    [[bounds.south, bounds.west], [bounds.south + latCut, bounds.west]],
+    [[bounds.south, bounds.west], [bounds.south, bounds.west + lngCut]],
+    [[bounds.south, bounds.east], [bounds.south + latCut, bounds.east]],
+    [[bounds.south, bounds.east], [bounds.south, bounds.east - lngCut]],
+  ];
+}
+
+function heatRadiusMeters(bounds) {
+  const centerLat = (bounds.north + bounds.south) / 2;
+  const latMeters = Math.abs(bounds.north - bounds.south) * 111320;
+  const lngMeters = Math.abs(bounds.east - bounds.west) * 111320 * Math.cos((centerLat * Math.PI) / 180);
+  return Math.max(10, Math.hypot(latMeters, lngMeters) * 0.45);
+}
+
+function AreaOverlay({ bounds, title, mode }) {
+  const center = [(bounds.north + bounds.south) / 2, (bounds.east + bounds.west) / 2];
+  const rect = toLatLngBounds(bounds);
+
+  return (
+    <Fragment>
+      {mode === "soft_fill" ? (
+        <Rectangle
+          bounds={rect}
+          interactive={false}
+          pathOptions={{ stroke: false, fillColor: AREA_COLOR, fillOpacity: 0.16 }}
+        />
+      ) : null}
+
+      {mode === "dashed_glow" ? (
+        <Fragment>
+          <Rectangle
+            bounds={rect}
+            interactive={false}
+            pathOptions={{ color: AREA_COLOR, weight: 6, opacity: 0.22, fillOpacity: 0 }}
+          />
+          <Rectangle
+            bounds={rect}
+            interactive={false}
+            pathOptions={{ color: AREA_COLOR, weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
+          />
+        </Fragment>
+      ) : null}
+
+      {mode === "corner_brackets" ? (
+        <Fragment>
+          {bracketLines(bounds).map((line, i) => (
+            <Polyline key={`${title}-br-${i}`} positions={line} interactive={false} pathOptions={{ color: AREA_COLOR, weight: 3 }} />
+          ))}
+        </Fragment>
+      ) : null}
+
+      {mode === "heat_blur" ? (
+        <Fragment>
+          <Circle
+            center={center}
+            radius={heatRadiusMeters(bounds)}
+            interactive={false}
+            pathOptions={{ stroke: false, fillColor: AREA_COLOR, fillOpacity: 0.13 }}
+          />
+          <Circle
+            center={center}
+            radius={heatRadiusMeters(bounds) * 0.55}
+            interactive={false}
+            pathOptions={{ stroke: false, fillColor: AREA_COLOR, fillOpacity: 0.2 }}
+          />
+        </Fragment>
+      ) : null}
+
+      <Rectangle bounds={rect} interactive pathOptions={{ color: AREA_COLOR, weight: 0, fillOpacity: 0, opacity: 0 }}>
+        <Tooltip sticky direction="top" opacity={0.95}>
+          {title}
+        </Tooltip>
+      </Rectangle>
+    </Fragment>
+  );
+}
 
 function cornerIcon(short) {
   return icon({
@@ -346,9 +458,14 @@ export default function SebringLeaflet() {
     west: -81.359682,
   });
   const [viewBoundsVersion, setViewBoundsVersion] = useState(0);
+  const [areaVisualMode, setAreaVisualMode] = useState("soft_fill");
+  const [areaViewer, setAreaViewer] = useState({ open: false, areaId: "", title: "", photos: [], index: 0 });
+  const [areaViewerMsg, setAreaViewerMsg] = useState("");
+  const [removingAreaPhoto, setRemovingAreaPhoto] = useState(false);
   const [photoAreaName, setPhotoAreaName] = useState("New photo area");
   const [photoAreaMsg, setPhotoAreaMsg] = useState("");
   const [photoAreaCopied, setPhotoAreaCopied] = useState(false);
+  const [assignedAreaPhotos, setAssignedAreaPhotos] = useState({});
   const [photoAreas, setPhotoAreas] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
     try {
@@ -367,17 +484,85 @@ export default function SebringLeaflet() {
     }
   });
 
-  const corner3Bounds = {
-    north: 27.45436,
-    south: 27.45317,
-    east: -81.3489,
-    west: -81.349479,
-  };
+  const allAreaRows = [
+    {
+      ...TURN3_INSIDE_AREA,
+      photos: [{ id: "builtin-photo-turn3", src: "/photos/imsa/sebring1.jpg", alt: "Turn 3 Inside" }],
+      locked: true,
+    },
+    ...photoAreas,
+  ].map((area) => ({
+    ...area,
+    photos: Array.isArray(assignedAreaPhotos[area.id]) && assignedAreaPhotos[area.id].length
+      ? assignedAreaPhotos[area.id]
+      : Array.isArray(area.photos)
+        ? area.photos
+        : [],
+  }));
 
-  const corner3Center = [
-    (corner3Bounds.north + corner3Bounds.south) / 2,
-    (corner3Bounds.east + corner3Bounds.west) / 2,
-  ];
+  const closeAreaViewer = () => {
+    setAreaViewer({ open: false, areaId: "", title: "", photos: [], index: 0 });
+    setAreaViewerMsg("");
+  };
+  const openAreaViewer = (area) => {
+    const photos = (Array.isArray(area.photos) ? area.photos : [])
+      .map((p, i) => ({
+        id: p.id || `${area.id}:${i}`,
+        name: p.name || area.title,
+        fullUrl: p.fullUrl || p.src,
+        thumbUrl: p.thumbUrl || p.fullUrl || p.src,
+        alt: p.alt || p.name || area.title,
+      }))
+      .filter((p) => !!p.fullUrl);
+    if (!photos.length) return;
+    setAreaViewer({ open: true, areaId: area.id, title: area.title, photos, index: 0 });
+    setAreaViewerMsg("");
+  };
+  const nextAreaPhoto = () =>
+    setAreaViewer((v) => ({
+      ...v,
+      index: v.photos.length ? (v.index + 1) % v.photos.length : 0,
+    }));
+  const prevAreaPhoto = () =>
+    setAreaViewer((v) => ({
+      ...v,
+      index: v.photos.length ? (v.index - 1 + v.photos.length) % v.photos.length : 0,
+    }));
+  const removeCurrentAreaPhoto = async () => {
+    const current = areaViewer.photos[areaViewer.index];
+    if (!current || String(current.id || "").startsWith("builtin-")) return;
+    setRemovingAreaPhoto(true);
+    setAreaViewerMsg("");
+    try {
+      const res = await fetch("/api/photo-area-assignments", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trackId: "sebring",
+          areaId: areaViewer.areaId,
+          assetId: current.id,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+
+      setAssignedAreaPhotos((prev) => {
+        const next = { ...prev };
+        next[areaViewer.areaId] = (next[areaViewer.areaId] || []).filter((p) => p.id !== current.id);
+        return next;
+      });
+      setAreaViewer((v) => {
+        const photos = v.photos.filter((p) => p.id !== current.id);
+        if (!photos.length) return { open: false, areaId: "", title: "", photos: [], index: 0 };
+        return { ...v, photos, index: Math.min(v.index, photos.length - 1) };
+      });
+      setAreaViewerMsg("Removed");
+    } catch (e) {
+      setAreaViewerMsg(`Remove failed: ${String(e?.message || e)}`);
+    } finally {
+      setRemovingAreaPhoto(false);
+    }
+  };
 
   const createPhotoAreaFromBounds = () => {
     if (!bounds) return;
@@ -617,6 +802,39 @@ export default function SebringLeaflet() {
       // ignore storage write failures
     }
   }, [photoAreas]);
+
+  useEffect(() => {
+    if (!areaViewer.open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") closeAreaViewer();
+      if (e.key === "ArrowLeft") prevAreaPhoto();
+      if (e.key === "ArrowRight") nextAreaPhoto();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [areaViewer.open]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/photo-areas?trackId=sebring")
+      .then((r) => r.json())
+      .then((payload) => {
+        if (cancelled) return;
+        const list = Array.isArray(payload?.areas) ? payload.areas : [];
+        const byArea = {};
+        for (const area of list) {
+          byArea[area.id] = Array.isArray(area.photos) ? area.photos : [];
+        }
+        setAssignedAreaPhotos(byArea);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAssignedAreaPhotos({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -893,7 +1111,30 @@ export default function SebringLeaflet() {
             ) : null}
           </div>
         ) : null}
-        <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {photoAreas.length}</div>
+        <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {allAreaRows.length}</div>
+        <div style={{ marginTop: 8 }}>
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>Area style</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {AREA_VISUAL_MODES.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setAreaVisualMode(m.id)}
+                style={{
+                  background: areaVisualMode === m.id ? "#15233a" : "#101827",
+                  border: areaVisualMode === m.id ? "1px solid #3b5f92" : "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "4px 6px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontSize: 11,
+                }}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
         {bounds ? (
           <div style={{ marginTop: 8 }}>
             <button
@@ -914,9 +1155,9 @@ export default function SebringLeaflet() {
             </button>
           </div>
         ) : null}
-        {photoAreas.length ? (
+        {allAreaRows.length ? (
           <div style={{ marginTop: 8, maxHeight: 140, overflowY: "auto" }}>
-            {photoAreas.map((area) => {
+            {allAreaRows.map((area) => {
               const count = Array.isArray(area.photos) ? area.photos.length : 0;
               return (
                 <div key={`tool-${area.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -927,18 +1168,20 @@ export default function SebringLeaflet() {
                   <button
                     type="button"
                     onClick={() => deletePhotoArea(area.id)}
+                    disabled={!!area.locked}
                     style={{
                       background: "#1f1020",
                       border: "1px solid #6f2b5a",
                       color: "#fff",
                       padding: "4px 6px",
                       borderRadius: 8,
-                      cursor: "pointer",
+                      cursor: area.locked ? "default" : "pointer",
                       fontSize: 11,
                       flexShrink: 0,
+                      opacity: area.locked ? 0.5 : 1,
                     }}
                   >
-                    Delete
+                    {area.locked ? "Built-in" : "Delete"}
                   </button>
                 </div>
               );
@@ -1122,62 +1365,52 @@ export default function SebringLeaflet() {
           </Marker>
         ))}
 
-        <Rectangle
-          bounds={[
-            [corner3Bounds.south, corner3Bounds.west],
-            [corner3Bounds.north, corner3Bounds.east],
-          ]}
-          interactive
-          pathOptions={{ color: "#ff8c00", weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
-        >
-          <Tooltip sticky direction="top" opacity={0.95}>
-            Turn 3 - Inside
-          </Tooltip>
-        </Rectangle>
-        <CircleMarker center={corner3Center} radius={7} pathOptions={{ color: "#ff8c00", fillColor: "#ff8c00", fillOpacity: 0.9 }}>
-          <Popup maxWidth={720} minWidth={220}>
-            <div style={{ width: "min(600px, 90vw)", overflow: "hidden", borderRadius: 12 }}>
-              <div style={{ fontWeight: 700, marginBottom: 6 }}>Corner 3 - Inside</div>
-              <img
-                src="/photos/imsa/sebring1.jpg"
-                alt="Corner 3 - Inside"
-                style={{ width: "100%", height: "auto", maxHeight: "55vh", objectFit: "cover", display: "block" }}
-              />
-            </div>
-          </Popup>
-        </CircleMarker>
-
-        {photoAreas.map((area) => (
+        {allAreaRows.map((area) => (
           <Fragment key={area.id}>
-            <Rectangle
-              bounds={[
-                [area.bounds.south, area.bounds.west],
-                [area.bounds.north, area.bounds.east],
-              ]}
-              interactive
-              pathOptions={{ color: "#ff8c00", weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
-            >
-              <Tooltip sticky direction="top" opacity={0.95}>
-                {area.title}
-              </Tooltip>
-            </Rectangle>
+            <AreaOverlay bounds={area.bounds} title={area.title} mode={areaVisualMode} />
             {Array.isArray(area.photos) && area.photos.length > 0 ? (
               <CircleMarker
-                center={area.center}
+                center={Array.isArray(area.center) ? area.center : [((area.bounds.north + area.bounds.south) / 2), ((area.bounds.east + area.bounds.west) / 2)]}
                 radius={7}
-                pathOptions={{ color: "#ff8c00", fillColor: "#ff8c00", fillOpacity: 0.9 }}
+                pathOptions={{ color: AREA_COLOR, fillColor: AREA_COLOR, fillOpacity: 0.9 }}
               >
-                <Popup maxWidth={420} minWidth={220}>
-                  <div style={{ width: "min(360px, 90vw)" }}>
+                <Popup maxWidth={720} minWidth={220}>
+                  <div style={{ width: "min(600px, 90vw)", overflow: "hidden", borderRadius: 12 }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>{area.title}</div>
-                    <div style={{ fontSize: 12, color: "#9fb2d6", lineHeight: 1.35 }}>
-                      N {area.bounds.north.toFixed(6)} S {area.bounds.south.toFixed(6)}
-                      <br />
-                      E {area.bounds.east.toFixed(6)} W {area.bounds.west.toFixed(6)}
-                    </div>
-                    <div style={{ marginTop: 8, color: "#dfe9ff", fontSize: 12 }}>
-                      {area.photos.length} photo{area.photos.length === 1 ? "" : "s"} in this area
-                    </div>
+                    {area.photos[0]?.src || area.photos[0]?.fullUrl ? (
+                      <>
+                        <img
+                          src={area.photos[0].fullUrl || area.photos[0].src}
+                          alt={area.photos[0].alt || area.photos[0].name || area.title}
+                          onClick={() => openAreaViewer(area)}
+                          style={{ width: "100%", height: "auto", maxHeight: "55vh", objectFit: "cover", display: "block", cursor: "pointer" }}
+                        />
+                        <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                          <div style={{ color: "#9fb2d6", fontSize: 12 }}>
+                            {area.photos.length} photo{area.photos.length === 1 ? "" : "s"}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => openAreaViewer(area)}
+                            style={{
+                              background: "#111",
+                              border: "1px solid #222",
+                              color: "#fff",
+                              padding: "6px 8px",
+                              borderRadius: 8,
+                              cursor: "pointer",
+                              fontSize: 12,
+                            }}
+                          >
+                            Open viewer
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ color: "#9fb2d6", fontSize: 12, lineHeight: 1.35 }}>
+                        {area.photos.length} photo{area.photos.length === 1 ? "" : "s"} assigned.
+                      </div>
+                    )}
                   </div>
                 </Popup>
               </CircleMarker>
@@ -1185,6 +1418,85 @@ export default function SebringLeaflet() {
           </Fragment>
         ))}
       </MapContainer>
+
+      {areaViewer.open && areaViewer.photos.length ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Area photo viewer"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closeAreaViewer();
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.92)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 20000,
+            padding: 16,
+          }}
+        >
+          <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <div style={{ color: "#bbb", fontSize: 13 }}>
+              {areaViewer.title} - {areaViewer.index + 1} / {areaViewer.photos.length}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {!String(areaViewer.photos[areaViewer.index]?.id || "").startsWith("builtin-") ? (
+                <button
+                  type="button"
+                  onClick={removeCurrentAreaPhoto}
+                  disabled={removingAreaPhoto}
+                  style={{ background: "#1f1020", border: "1px solid #6f2b5a", color: "#fff", padding: "10px 12px", borderRadius: 12, cursor: "pointer", opacity: removingAreaPhoto ? 0.7 : 1 }}
+                >
+                  {removingAreaPhoto ? "Removing..." : "Remove from area"}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={closeAreaViewer}
+                style={{ background: "#111", border: "1px solid #222", color: "#fff", padding: "10px 12px", borderRadius: 12, cursor: "pointer" }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+          {areaViewerMsg ? (
+            <div style={{ position: "absolute", top: 52, left: 12, color: areaViewerMsg.startsWith("Remove failed") ? "#ff9a9a" : "#9dd8a3", fontSize: 12 }}>
+              {areaViewerMsg}
+            </div>
+          ) : null}
+
+          {areaViewer.photos.length > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={prevAreaPhoto}
+                style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", background: "#111", border: "1px solid #222", color: "#fff", padding: "12px 14px", borderRadius: 14, cursor: "pointer" }}
+                aria-label="Previous photo"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                onClick={nextAreaPhoto}
+                style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#111", border: "1px solid #222", color: "#fff", padding: "12px 14px", borderRadius: 14, cursor: "pointer" }}
+                aria-label="Next photo"
+              >
+                →
+              </button>
+            </>
+          ) : null}
+
+          <img
+            src={areaViewer.photos[areaViewer.index].fullUrl}
+            alt={areaViewer.photos[areaViewer.index].alt || areaViewer.photos[areaViewer.index].name}
+            style={{ maxWidth: "calc(100vw - 120px)", maxHeight: "calc(100vh - 120px)", width: "auto", height: "auto", borderRadius: 18, border: "1px solid #222", boxShadow: "0 10px 40px rgba(0,0,0,0.6)", background: "#111" }}
+            draggable={false}
+          />
+        </div>
+      ) : null}
 
       <style jsx global>{`
         .leaflet-popup-content-wrapper,

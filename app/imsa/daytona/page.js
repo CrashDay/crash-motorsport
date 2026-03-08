@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
 
 export default function IMSADaytona() {
   const images = useMemo(
@@ -54,6 +55,9 @@ export default function IMSADaytona() {
 
   const activeName = openIndex !== null ? images[openIndex] : null;
   const activeSrc = activeName ? `/photos/imsa/${activeName}` : null;
+  const activeAsset = activeName
+    ? { id: `imsa:${activeName}`, name: activeName, thumbUrl: activeSrc, fullUrl: activeSrc }
+    : null;
 
   return (
     <div
@@ -162,23 +166,24 @@ export default function IMSADaytona() {
           >
             <div style={{ color: "#bbb", fontSize: 13 }}>
               {openIndex + 1} / {images.length} — {activeName}
+            </div>            <div style={{ display: "flex", gap: 8 }}>
+              {activeAsset ? <AssignPhotoToArea asset={activeAsset} /> : null}
+              <button
+                type="button"
+                onClick={close}
+                style={{
+                  background: "#111",
+                  border: "1px solid #222",
+                  color: "#fff",
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  cursor: "pointer",
+                }}
+                aria-label="Close"
+              >
+                Close ✕
+              </button>
             </div>
-
-            <button
-              type="button"
-              onClick={close}
-              style={{
-                background: "#111",
-                border: "1px solid #222",
-                color: "#fff",
-                padding: "10px 12px",
-                borderRadius: 12,
-                cursor: "pointer",
-              }}
-              aria-label="Close"
-            >
-              Close ✕
-            </button>
           </div>
 
           {/* Prev button */}
@@ -246,3 +251,4 @@ export default function IMSADaytona() {
     </div>
   );
 }
+
