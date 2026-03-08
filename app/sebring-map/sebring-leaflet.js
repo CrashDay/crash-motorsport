@@ -39,6 +39,18 @@ const DEFAULT_PHOTO_AREAS = [
     center: [27.454707, -81.34935],
     photos: [],
   },
+  {
+    id: "area-1772984280521-draft",
+    title: "Turn 3 Outside East",
+    bounds: {
+      north: 27.454494,
+      south: 27.453894,
+      east: -81.348685,
+      west: -81.348835,
+    },
+    center: [27.454194, -81.34876],
+    photos: [],
+  },
 ];
 const DEFAULT_CORNERS = {
   T1: { lat: 27.450638, lng: -81.348975 },
@@ -359,8 +371,30 @@ export default function SebringLeaflet() {
   };
 
   const copyPhotoAreaJson = async () => {
+    if (!bounds) {
+      setPhotoAreaMsg("Draw bounds first to copy current area JSON");
+      return;
+    }
+    const title = (photoAreaName || "").trim() || "New photo area";
+    const north = Number(bounds.north.toFixed(6));
+    const south = Number(bounds.south.toFixed(6));
+    const east = Number(bounds.east.toFixed(6));
+    const west = Number(bounds.west.toFixed(6));
+    const center = [
+      Number(((north + south) / 2).toFixed(6)),
+      Number(((east + west) / 2).toFixed(6)),
+    ];
+    const payload = [
+      {
+        id: `area-${Date.now()}-draft`,
+        title,
+        bounds: { north, south, east, west },
+        center,
+        photos: [],
+      },
+    ];
     try {
-      await navigator.clipboard.writeText(JSON.stringify(photoAreas, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
       setPhotoAreaCopied(true);
       setTimeout(() => setPhotoAreaCopied(false), 1200);
     } catch {
@@ -824,7 +858,7 @@ export default function SebringLeaflet() {
           </div>
         ) : null}
         <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {photoAreas.length}</div>
-        {photoAreas.length ? (
+        {bounds ? (
           <div style={{ marginTop: 8 }}>
             <button
               type="button"
@@ -840,7 +874,7 @@ export default function SebringLeaflet() {
                 fontSize: 12,
               }}
             >
-              {photoAreaCopied ? "Copied" : "Copy area JSON"}
+              {photoAreaCopied ? "Copied" : "Copy current area JSON"}
             </button>
           </div>
         ) : null}
