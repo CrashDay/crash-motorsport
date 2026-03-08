@@ -2,6 +2,40 @@
 
 import { useEffect, useState } from "react";
 
+async function postAssignment(payload, retries = 2) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      const res = await fetch("/api/photo-area-assignments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const raw = await res.text();
+      let parsed = null;
+      try {
+        parsed = raw ? JSON.parse(raw) : null;
+      } catch {
+        parsed = null;
+      }
+      if (!res.ok) {
+        const message = parsed?.error || raw || `HTTP ${res.status}`;
+        const err = new Error(message);
+        err.status = res.status;
+        throw err;
+      }
+      return parsed || { ok: true };
+    } catch (error) {
+      lastError = error;
+      const status = Number(error?.status || 0);
+      const retryable = !status || status >= 500;
+      if (!retryable || attempt >= retries) break;
+      await new Promise((resolve) => setTimeout(resolve, 220 * (attempt + 1)));
+    }
+  }
+  throw lastError || new Error("Assignment failed");
+}
+
 export default function AssignPhotoToArea({ asset }) {
   const [open, setOpen] = useState(false);
   const [tracks, setTracks] = useState([]);
@@ -61,28 +95,16 @@ export default function AssignPhotoToArea({ asset }) {
     setSaving(true);
     setMsg("");
     try {
-      const res = await fetch("/api/photo-area-assignments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          trackId,
-          areaId,
-          asset: {
-            id: asset.id,
-            name: asset.name || asset.id,
-            thumbUrl: asset.thumbUrl || asset.fullUrl,
-            fullUrl: asset.fullUrl || asset.thumbUrl,
-          },
-        }),
+      await postAssignment({
+        trackId,
+        areaId,
+        asset: {
+          id: asset.id,
+          name: asset.name || asset.id,
+          thumbUrl: asset.thumbUrl || asset.fullUrl,
+          fullUrl: asset.fullUrl || asset.thumbUrl,
+        },
       });
-      const raw = await res.text();
-      let payload = null;
-      try {
-        payload = raw ? JSON.parse(raw) : null;
-      } catch {
-        payload = null;
-      }
-      if (!res.ok) throw new Error(payload?.error || raw || `HTTP ${res.status}`);
       setMsg("Assigned");
     } catch (e) {
       setMsg(`Failed: ${String(e?.message || e)}`);
