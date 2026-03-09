@@ -419,6 +419,7 @@ function CornerPicker({ enabled, activeCorner, onPick }) {
 
 export default function SebringLeaflet() {
   const showCornerPickerTools = false;
+  const showBoundsPickerTools = process.env.NODE_ENV !== "production";
   const showDebugWindow = false;
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK_LIGHTROOM === "true";
   const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
@@ -1012,104 +1013,108 @@ export default function SebringLeaflet() {
           </div>
         ) : null}
 
-        <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>Bounds Picker</div>
-        <div style={{ color: "#b8c4d8" }}>
-          {pickMode ? "Click and drag to draw a rectangle. The bounds will appear below." : "Picker is off."}
-        </div>
-        {pickMode ? <div style={{ marginTop: 4, color: "#9fb2d6" }}>Disable picker to interact with map markers and popups.</div> : null}
-        <div style={{ marginTop: 8 }}>
-          <button
-            type="button"
-            onClick={() => {
-              setPickMode((v) => {
-                const next = !v;
-                if (next) setCornerPickMode(false);
-                return next;
-              });
-            }}
-            style={{
-              background: "#101827",
-              border: "1px solid #2a3a57",
-              color: "#fff",
-              padding: "6px 8px",
-              borderRadius: 8,
-              cursor: "pointer",
-              fontSize: 12,
-            }}
-          >
-            {pickMode ? "Disable picker" : "Enable picker"}
-          </button>
-        </div>
-        {bounds ? (
-          <div style={{ marginTop: 8 }}>
-            <button
-              type="button"
-              onClick={() => {
-                setViewBounds({ ...bounds });
-                setViewBoundsVersion((v) => v + 1);
-              }}
-              style={{
-                background: "#101827",
-                border: "1px solid #2a3a57",
-                color: "#fff",
-                padding: "6px 8px",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontSize: 12,
-              }}
-            >
-              Use bounds for view
-            </button>
-          </div>
-        ) : null}
-        {bounds ? (
-          <div style={{ marginTop: 8, lineHeight: 1.4 }}>
-            <div>North: {bounds.north.toFixed(6)}</div>
-            <div>South: {bounds.south.toFixed(6)}</div>
-            <div>East: {bounds.east.toFixed(6)}</div>
-            <div>West: {bounds.west.toFixed(6)}</div>
-          </div>
-        ) : null}
-        {bounds ? (
-          <div style={{ marginTop: 8 }}>
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>Create Photo Area</div>
-            <input
-              type="text"
-              value={photoAreaName}
-              onChange={(e) => setPhotoAreaName(e.target.value)}
-              placeholder="Area name"
-              style={{
-                width: "100%",
-                background: "#101827",
-                border: "1px solid #2a3a57",
-                color: "#fff",
-                borderRadius: 8,
-                padding: "6px 8px",
-                fontSize: 12,
-              }}
-            />
-            <button
-              type="button"
-              onClick={createPhotoAreaFromBounds}
-              style={{
-                marginTop: 6,
-                width: "100%",
-                background: "#15233a",
-                border: "1px solid #325080",
-                color: "#fff",
-                padding: "6px 8px",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontSize: 12,
-              }}
-            >
-              Create area from current bounds
-            </button>
-            {photoAreaMsg ? (
-              <div style={{ marginTop: 6, color: "#9dd8a3" }}>{photoAreaMsg}</div>
+        {showBoundsPickerTools ? (
+          <>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Bounds Picker</div>
+            <div style={{ color: "#b8c4d8" }}>
+              {pickMode ? "Click and drag to draw a rectangle. The bounds will appear below." : "Picker is off."}
+            </div>
+            {pickMode ? <div style={{ marginTop: 4, color: "#9fb2d6" }}>Disable picker to interact with map markers and popups.</div> : null}
+            <div style={{ marginTop: 8 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setPickMode((v) => {
+                    const next = !v;
+                    if (next) setCornerPickMode(false);
+                    return next;
+                  });
+                }}
+                style={{
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
+              >
+                {pickMode ? "Disable picker" : "Enable picker"}
+              </button>
+            </div>
+            {bounds ? (
+              <div style={{ marginTop: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewBounds({ ...bounds });
+                    setViewBoundsVersion((v) => v + 1);
+                  }}
+                  style={{
+                    background: "#101827",
+                    border: "1px solid #2a3a57",
+                    color: "#fff",
+                    padding: "6px 8px",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontSize: 12,
+                  }}
+                >
+                  Use bounds for view
+                </button>
+              </div>
             ) : null}
-          </div>
+            {bounds ? (
+              <div style={{ marginTop: 8, lineHeight: 1.4 }}>
+                <div>North: {bounds.north.toFixed(6)}</div>
+                <div>South: {bounds.south.toFixed(6)}</div>
+                <div>East: {bounds.east.toFixed(6)}</div>
+                <div>West: {bounds.west.toFixed(6)}</div>
+              </div>
+            ) : null}
+            {bounds ? (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Create Photo Area</div>
+                <input
+                  type="text"
+                  value={photoAreaName}
+                  onChange={(e) => setPhotoAreaName(e.target.value)}
+                  placeholder="Area name"
+                  style={{
+                    width: "100%",
+                    background: "#101827",
+                    border: "1px solid #2a3a57",
+                    color: "#fff",
+                    borderRadius: 8,
+                    padding: "6px 8px",
+                    fontSize: 12,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={createPhotoAreaFromBounds}
+                  style={{
+                    marginTop: 6,
+                    width: "100%",
+                    background: "#15233a",
+                    border: "1px solid #325080",
+                    color: "#fff",
+                    padding: "6px 8px",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontSize: 12,
+                  }}
+                >
+                  Create area from current bounds
+                </button>
+                {photoAreaMsg ? (
+                  <div style={{ marginTop: 6, color: "#9dd8a3" }}>{photoAreaMsg}</div>
+                ) : null}
+              </div>
+            ) : null}
+          </>
         ) : null}
         <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {allAreaRows.length}</div>
         <div style={{ marginTop: 8 }}>
@@ -1344,7 +1349,7 @@ export default function SebringLeaflet() {
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
         {viewLatLngBounds ? <FitToBounds bounds={viewLatLngBounds} lockZoom version={viewBoundsVersion} /> : data ? <FitToGeoJSON data={data} /> : null}
-        <BoundsPicker enabled={pickMode} onChange={setBounds} />
+        {showBoundsPickerTools ? <BoundsPicker enabled={pickMode} onChange={setBounds} /> : null}
         <CornerPicker enabled={cornerPickMode} activeCorner={activeCorner} onPick={onCornerPick} />
         {showDebugWindow ? <MapDebug viewLatLngBounds={viewLatLngBounds} /> : null}
 
