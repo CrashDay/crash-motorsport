@@ -29,12 +29,17 @@ async function ensurePostgresSchema() {
 function hasPostgresConfig() {
   const connection =
     process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
     process.env.POSTGRES_PRISMA_URL ||
     process.env.DATABASE_URL;
   if (connection && !process.env.POSTGRES_URL) {
     process.env.POSTGRES_URL = connection;
   }
   return Boolean(connection);
+}
+
+function isVercelRuntime() {
+  return process.env.VERCEL === "1" || String(process.env.VERCEL || "").toLowerCase() === "true";
 }
 
 export async function POST(request) {
@@ -77,7 +82,7 @@ export async function POST(request) {
           full_url = EXCLUDED.full_url,
           assigned_at = EXCLUDED.assigned_at
       `;
-    } else {
+    } else if (!isVercelRuntime()) {
       const db = getDb();
       assignAreaAsset(db, {
         track_id: trackId,
@@ -88,6 +93,11 @@ export async function POST(request) {
         full_url: fullUrl,
         assigned_at: assignedAt,
       });
+    } else {
+      return NextResponse.json(
+        { error: "Durable storage is not configured. Set a Postgres connection in Vercel env vars." },
+        { status: 503 }
+      );
     }
   } catch (error) {
     console.error("[photo-area-assignments:POST] storage error", error);
@@ -129,9 +139,14 @@ export async function DELETE(request) {
         DELETE FROM photo_area_assets
         WHERE track_id = ${trackId} AND area_id = ${areaId} AND asset_id = ${assetId}
       `;
-    } else {
+    } else if (!isVercelRuntime()) {
       const db = getDb();
       removeAreaAsset(db, { track_id: trackId, area_id: areaId, asset_id: assetId });
+    } else {
+      return NextResponse.json(
+        { error: "Durable storage is not configured. Set a Postgres connection in Vercel env vars." },
+        { status: 503 }
+      );
     }
   } catch (error) {
     console.error("[photo-area-assignments:DELETE] storage error", error);

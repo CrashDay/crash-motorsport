@@ -36,12 +36,17 @@ async function ensurePostgresSchema() {
 function hasPostgresConfig() {
   const connection =
     process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
     process.env.POSTGRES_PRISMA_URL ||
     process.env.DATABASE_URL;
   if (connection && !process.env.POSTGRES_URL) {
     process.env.POSTGRES_URL = connection;
   }
   return Boolean(connection);
+}
+
+function isVercelRuntime() {
+  return process.env.VERCEL === "1" || String(process.env.VERCEL || "").toLowerCase() === "true";
 }
 
 function groupAssignedRows(rows) {
@@ -88,14 +93,23 @@ export async function GET(request) {
         ORDER BY assigned_at DESC
       `;
       assignedByArea = groupAssignedRows(rows);
-    } else {
+    } else if (!isVercelRuntime()) {
       const db = getDb();
       assignedByArea = getAreaAssetsByTrack(db, trackId);
+    } else {
+      return NextResponse.json(
+        { error: "Durable storage is not configured. Set a Postgres connection in Vercel env vars." },
+        { status: 503, headers: { "Cache-Control": "no-store" } }
+      );
     }
   } catch (error) {
     console.error("[photo-areas:GET] storage error", error);
-    // In environments without writable local DB (e.g. some serverless deployments),
-    // return static areas so assignment UI still works for area selection.
+    if (isVercelRuntime()) {
+      return NextResponse.json(
+        { error: "Durable photo area storage is unavailable right now." },
+        { status: 503, headers: { "Cache-Control": "no-store" } }
+      );
+    }
     assignedByArea = {};
   }
   const areas = track.areas.map((a) => ({
