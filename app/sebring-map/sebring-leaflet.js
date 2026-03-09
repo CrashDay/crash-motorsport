@@ -1117,29 +1117,31 @@ export default function SebringLeaflet() {
           </>
         ) : null}
         <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {allAreaRows.length}</div>
-        <div style={{ marginTop: 8 }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>Area style</div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {AREA_VISUAL_MODES.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setAreaVisualMode(m.id)}
-                style={{
-                  background: areaVisualMode === m.id ? "#15233a" : "#101827",
-                  border: areaVisualMode === m.id ? "1px solid #3b5f92" : "1px solid #2a3a57",
-                  color: "#fff",
-                  padding: "4px 6px",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  fontSize: 11,
-                }}
-              >
-                {m.label}
-              </button>
-            ))}
+        {showBoundsPickerTools ? (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Area style</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {AREA_VISUAL_MODES.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setAreaVisualMode(m.id)}
+                  style={{
+                    background: areaVisualMode === m.id ? "#15233a" : "#101827",
+                    border: areaVisualMode === m.id ? "1px solid #3b5f92" : "1px solid #2a3a57",
+                    color: "#fff",
+                    padding: "4px 6px",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontSize: 11,
+                  }}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
         {bounds ? (
           <div style={{ marginTop: 8 }}>
             <button
