@@ -418,11 +418,16 @@ function CornerPicker({ enabled, activeCorner, onPick }) {
 }
 
 export default function SebringLeaflet() {
-  const showCornerPickerTools = false;
-  const showBoundsPickerTools = process.env.NODE_ENV !== "production";
   const showDebugWindow = false;
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK_LIGHTROOM === "true";
   const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
+  const [toolPanels, setToolPanels] = useState({
+    lightroom: true,
+    bounds: false,
+    areaStyle: false,
+    areas: false,
+    corner: false,
+  });
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [pickMode, setPickMode] = useState(false);
@@ -484,6 +489,14 @@ export default function SebringLeaflet() {
       return DEFAULT_PHOTO_AREAS;
     }
   });
+
+  useEffect(() => {
+    if (!toolPanels.bounds) setPickMode(false);
+  }, [toolPanels.bounds]);
+
+  useEffect(() => {
+    if (!toolPanels.corner) setCornerPickMode(false);
+  }, [toolPanels.corner]);
 
   const allAreaRows = [
     {
@@ -949,71 +962,102 @@ export default function SebringLeaflet() {
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 6 }}>Tools</div>
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>Lightroom</div>
-        <div style={{ color: "#b8c4d8" }}>
-          {useLocalExports
-            ? "Mode: local exports"
-            : useMock
-              ? "Mode: mock Lightroom"
-              : auth.loading
-                ? "Lightroom: checking..."
-                : auth.connected
-                  ? "Lightroom: connected"
-                  : "Lightroom: disconnected"}
-        </div>
-        {auth.error && !useMock && !useLocalExports ? (
-          <div style={{ marginTop: 6, color: "#ffb0b0" }}>{auth.error}</div>
-        ) : null}
-        <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
-          <button
-            type="button"
-            onClick={useLocalExports ? syncLocalExports : useMock ? syncMock : syncLightroom}
-            disabled={syncing || (!useMock && !useLocalExports && !auth.connected)}
-            style={{
-              background: syncing ? "#0f1726" : "#101827",
-              border: "1px solid #2a3a57",
-              color: "#fff",
-              padding: "6px 8px",
-              borderRadius: 8,
-              cursor: syncing ? "default" : "pointer",
-              fontSize: 12,
-              opacity: syncing || (!useMock && !useLocalExports && !auth.connected) ? 0.65 : 1,
-            }}
-          >
-            {syncing
-              ? "Syncing..."
-              : useLocalExports
-                ? "Sync local exports"
-                : useMock
-                  ? "Sync mock Lightroom"
-                  : "Sync Lightroom"}
-          </button>
-          {!useMock && !useLocalExports ? (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+          {[
+            ["lightroom", "Lightroom"],
+            ["bounds", "Bounds"],
+            ["areaStyle", "Area Style"],
+            ["areas", "Areas"],
+            ["corner", "Corner"],
+          ].map(([key, label]) => (
             <button
+              key={key}
               type="button"
-              onClick={startConnect}
+              onClick={() => setToolPanels((prev) => ({ ...prev, [key]: !prev[key] }))}
               style={{
-                background: "#101827",
-                border: "1px solid #2a3a57",
+                background: toolPanels[key] ? "#15233a" : "#101827",
+                border: toolPanels[key] ? "1px solid #3b5f92" : "1px solid #2a3a57",
                 color: "#fff",
-                padding: "6px 8px",
+                padding: "4px 6px",
                 borderRadius: 8,
                 cursor: "pointer",
-                fontSize: 12,
+                fontSize: 11,
               }}
             >
-              {auth.connected ? "Reconnect" : "Connect"}
+              {label}
             </button>
-          ) : null}
+          ))}
         </div>
-        <div style={{ marginTop: 6, color: "#b8c4d8" }}>Pins: {pinsCount}</div>
-        {syncMsg ? (
-          <div style={{ marginTop: 6, color: syncMsg.startsWith("Sync failed") ? "#ff9a9a" : "#9dd8a3" }}>
-            {syncMsg}
-          </div>
+
+        {toolPanels.lightroom ? (
+          <>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Lightroom</div>
+            <div style={{ color: "#b8c4d8" }}>
+              {useLocalExports
+                ? "Mode: local exports"
+                : useMock
+                  ? "Mode: mock Lightroom"
+                  : auth.loading
+                    ? "Lightroom: checking..."
+                    : auth.connected
+                      ? "Lightroom: connected"
+                      : "Lightroom: disconnected"}
+            </div>
+            {auth.error && !useMock && !useLocalExports ? (
+              <div style={{ marginTop: 6, color: "#ffb0b0" }}>{auth.error}</div>
+            ) : null}
+            <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+              <button
+                type="button"
+                onClick={useLocalExports ? syncLocalExports : useMock ? syncMock : syncLightroom}
+                disabled={syncing || (!useMock && !useLocalExports && !auth.connected)}
+                style={{
+                  background: syncing ? "#0f1726" : "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: syncing ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: syncing || (!useMock && !useLocalExports && !auth.connected) ? 0.65 : 1,
+                }}
+              >
+                {syncing
+                  ? "Syncing..."
+                  : useLocalExports
+                    ? "Sync local exports"
+                    : useMock
+                      ? "Sync mock Lightroom"
+                      : "Sync Lightroom"}
+              </button>
+              {!useMock && !useLocalExports ? (
+                <button
+                  type="button"
+                  onClick={startConnect}
+                  style={{
+                    background: "#101827",
+                    border: "1px solid #2a3a57",
+                    color: "#fff",
+                    padding: "6px 8px",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontSize: 12,
+                  }}
+                >
+                  {auth.connected ? "Reconnect" : "Connect"}
+                </button>
+              ) : null}
+            </div>
+            <div style={{ marginTop: 6, color: "#b8c4d8" }}>Pins: {pinsCount}</div>
+            {syncMsg ? (
+              <div style={{ marginTop: 6, color: syncMsg.startsWith("Sync failed") ? "#ff9a9a" : "#9dd8a3" }}>
+                {syncMsg}
+              </div>
+            ) : null}
+          </>
         ) : null}
 
-        {showBoundsPickerTools ? (
+        {toolPanels.bounds ? (
           <>
             <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
             <div style={{ fontWeight: 600, marginBottom: 4 }}>Bounds Picker</div>
@@ -1116,8 +1160,8 @@ export default function SebringLeaflet() {
             ) : null}
           </>
         ) : null}
-        <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {allAreaRows.length}</div>
-        {showBoundsPickerTools ? (
+        {toolPanels.areas ? <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {allAreaRows.length}</div> : null}
+        {toolPanels.areaStyle ? (
           <div style={{ marginTop: 8 }}>
             <div style={{ fontWeight: 600, marginBottom: 4 }}>Area style</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -1142,7 +1186,7 @@ export default function SebringLeaflet() {
             </div>
           </div>
         ) : null}
-        {bounds ? (
+        {toolPanels.bounds && bounds ? (
           <div style={{ marginTop: 8 }}>
             <button
               type="button"
@@ -1162,7 +1206,7 @@ export default function SebringLeaflet() {
             </button>
           </div>
         ) : null}
-        {allAreaRows.length ? (
+        {toolPanels.areas && allAreaRows.length ? (
           <div style={{ marginTop: 8, maxHeight: 140, overflowY: "auto" }}>
             {allAreaRows.map((area) => {
               const count = Array.isArray(area.photos) ? area.photos.length : 0;
@@ -1196,7 +1240,7 @@ export default function SebringLeaflet() {
           </div>
         ) : null}
 
-        {showCornerPickerTools ? (
+        {toolPanels.corner ? (
           <>
             <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
             <div style={{ fontWeight: 600, marginBottom: 4 }}>Corner Picker</div>
@@ -1351,8 +1395,8 @@ export default function SebringLeaflet() {
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
         {viewLatLngBounds ? <FitToBounds bounds={viewLatLngBounds} lockZoom version={viewBoundsVersion} /> : data ? <FitToGeoJSON data={data} /> : null}
-        {showBoundsPickerTools ? <BoundsPicker enabled={pickMode} onChange={setBounds} /> : null}
-        <CornerPicker enabled={cornerPickMode} activeCorner={activeCorner} onPick={onCornerPick} />
+        {toolPanels.bounds ? <BoundsPicker enabled={pickMode} onChange={setBounds} /> : null}
+        {toolPanels.corner ? <CornerPicker enabled={cornerPickMode} activeCorner={activeCorner} onPick={onCornerPick} /> : null}
         {showDebugWindow ? <MapDebug viewLatLngBounds={viewLatLngBounds} /> : null}
 
         {cornerMarkers.map((corner) => (
