@@ -97,19 +97,10 @@ export async function GET(request) {
       const db = getDb();
       assignedByArea = getAreaAssetsByTrack(db, trackId);
     } else {
-      return NextResponse.json(
-        { error: "Durable storage is not configured. Set a Postgres connection in Vercel env vars." },
-        { status: 503, headers: { "Cache-Control": "no-store" } }
-      );
+      assignedByArea = {};
     }
   } catch (error) {
     console.error("[photo-areas:GET] storage error", error);
-    if (isVercelRuntime()) {
-      return NextResponse.json(
-        { error: "Durable photo area storage is unavailable right now." },
-        { status: 503, headers: { "Cache-Control": "no-store" } }
-      );
-    }
     assignedByArea = {};
   }
   const areas = track.areas.map((a) => ({
