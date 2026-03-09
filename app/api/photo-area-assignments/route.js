@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sql } from "@vercel/postgres";
+import { Client } from "pg";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import { assignAreaAsset, getDb, removeAreaAsset } from "@/lib/db";
 
@@ -9,9 +9,35 @@ const VALID_TRACKS = {
 
 let postgresReady = false;
 
+function getPostgresConnectionString() {
+  return (
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.PRISMA_DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    ""
+  );
+}
+
+async function runPgQuery(text, values = []) {
+  const connectionString = getPostgresConnectionString();
+  if (!connectionString) throw new Error("Missing Postgres connection string");
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+  });
+  await client.connect();
+  try {
+    return await client.query(text, values);
+  } finally {
+    await client.end();
+  }
+}
+
 async function ensurePostgresSchema() {
   if (postgresReady) return;
-  await sql`
+  await runPgQuery(`
     CREATE TABLE IF NOT EXISTS photo_area_assets (
       track_id TEXT NOT NULL,
       area_id TEXT NOT NULL,
@@ -22,17 +48,12 @@ async function ensurePostgresSchema() {
       assigned_at TEXT NOT NULL,
       PRIMARY KEY (track_id, area_id, asset_id)
     )
-  `;
+  `);
   postgresReady = true;
 }
 
 function hasPostgresConfig() {
-  const connection =
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.PRISMA_DATABASE_URL ||
-    process.env.DATABASE_URL;
+  const connection = getPostgresConnectionString();
   if (connection && !process.env.POSTGRES_URL) {
     process.env.POSTGRES_URL = connection;
   }
@@ -74,15 +95,18 @@ export async function POST(request) {
     const assignedAt = new Date().toISOString();
     if (hasPostgresConfig()) {
       await ensurePostgresSchema();
-      await sql`
+      await runPgQuery(
+        `
         INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at)
-        VALUES (${trackId}, ${areaId}, ${canonicalAssetId}, ${assetName || assetId}, ${thumbUrl}, ${fullUrl}, ${assignedAt})
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
           asset_name = EXCLUDED.asset_name,
           thumb_url = EXCLUDED.thumb_url,
           full_url = EXCLUDED.full_url,
           assigned_at = EXCLUDED.assigned_at
-      `;
+      `,
+        [trackId, areaId, canonicalAssetId, assetName || assetId, thumbUrl, fullUrl, assignedAt]
+      );
     } else if (!isVercelRuntime()) {
       const db = getDb();
       assignAreaAsset(db, {
@@ -136,10 +160,13 @@ export async function DELETE(request) {
   try {
     if (hasPostgresConfig()) {
       await ensurePostgresSchema();
-      await sql`
+      await runPgQuery(
+        `
         DELETE FROM photo_area_assets
-        WHERE track_id = ${trackId} AND area_id = ${areaId} AND asset_id = ${assetId}
-      `;
+        WHERE track_id = $1 AND area_id = $2 AND asset_id = $3
+      `,
+        [trackId, areaId, assetId]
+      );
     } else if (!isVercelRuntime()) {
       const db = getDb();
       removeAreaAsset(db, { track_id: trackId, area_id: areaId, asset_id: assetId });

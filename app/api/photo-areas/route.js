@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sql } from "@vercel/postgres";
+import { Client } from "pg";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import { getAreaAssetsByTrack, getDb } from "@/lib/db";
 
@@ -16,9 +16,35 @@ const TRACKS = {
 
 let postgresReady = false;
 
+function getPostgresConnectionString() {
+  return (
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.PRISMA_DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    ""
+  );
+}
+
+async function runPgQuery(text, values = []) {
+  const connectionString = getPostgresConnectionString();
+  if (!connectionString) throw new Error("Missing Postgres connection string");
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+  });
+  await client.connect();
+  try {
+    return await client.query(text, values);
+  } finally {
+    await client.end();
+  }
+}
+
 async function ensurePostgresSchema() {
   if (postgresReady) return;
-  await sql`
+  await runPgQuery(`
     CREATE TABLE IF NOT EXISTS photo_area_assets (
       track_id TEXT NOT NULL,
       area_id TEXT NOT NULL,
@@ -29,17 +55,12 @@ async function ensurePostgresSchema() {
       assigned_at TEXT NOT NULL,
       PRIMARY KEY (track_id, area_id, asset_id)
     )
-  `;
+  `);
   postgresReady = true;
 }
 
 function hasPostgresConfig() {
-  const connection =
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.PRISMA_DATABASE_URL ||
-    process.env.DATABASE_URL;
+  const connection = getPostgresConnectionString();
   if (connection && !process.env.POSTGRES_URL) {
     process.env.POSTGRES_URL = connection;
   }
@@ -87,12 +108,15 @@ export async function GET(request) {
   try {
     if (hasPostgresConfig()) {
       await ensurePostgresSchema();
-      const { rows } = await sql`
+      const { rows } = await runPgQuery(
+        `
         SELECT track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at
         FROM photo_area_assets
-        WHERE track_id = ${trackId}
+        WHERE track_id = $1
         ORDER BY assigned_at DESC
-      `;
+      `,
+        [trackId]
+      );
       assignedByArea = groupAssignedRows(rows);
     } else if (!isVercelRuntime()) {
       const db = getDb();

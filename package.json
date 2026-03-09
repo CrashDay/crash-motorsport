@@ -14,10 +14,10 @@
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
-    "@vercel/postgres": "^0.10.0",
     "better-sqlite3": "^9.4.0",
     "leaflet": "^1.9.4",
     "next": "16.1.6",
+    "pg": "^8.20.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0"
