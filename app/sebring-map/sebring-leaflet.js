@@ -912,29 +912,55 @@ export default function SebringLeaflet() {
   }, []);
 
   return (
-    <div style={{ height: "100vh", width: "100%", position: "relative", background: "#070b12", overflow: "hidden" }}>
+    <div
+      style={{
+        height: "100vh",
+        width: "100%",
+        position: "relative",
+        background:
+          "radial-gradient(1200px 700px at 8% 8%, rgba(54,109,255,0.2), transparent 55%), radial-gradient(900px 600px at 88% 10%, rgba(0,200,210,0.14), transparent 55%), linear-gradient(160deg, #04070e 0%, #091322 45%, #05080f 100%)",
+        overflow: "hidden",
+      }}
+    >
       <div
         style={{
           position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to right, rgba(127,167,255,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(127,167,255,0.06) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+          opacity: 0.18,
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        className="sebringTitleCard"
+        style={{
+          position: "absolute",
           zIndex: 9999,
-          top: 10,
+          top: 12,
           left: "50%",
           transform: "translateX(-50%)",
-          background: "rgba(7,11,18,0.82)",
-          color: "#f2f6ff",
-          border: "1px solid rgba(153, 181, 255, 0.2)",
-          borderRadius: 10,
-          padding: "clamp(6px, 1.4vw, 10px) clamp(10px, 2.4vw, 16px)",
-          fontSize: "clamp(17px, 4.8vw, 28px)",
-          fontWeight: 700,
-          letterSpacing: "clamp(0.2px, 0.1vw, 0.6px)",
-          lineHeight: 1.15,
+          background: "linear-gradient(145deg, rgba(9,18,32,0.92), rgba(8,14,26,0.78))",
+          color: "#ecf3ff",
+          border: "1px solid rgba(137, 179, 255, 0.35)",
+          borderRadius: 14,
+          boxShadow: "0 14px 38px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.04)",
+          backdropFilter: "blur(8px)",
+          padding: "clamp(8px, 1.4vw, 12px) clamp(14px, 2.6vw, 20px)",
+          fontSize: "clamp(18px, 4.8vw, 30px)",
+          fontWeight: 800,
+          letterSpacing: "clamp(0.2px, 0.12vw, 0.7px)",
+          lineHeight: 1.05,
           textAlign: "center",
           whiteSpace: "normal",
-          maxWidth: "calc(100vw - 16px)",
+          maxWidth: "calc(100vw - 24px)",
         }}
       >
-        Sebring International Raceway
+        <div style={{ textTransform: "uppercase", fontSize: "clamp(10px, 1.4vw, 12px)", letterSpacing: 2.4, color: "#92afff", marginBottom: 4 }}>
+          CrashDay Map View
+        </div>
+        <div>Sebring International Raceway</div>
       </div>
 
       <div style={{ position: "relative", height: "100%", width: "100%" }}>
@@ -950,18 +976,21 @@ export default function SebringLeaflet() {
           zIndex: 9999,
           bottom: 12,
           right: 12,
-          background: "rgba(7,11,18,0.86)",
-          color: "#fff",
-          padding: "10px 12px",
-          borderRadius: 10,
+          background: "linear-gradient(165deg, rgba(8,15,27,0.95), rgba(7,12,21,0.88))",
+          color: "#f4f8ff",
+          padding: "12px 12px",
+          borderRadius: 14,
           fontSize: 12,
-          border: "1px solid rgba(153, 181, 255, 0.2)",
-          maxWidth: 280,
-          maxHeight: "calc(100vh - 120px)",
+          border: "1px solid rgba(120, 170, 255, 0.36)",
+          boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
+          backdropFilter: "blur(10px)",
+          width: "min(340px, calc(100vw - 24px))",
+          maxHeight: "calc(100vh - 136px)",
           overflowY: "auto",
         }}
       >
-        <div style={{ fontWeight: 700, marginBottom: 6 }}>Tools</div>
+        <div style={{ fontWeight: 800, marginBottom: 2, letterSpacing: 0.4 }}>Track Tools</div>
+        <div style={{ color: "#91a6cb", fontSize: 11, marginBottom: 8 }}>Toggle sections on demand</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
           {[
             ["lightroom", "Lightroom"],
@@ -975,13 +1004,15 @@ export default function SebringLeaflet() {
               type="button"
               onClick={() => setToolPanels((prev) => ({ ...prev, [key]: !prev[key] }))}
               style={{
-                background: toolPanels[key] ? "#15233a" : "#101827",
-                border: toolPanels[key] ? "1px solid #3b5f92" : "1px solid #2a3a57",
+                background: toolPanels[key] ? "linear-gradient(150deg, #17335e, #123058)" : "rgba(11,20,34,0.9)",
+                border: toolPanels[key] ? "1px solid #75b7ff" : "1px solid #2d476e",
                 color: "#fff",
-                padding: "4px 6px",
-                borderRadius: 8,
+                padding: "5px 8px",
+                borderRadius: 999,
                 cursor: "pointer",
                 fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 0.25,
               }}
             >
               {label}
@@ -1552,9 +1583,23 @@ export default function SebringLeaflet() {
       <style jsx global>{`
         .leaflet-popup-content-wrapper,
         .leaflet-popup-tip {
-          background: #0f1724;
-          color: #eef3ff;
-          border: 1px solid rgba(153, 181, 255, 0.25);
+          background: linear-gradient(150deg, #0d1628, #101a30);
+          color: #eef6ff;
+          border: 1px solid rgba(144, 191, 255, 0.34);
+          box-shadow: 0 12px 26px rgba(0, 0, 0, 0.38);
+        }
+        .sebringTitleCard {
+          animation: sebringPulse 4s ease-in-out infinite;
+        }
+        @keyframes sebringPulse {
+          0%,
+          100% {
+            box-shadow: 0 14px 38px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+          }
+          50% {
+            box-shadow: 0 16px 42px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(115, 171, 255, 0.35),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+          }
         }
       `}</style>
       </div>
