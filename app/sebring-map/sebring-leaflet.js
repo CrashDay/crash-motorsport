@@ -26,6 +26,7 @@ const CORNER_ORDER = [
 ];
 const CORNER_STORAGE_KEY = "sebring_corner_coords_v1";
 const PHOTO_AREA_STORAGE_KEY = "sebring_photo_areas_v1";
+const AREA_STYLE_STORAGE_KEY = "sebring_area_style_v1";
 const DEFAULT_PHOTO_AREAS = [
   {
     id: "area-1772982986829-6a537i",
@@ -464,7 +465,18 @@ export default function SebringLeaflet() {
     west: -81.359682,
   });
   const [viewBoundsVersion, setViewBoundsVersion] = useState(0);
-  const [areaVisualMode, setAreaVisualMode] = useState("soft_fill");
+  const [areaVisualMode, setAreaVisualMode] = useState(() => {
+    if (typeof window === "undefined") return "soft_fill";
+    try {
+      const raw = window.localStorage.getItem(AREA_STYLE_STORAGE_KEY);
+      if (raw && AREA_VISUAL_MODES.some((m) => m.id === raw)) return raw;
+    } catch {
+      // ignore localStorage read errors
+    }
+    return "soft_fill";
+  });
+  const [areaStyleDraft, setAreaStyleDraft] = useState("soft_fill");
+  const [areaStyleMsg, setAreaStyleMsg] = useState("");
   const [areaViewer, setAreaViewer] = useState({ open: false, areaId: "", title: "", photos: [], index: 0 });
   const [areaViewerMsg, setAreaViewerMsg] = useState("");
   const [removingAreaPhoto, setRemovingAreaPhoto] = useState(false);
@@ -497,6 +509,10 @@ export default function SebringLeaflet() {
   useEffect(() => {
     if (!toolPanels.corner) setCornerPickMode(false);
   }, [toolPanels.corner]);
+
+  useEffect(() => {
+    setAreaStyleDraft(areaVisualMode);
+  }, [areaVisualMode]);
 
   const allAreaRows = [
     {
@@ -816,6 +832,14 @@ export default function SebringLeaflet() {
       // ignore storage write failures
     }
   }, [photoAreas]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(AREA_STYLE_STORAGE_KEY, areaVisualMode);
+    } catch {
+      // ignore storage write failures
+    }
+  }, [areaVisualMode]);
 
   useEffect(() => {
     if (!areaViewer.open) return;
@@ -1200,10 +1224,10 @@ export default function SebringLeaflet() {
                 <button
                   key={m.id}
                   type="button"
-                  onClick={() => setAreaVisualMode(m.id)}
+                  onClick={() => setAreaStyleDraft(m.id)}
                   style={{
-                    background: areaVisualMode === m.id ? "#15233a" : "#101827",
-                    border: areaVisualMode === m.id ? "1px solid #3b5f92" : "1px solid #2a3a57",
+                    background: areaStyleDraft === m.id ? "#15233a" : "#101827",
+                    border: areaStyleDraft === m.id ? "1px solid #3b5f92" : "1px solid #2a3a57",
                     color: "#fff",
                     padding: "4px 6px",
                     borderRadius: 8,
@@ -1215,6 +1239,34 @@ export default function SebringLeaflet() {
                 </button>
               ))}
             </div>
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setAreaVisualMode(areaStyleDraft);
+                  setAreaStyleMsg("Style applied");
+                }}
+                disabled={areaStyleDraft === areaVisualMode}
+                style={{
+                  background: "#15233a",
+                  border: "1px solid #325080",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: areaStyleDraft === areaVisualMode ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: areaStyleDraft === areaVisualMode ? 0.65 : 1,
+                }}
+              >
+                Apply style
+              </button>
+              <div style={{ color: "#9fb2d6", fontSize: 11 }}>
+                Live: {AREA_VISUAL_MODES.find((m) => m.id === areaVisualMode)?.label || areaVisualMode}
+              </div>
+            </div>
+            {areaStyleMsg ? (
+              <div style={{ marginTop: 6, color: "#9dd8a3", fontSize: 11 }}>{areaStyleMsg}</div>
+            ) : null}
           </div>
         ) : null}
         {toolPanels.bounds && bounds ? (
