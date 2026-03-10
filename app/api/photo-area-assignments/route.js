@@ -43,6 +43,21 @@ async function runPgQuery(text, values = []) {
   }
 }
 
+async function withPgClient(fn) {
+  const connectionString = getPostgresConnectionString();
+  if (!connectionString) throw new Error("Missing Postgres connection string");
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+  });
+  await client.connect();
+  try {
+    return await fn(client);
+  } finally {
+    await client.end();
+  }
+}
+
 async function ensurePostgresSchema() {
   if (postgresReady) return;
   await runPgQuery(`
@@ -103,20 +118,42 @@ export async function POST(request) {
     const assignedAt = new Date().toISOString();
     if (hasPostgresConfig()) {
       await ensurePostgresSchema();
-      await runPgQuery(
-        `
-        INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
-          asset_name = EXCLUDED.asset_name,
-          thumb_url = EXCLUDED.thumb_url,
-          full_url = EXCLUDED.full_url,
-          assigned_at = EXCLUDED.assigned_at
-      `,
-        [trackId, areaId, canonicalAssetId, assetName || assetId, thumbUrl, fullUrl, assignedAt]
-      );
+      await withPgClient(async (client) => {
+        await client.query("BEGIN");
+        try {
+          await client.query(
+            `
+              DELETE FROM photo_area_assets
+              WHERE track_id = $1 AND asset_id = $2
+            `,
+            [trackId, canonicalAssetId]
+          );
+          await client.query(
+            `
+              INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at)
+              VALUES ($1, $2, $3, $4, $5, $6, $7)
+              ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
+                asset_name = EXCLUDED.asset_name,
+                thumb_url = EXCLUDED.thumb_url,
+                full_url = EXCLUDED.full_url,
+                assigned_at = EXCLUDED.assigned_at
+            `,
+            [trackId, areaId, canonicalAssetId, assetName || assetId, thumbUrl, fullUrl, assignedAt]
+          );
+          await client.query("COMMIT");
+        } catch (txError) {
+          await client.query("ROLLBACK");
+          throw txError;
+        }
+      });
     } else if (!isVercelRuntime()) {
       const db = getDb();
+      db.prepare(
+        `
+          DELETE FROM photo_area_assets
+          WHERE track_id = ? AND asset_id = ?
+        `
+      ).run(trackId, canonicalAssetId);
       assignAreaAsset(db, {
         track_id: trackId,
         area_id: areaId,

@@ -86,6 +86,31 @@ function groupAssignedRows(rows) {
   return byArea;
 }
 
+function keepMostRecentByAsset(assignedByArea) {
+  const rows = [];
+  for (const [areaId, photos] of Object.entries(assignedByArea || {})) {
+    for (const p of Array.isArray(photos) ? photos : []) {
+      rows.push({
+        areaId,
+        photo: p,
+        assignedAtTs: Date.parse(String(p?.assignedAt || "")) || 0,
+      });
+    }
+  }
+  rows.sort((a, b) => b.assignedAtTs - a.assignedAtTs);
+
+  const seenAssetIds = new Set();
+  const out = {};
+  for (const row of rows) {
+    const assetId = String(row.photo?.id || "").trim();
+    if (!assetId || seenAssetIds.has(assetId)) continue;
+    seenAssetIds.add(assetId);
+    if (!out[row.areaId]) out[row.areaId] = [];
+    out[row.areaId].push(row.photo);
+  }
+  return out;
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const trackId = String(searchParams.get("trackId") || "").trim().toLowerCase();
@@ -128,6 +153,7 @@ export async function GET(request) {
     console.error("[photo-areas:GET] storage error", error);
     assignedByArea = {};
   }
+  assignedByArea = keepMostRecentByAsset(assignedByArea);
   const areas = track.areas.map((a) => ({
     ...a,
     photos: assignedByArea[a.id]?.length
