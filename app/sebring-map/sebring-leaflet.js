@@ -125,7 +125,8 @@ const AREA_VISUAL_MODES = [
   { id: "corner_brackets", label: "Corner Brackets" },
   { id: "heat_blur", label: "Heat Blur" },
 ];
-const AREA_COLOR = "#ffd84d";
+const AREA_OVERLAY_COLOR = "#5da2ff";
+const AREA_MARKER_COLOR = "#ffd84d";
 
 function toLatLngBounds(bounds) {
   return [
@@ -168,7 +169,7 @@ function AreaOverlay({ bounds, title, mode }) {
         <Rectangle
           bounds={rect}
           interactive={false}
-          pathOptions={{ stroke: false, fillColor: AREA_COLOR, fillOpacity: 0.16 }}
+          pathOptions={{ stroke: false, fillColor: AREA_OVERLAY_COLOR, fillOpacity: 0.16 }}
         />
       ) : null}
 
@@ -177,12 +178,12 @@ function AreaOverlay({ bounds, title, mode }) {
           <Rectangle
             bounds={rect}
             interactive={false}
-            pathOptions={{ color: AREA_COLOR, weight: 6, opacity: 0.22, fillOpacity: 0 }}
+            pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 6, opacity: 0.22, fillOpacity: 0 }}
           />
           <Rectangle
             bounds={rect}
             interactive={false}
-            pathOptions={{ color: AREA_COLOR, weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
+            pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
           />
         </Fragment>
       ) : null}
@@ -190,7 +191,7 @@ function AreaOverlay({ bounds, title, mode }) {
       {mode === "corner_brackets" ? (
         <Fragment>
           {bracketLines(bounds).map((line, i) => (
-            <Polyline key={`${title}-br-${i}`} positions={line} interactive={false} pathOptions={{ color: AREA_COLOR, weight: 3 }} />
+            <Polyline key={`${title}-br-${i}`} positions={line} interactive={false} pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 3 }} />
           ))}
         </Fragment>
       ) : null}
@@ -201,18 +202,18 @@ function AreaOverlay({ bounds, title, mode }) {
             center={center}
             radius={heatRadiusMeters(bounds)}
             interactive={false}
-            pathOptions={{ stroke: false, fillColor: AREA_COLOR, fillOpacity: 0.13 }}
+            pathOptions={{ stroke: false, fillColor: AREA_OVERLAY_COLOR, fillOpacity: 0.13 }}
           />
           <Circle
             center={center}
             radius={heatRadiusMeters(bounds) * 0.55}
             interactive={false}
-            pathOptions={{ stroke: false, fillColor: AREA_COLOR, fillOpacity: 0.2 }}
+            pathOptions={{ stroke: false, fillColor: AREA_OVERLAY_COLOR, fillOpacity: 0.2 }}
           />
         </Fragment>
       ) : null}
 
-      <Rectangle bounds={rect} interactive pathOptions={{ color: AREA_COLOR, weight: 0, fillOpacity: 0, opacity: 0 }}>
+      <Rectangle bounds={rect} interactive pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 0, fillOpacity: 0, opacity: 0 }}>
         <Tooltip sticky direction="top" opacity={0.95}>
           {title}
         </Tooltip>
@@ -1563,7 +1564,7 @@ export default function SebringLeaflet() {
               <CircleMarker
                 center={Array.isArray(area.center) ? area.center : [((area.bounds.north + area.bounds.south) / 2), ((area.bounds.east + area.bounds.west) / 2)]}
                 radius={3}
-                pathOptions={{ color: AREA_COLOR, fillColor: AREA_COLOR, fillOpacity: 0.9 }}
+                pathOptions={{ color: AREA_MARKER_COLOR, fillColor: AREA_MARKER_COLOR, fillOpacity: 0.9 }}
               >
                 <Popup maxWidth={720} minWidth={220}>
                   <div style={{ width: "min(600px, 90vw)", overflow: "hidden", borderRadius: 12 }}>
