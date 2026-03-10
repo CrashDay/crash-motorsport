@@ -2,6 +2,37 @@
 
 import { useEffect, useState } from "react";
 
+const LOCAL_SEBRING_AREAS_KEY = "sebring_photo_areas_v1";
+
+function getLocalSebringAreas() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(LOCAL_SEBRING_AREAS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((a) => a && typeof a === "object" && typeof a.id === "string" && a.id.trim())
+      .map((a) => ({ id: String(a.id), title: String(a.title || a.id) }));
+  } catch {
+    return [];
+  }
+}
+
+function mergeAreas(serverAreas, localAreas) {
+  const map = new Map();
+  for (const area of serverAreas || []) {
+    if (!area?.id) continue;
+    map.set(String(area.id), { ...area, id: String(area.id), title: String(area.title || area.id) });
+  }
+  for (const area of localAreas || []) {
+    if (!area?.id) continue;
+    if (!map.has(area.id)) {
+      map.set(area.id, { id: area.id, title: area.title || area.id });
+    }
+  }
+  return Array.from(map.values());
+}
+
 async function postAssignment(payload, retries = 2) {
   let lastError = null;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
@@ -72,7 +103,9 @@ export default function AssignPhotoToArea({ asset }) {
       .then((r) => r.json())
       .then((payload) => {
         if (cancelled) return;
-        const list = Array.isArray(payload?.areas) ? payload.areas : [];
+        const serverList = Array.isArray(payload?.areas) ? payload.areas : [];
+        const localList = trackId === "sebring" ? getLocalSebringAreas() : [];
+        const list = mergeAreas(serverList, localList);
         setAreas(list);
         if (list.length) {
           setAreaId((prev) => (list.some((a) => a.id === prev) ? prev : list[0].id));
@@ -82,8 +115,14 @@ export default function AssignPhotoToArea({ asset }) {
       })
       .catch(() => {
         if (cancelled) return;
-        setAreas([]);
-        setAreaId("");
+        if (trackId === "sebring") {
+          const localList = mergeAreas([], getLocalSebringAreas());
+          setAreas(localList);
+          setAreaId(localList.length ? localList[0].id : "");
+        } else {
+          setAreas([]);
+          setAreaId("");
+        }
       });
     return () => {
       cancelled = true;

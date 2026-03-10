@@ -7,6 +7,14 @@ const VALID_TRACKS = {
   sebring: new Set(sebringAreas.map((a) => a.id)),
 };
 
+function isValidAreaId(trackId, areaId) {
+  if (!areaId) return false;
+  if (!VALID_TRACKS[trackId]) return false;
+  if (VALID_TRACKS[trackId].has(areaId)) return true;
+  if (trackId === "sebring" && areaId.startsWith("area-")) return true;
+  return false;
+}
+
 let postgresReady = false;
 
 function getPostgresConnectionString() {
@@ -84,7 +92,7 @@ export async function POST(request) {
   if (!trackId || !VALID_TRACKS[trackId]) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
   }
-  if (!areaId || !VALID_TRACKS[trackId].has(areaId)) {
+  if (!isValidAreaId(trackId, areaId)) {
     return NextResponse.json({ error: "Invalid areaId" }, { status: 400 });
   }
   if (!assetId || !thumbUrl || !fullUrl || !canonicalAssetId) {
@@ -150,7 +158,7 @@ export async function DELETE(request) {
   if (!trackId || !VALID_TRACKS[trackId]) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
   }
-  if (!areaId || !VALID_TRACKS[trackId].has(areaId)) {
+  if (!isValidAreaId(trackId, areaId)) {
     return NextResponse.json({ error: "Invalid areaId" }, { status: 400 });
   }
   if (!assetId) {
