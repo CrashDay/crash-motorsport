@@ -981,9 +981,6 @@ export default function SebringLeaflet() {
           maxWidth: "calc(100vw - 24px)",
         }}
       >
-        <div style={{ textTransform: "uppercase", fontSize: "clamp(10px, 1.4vw, 12px)", letterSpacing: 2.4, color: "#92afff", marginBottom: 4 }}>
-          CrashDay Map View
-        </div>
         <div>Sebring International Raceway</div>
       </div>
 
