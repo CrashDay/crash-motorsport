@@ -29,6 +29,14 @@ function mergeAreas(serverAreas, localAreas) {
     if (!area?.id) continue;
     if (!map.has(area.id)) {
       map.set(area.id, { id: area.id, title: area.title || area.id });
+      continue;
+    }
+    const existing = map.get(area.id);
+    const existingTitle = String(existing?.title || "");
+    const localTitle = String(area.title || area.id);
+    // Prefer local human-readable titles over server fallback IDs for custom areas.
+    if (!existingTitle || existingTitle === area.id) {
+      map.set(area.id, { ...existing, title: localTitle });
     }
   }
   return Array.from(map.values());
