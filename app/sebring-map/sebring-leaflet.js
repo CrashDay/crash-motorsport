@@ -958,6 +958,66 @@ export default function SebringLeaflet() {
         }}
       />
       <div
+        style={{
+          position: "absolute",
+          zIndex: 10000,
+          top: 12,
+          left: 12,
+          background: "linear-gradient(145deg, rgba(9,18,32,0.92), rgba(8,14,26,0.78))",
+          border: "1px solid rgba(137, 179, 255, 0.35)",
+          borderRadius: 12,
+          boxShadow: "0 14px 32px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.04)",
+          backdropFilter: "blur(8px)",
+          padding: "8px 10px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          flexWrap: "wrap",
+          maxWidth: "calc(100vw - 24px)",
+        }}
+      >
+        <a href="/" style={{ color: "#ecf3ff", textDecoration: "none", fontSize: 12, fontWeight: 700, letterSpacing: 0.4 }}>
+          Home
+        </a>
+        <a href="/imsa" style={{ color: "#c9d7ef", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
+          IMSA
+        </a>
+        <a href="/f1" style={{ color: "#c9d7ef", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
+          F1
+        </a>
+        <details style={{ position: "relative" }}>
+          <summary style={{ cursor: "pointer", color: "#c9d7ef", listStyle: "none", fontSize: 12, fontWeight: 600 }}>
+            Maps
+          </summary>
+          <div
+            style={{
+              position: "absolute",
+              top: "calc(100% + 8px)",
+              left: 0,
+              minWidth: 240,
+              background: "#0f1724",
+              border: "1px solid #22304a",
+              borderRadius: 10,
+              padding: "8px 0",
+              boxShadow: "0 12px 28px rgba(0,0,0,0.5)",
+            }}
+          >
+            <a
+              style={{ display: "block", color: "#dfe8ff", textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
+              href="/sebring-map"
+            >
+              Sebring International Raceway
+            </a>
+            <a
+              style={{ display: "block", color: "#dfe8ff", textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
+              href="/daniels-park"
+            >
+              Daniels Park
+            </a>
+          </div>
+        </details>
+      </div>
+      <div
         className="sebringTitleCard"
         style={{
           position: "absolute",
