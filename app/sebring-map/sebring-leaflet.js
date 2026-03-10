@@ -1562,7 +1562,7 @@ export default function SebringLeaflet() {
             {Array.isArray(area.photos) && area.photos.length > 0 ? (
               <CircleMarker
                 center={Array.isArray(area.center) ? area.center : [((area.bounds.north + area.bounds.south) / 2), ((area.bounds.east + area.bounds.west) / 2)]}
-                radius={7}
+                radius={5}
                 pathOptions={{ color: AREA_COLOR, fillColor: AREA_COLOR, fillOpacity: 0.9 }}
               >
                 <Popup maxWidth={720} minWidth={220}>
