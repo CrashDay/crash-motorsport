@@ -136,6 +136,15 @@ export async function GET(request) {
         ? [{ id: a.defaultPhoto.id, name: a.title, thumbUrl: a.defaultPhoto.src, fullUrl: a.defaultPhoto.src }]
         : [],
   }));
+  const staticAreaIds = new Set(track.areas.map((a) => a.id));
+  for (const [areaId, photos] of Object.entries(assignedByArea)) {
+    if (staticAreaIds.has(areaId)) continue;
+    areas.push({
+      id: areaId,
+      title: areaId,
+      photos: Array.isArray(photos) ? photos : [],
+    });
+  }
 
   return NextResponse.json(
     {
