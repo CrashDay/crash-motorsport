@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 const LOCAL_SEBRING_AREAS_KEY = "sebring_photo_areas_v1";
+const DEFAULT_TRACK_ID = "sebring";
 
 function getLocalSebringAreas() {
   if (typeof window === "undefined") return [];
@@ -31,6 +32,28 @@ function mergeAreas(serverAreas, localAreas) {
     }
   }
   return Array.from(map.values());
+}
+
+function getAssetIds(asset) {
+  const rawId = String(asset?.id || "").trim();
+  const thumbUrl = String(asset?.thumbUrl || "").trim();
+  const fullUrl = String(asset?.fullUrl || "").trim();
+  const canonicalId = [rawId, fullUrl || thumbUrl].filter(Boolean).join("::");
+  return { rawId, canonicalId };
+}
+
+function getAssignedAreaTitles(areas, ids) {
+  if (!Array.isArray(areas) || !ids?.rawId) return [];
+  const out = [];
+  for (const area of areas) {
+    const photos = Array.isArray(area?.photos) ? area.photos : [];
+    const match = photos.some((p) => {
+      const pid = String(p?.id || "");
+      return pid === ids.rawId || (ids.canonicalId && pid === ids.canonicalId);
+    });
+    if (match) out.push(String(area?.title || area?.id || "Unnamed area"));
+  }
+  return out;
 }
 
 async function postAssignment(payload, retries = 2) {
@@ -75,6 +98,7 @@ export default function AssignPhotoToArea({ asset }) {
   const [areaId, setAreaId] = useState("");
   const [msg, setMsg] = useState("");
   const [saving, setSaving] = useState(false);
+  const [assignedByTrack, setAssignedByTrack] = useState({});
 
   useEffect(() => {
     if (!open) return;
@@ -129,6 +153,43 @@ export default function AssignPhotoToArea({ asset }) {
     };
   }, [open, trackId]);
 
+  useEffect(() => {
+    if (!asset?.id) {
+      setAssignedByTrack({});
+      return;
+    }
+    let cancelled = false;
+    const ids = getAssetIds(asset);
+    fetch("/api/photo-areas", { cache: "no-store" })
+      .then((r) => r.json())
+      .then(async (payload) => {
+        const tracksList = Array.isArray(payload?.tracks) ? payload.tracks : [];
+        const statusEntries = await Promise.all(
+          tracksList.map(async (t) => {
+            try {
+              const res = await fetch(`/api/photo-areas?trackId=${encodeURIComponent(t.id)}`, { cache: "no-store" });
+              const trackPayload = await res.json();
+              const serverAreas = Array.isArray(trackPayload?.areas) ? trackPayload.areas : [];
+              const localAreas = t.id === "sebring" ? getLocalSebringAreas() : [];
+              const mergedAreas = mergeAreas(serverAreas, localAreas);
+              return [t.id, getAssignedAreaTitles(mergedAreas, ids)];
+            } catch {
+              return [t.id, []];
+            }
+          })
+        );
+        if (cancelled) return;
+        setAssignedByTrack(Object.fromEntries(statusEntries));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAssignedByTrack({});
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [asset?.id, asset?.fullUrl, asset?.thumbUrl]);
+
   const assign = async () => {
     if (!asset?.id || !areaId || !trackId) return;
     setSaving(true);
@@ -145,6 +206,12 @@ export default function AssignPhotoToArea({ asset }) {
         },
       });
       setMsg("Assigned");
+      const areaTitle = areas.find((a) => a.id === areaId)?.title || areaId;
+      setAssignedByTrack((prev) => {
+        const current = Array.isArray(prev[trackId]) ? prev[trackId] : [];
+        if (current.includes(areaTitle)) return prev;
+        return { ...prev, [trackId]: [...current, areaTitle] };
+      });
     } catch (e) {
       setMsg(`Failed: ${String(e?.message || e)}`);
     } finally {
@@ -152,21 +219,24 @@ export default function AssignPhotoToArea({ asset }) {
     }
   };
 
+  const defaultTrackAssigned = Array.isArray(assignedByTrack[DEFAULT_TRACK_ID]) ? assignedByTrack[DEFAULT_TRACK_ID] : [];
+  const selectedTrackAssigned = Array.isArray(assignedByTrack[trackId]) ? assignedByTrack[trackId] : [];
+
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
         style={{
-          background: "#111",
-          border: "1px solid #222",
+          background: defaultTrackAssigned.length ? "#132612" : "#111",
+          border: defaultTrackAssigned.length ? "1px solid #2f6f3b" : "1px solid #222",
           color: "#fff",
           padding: "10px 12px",
           borderRadius: 12,
           cursor: "pointer",
         }}
       >
-        Add to Area
+        {defaultTrackAssigned.length ? `Added to ${defaultTrackAssigned.length} area${defaultTrackAssigned.length === 1 ? "" : "s"}` : "Add to Area"}
       </button>
 
       {open ? (
@@ -202,6 +272,13 @@ export default function AssignPhotoToArea({ asset }) {
                 </option>
               ))}
             </select>
+            {selectedTrackAssigned.length ? (
+              <div style={{ marginTop: 8, fontSize: 12, color: "#9dd8a3" }}>
+                Assigned in: {selectedTrackAssigned.join(", ")}
+              </div>
+            ) : (
+              <div style={{ marginTop: 8, fontSize: 12, color: "#9fb2d6" }}>Not assigned to an area on this track yet.</div>
+            )}
 
             <div style={{ marginTop: 12, marginBottom: 8, fontSize: 12, color: "#b8c4d8" }}>Photo area</div>
             <select
