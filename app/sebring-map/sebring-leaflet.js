@@ -125,7 +125,7 @@ const AREA_VISUAL_MODES = [
   { id: "corner_brackets", label: "Corner Brackets" },
   { id: "heat_blur", label: "Heat Blur" },
 ];
-const AREA_COLOR = "#5da2ff";
+const AREA_COLOR = "#ffd84d";
 
 function toLatLngBounds(bounds) {
   return [
