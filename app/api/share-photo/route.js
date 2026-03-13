@@ -1,11 +1,70 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
+import { Client } from "pg";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import { assignAreaAsset, getDb, upsertGpsPin, upsertPhotoAsset, upsertPinAsset } from "@/lib/db";
 import { getProjectorForTrack } from "@/lib/geo-projector";
 
 const TRACK_ID = "sebring";
 const STATIC_AREA_IDS = new Set(sebringAreas.map((a) => a.id));
+let postgresReady = false;
+
+function getPostgresConnectionString() {
+  return (
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.PRISMA_DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    ""
+  );
+}
+
+function hasPostgresConfig() {
+  const connection = getPostgresConnectionString();
+  if (connection && !process.env.POSTGRES_URL) {
+    process.env.POSTGRES_URL = connection;
+  }
+  return Boolean(connection);
+}
+
+function isVercelRuntime() {
+  return process.env.VERCEL === "1" || String(process.env.VERCEL || "").toLowerCase() === "true";
+}
+
+async function withPgClient(fn) {
+  const connectionString = getPostgresConnectionString();
+  if (!connectionString) throw new Error("Missing Postgres connection string");
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+  });
+  await client.connect();
+  try {
+    return await fn(client);
+  } finally {
+    await client.end();
+  }
+}
+
+async function ensurePostgresSchema() {
+  if (postgresReady) return;
+  await withPgClient(async (client) => {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS photo_area_assets (
+        track_id TEXT NOT NULL,
+        area_id TEXT NOT NULL,
+        asset_id TEXT NOT NULL,
+        asset_name TEXT,
+        thumb_url TEXT,
+        full_url TEXT,
+        assigned_at TEXT NOT NULL,
+        PRIMARY KEY (track_id, area_id, asset_id)
+      )
+    `);
+  });
+  postgresReady = true;
+}
 
 function normalizeUrl(value) {
   const raw = String(value || "").trim();
@@ -128,21 +187,66 @@ export async function POST(request) {
   }
 
   if (areaId) {
-    db.prepare(
-      `
-        DELETE FROM photo_area_assets
-        WHERE track_id = ? AND asset_id = ?
-      `
-    ).run(TRACK_ID, canonicalAreaAssetId);
-    assignAreaAsset(db, {
-      track_id: TRACK_ID,
-      area_id: areaId,
-      asset_id: canonicalAreaAssetId,
-      asset_name: "Shared Lightroom Photo",
-      thumb_url: shortLink,
-      full_url: shortLink,
-      assigned_at: nowIso,
-    });
+    try {
+      if (hasPostgresConfig()) {
+        await ensurePostgresSchema();
+        await withPgClient(async (client) => {
+          await client.query("BEGIN");
+          try {
+            await client.query(
+              `
+                DELETE FROM photo_area_assets
+                WHERE track_id = $1 AND asset_id = $2
+              `,
+              [TRACK_ID, canonicalAreaAssetId]
+            );
+            await client.query(
+              `
+                INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
+                  asset_name = EXCLUDED.asset_name,
+                  thumb_url = EXCLUDED.thumb_url,
+                  full_url = EXCLUDED.full_url,
+                  assigned_at = EXCLUDED.assigned_at
+              `,
+              [TRACK_ID, areaId, canonicalAreaAssetId, "Shared Lightroom Photo", shortLink, shortLink, nowIso]
+            );
+            await client.query("COMMIT");
+          } catch (txError) {
+            await client.query("ROLLBACK");
+            throw txError;
+          }
+        });
+      } else if (!isVercelRuntime()) {
+        db.prepare(
+          `
+            DELETE FROM photo_area_assets
+            WHERE track_id = ? AND asset_id = ?
+          `
+        ).run(TRACK_ID, canonicalAreaAssetId);
+        assignAreaAsset(db, {
+          track_id: TRACK_ID,
+          area_id: areaId,
+          asset_id: canonicalAreaAssetId,
+          asset_name: "Shared Lightroom Photo",
+          thumb_url: shortLink,
+          full_url: shortLink,
+          assigned_at: nowIso,
+        });
+      } else {
+        return NextResponse.json(
+          { error: "Durable storage is not configured. Set a Postgres connection in Vercel env vars." },
+          { status: 503 }
+        );
+      }
+    } catch (error) {
+      console.error("[share-photo:POST] area assignment storage error", error);
+      return NextResponse.json(
+        { error: "Area assignment storage unavailable. Configure Vercel Postgres for durable persistence." },
+        { status: 503 }
+      );
+    }
   }
 
   return NextResponse.json({
