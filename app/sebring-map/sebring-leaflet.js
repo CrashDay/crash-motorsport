@@ -128,6 +128,39 @@ const AREA_VISUAL_MODES = [
 const AREA_OVERLAY_COLOR = "#5da2ff";
 const AREA_MARKER_COLOR = "#ffd84d";
 
+function isSharedLinkPhoto(photo) {
+  const id = String(photo?.id || "").trim().toLowerCase();
+  const rawUrl = String(photo?.fullUrl || photo?.src || photo?.thumbUrl || "").trim().toLowerCase();
+  return id.startsWith("shared:") || rawUrl.includes("adobe.ly/") || rawUrl.includes("lightroom.adobe.com/shares/");
+}
+
+function extractSharedLink(photo) {
+  const direct = String(photo?.fullUrl || photo?.src || photo?.thumbUrl || "").trim();
+  const directLower = direct.toLowerCase();
+  if (directLower.includes("adobe.ly/") || directLower.includes("lightroom.adobe.com/shares/")) {
+    return direct;
+  }
+
+  const id = String(photo?.id || "");
+  const marker = "::http";
+  const idx = id.indexOf(marker);
+  if (idx >= 0) return id.slice(idx + 2);
+
+  const alt = String(photo?.alt || photo?.name || "");
+  const match = alt.match(/https?:\/\/\S+/i);
+  return String(match?.[0] || "").trim();
+}
+
+function getRenderablePhotoUrl(photo) {
+  if (!photo) return "";
+  if (isSharedLinkPhoto(photo)) {
+    const link = extractSharedLink(photo);
+    if (!link) return "";
+    return `/api/share-photo/preview?url=${encodeURIComponent(link)}`;
+  }
+  return String(photo.fullUrl || photo.src || photo.thumbUrl || "").trim();
+}
+
 function toLatLngBounds(bounds) {
   return [
     [bounds.south, bounds.west],
@@ -425,6 +458,7 @@ export default function SebringLeaflet() {
   const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
   const [toolPanels, setToolPanels] = useState({
     lightroom: true,
+    share: false,
     bounds: false,
     areaStyle: false,
     areas: false,
@@ -484,6 +518,13 @@ export default function SebringLeaflet() {
   const [photoAreaName, setPhotoAreaName] = useState("New photo area");
   const [photoAreaMsg, setPhotoAreaMsg] = useState("");
   const [photoAreaCopied, setPhotoAreaCopied] = useState(false);
+  const [shareShortLink, setShareShortLink] = useState("");
+  const [shareDateTime, setShareDateTime] = useState("");
+  const [shareLat, setShareLat] = useState("");
+  const [shareLng, setShareLng] = useState("");
+  const [shareAreaId, setShareAreaId] = useState("");
+  const [shareSubmitting, setShareSubmitting] = useState(false);
+  const [shareMsg, setShareMsg] = useState("");
   const [assignedAreaPhotos, setAssignedAreaPhotos] = useState({});
   const [photoAreas, setPhotoAreas] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
@@ -754,6 +795,22 @@ export default function SebringLeaflet() {
     }
   };
 
+  const loadAssignedAreaPhotos = async () => {
+    try {
+      const res = await fetch("/api/photo-areas?trackId=sebring", { cache: "no-store" });
+      if (!res.ok) throw new Error(`Areas HTTP ${res.status}`);
+      const payload = await res.json();
+      const list = Array.isArray(payload?.areas) ? payload.areas : [];
+      const byArea = {};
+      for (const area of list) {
+        byArea[area.id] = Array.isArray(area.photos) ? area.photos : [];
+      }
+      setAssignedAreaPhotos(byArea);
+    } catch {
+      setAssignedAreaPhotos({});
+    }
+  };
+
   const loadAuthStatus = async () => {
     if (useMock || useLocalExports) {
       setAuth({ loading: false, connected: false, error: "" });
@@ -854,25 +911,7 @@ export default function SebringLeaflet() {
   }, [areaViewer.open]);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch("/api/photo-areas?trackId=sebring", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((payload) => {
-        if (cancelled) return;
-        const list = Array.isArray(payload?.areas) ? payload.areas : [];
-        const byArea = {};
-        for (const area of list) {
-          byArea[area.id] = Array.isArray(area.photos) ? area.photos : [];
-        }
-        setAssignedAreaPhotos(byArea);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setAssignedAreaPhotos({});
-      });
-    return () => {
-      cancelled = true;
-    };
+    loadAssignedAreaPhotos();
   }, []);
 
   useEffect(() => {
@@ -915,6 +954,57 @@ export default function SebringLeaflet() {
     loadAuthStatus();
   }, []);
 
+  const submitSharePhoto = async () => {
+    const trimmedShortLink = (shareShortLink || "").trim();
+    const trimmedAreaId = (shareAreaId || "").trim();
+    const trimmedLat = (shareLat || "").trim();
+    const trimmedLng = (shareLng || "").trim();
+    const hasLat = trimmedLat.length > 0;
+    const hasLng = trimmedLng.length > 0;
+
+    if (!trimmedShortLink) {
+      setShareMsg("Lightroom shared short link is required.");
+      return;
+    }
+    if ((hasLat && !hasLng) || (!hasLat && hasLng)) {
+      setShareMsg("Provide both Latitude and Longitude, or leave both blank.");
+      return;
+    }
+    if (!hasLat && !hasLng && !trimmedAreaId) {
+      setShareMsg("Photo area is required when no location is provided.");
+      return;
+    }
+
+    setShareSubmitting(true);
+    setShareMsg("");
+    try {
+      const res = await fetch("/api/share-photo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shortLink: trimmedShortLink,
+          captureTime: shareDateTime || undefined,
+          lat: hasLat ? Number(trimmedLat) : undefined,
+          lng: hasLng ? Number(trimmedLng) : undefined,
+          areaId: trimmedAreaId || undefined,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+
+      await Promise.all([loadPinsCount(), loadAssignedAreaPhotos()]);
+      setShareMsg("Shared photo added.");
+      setShareShortLink("");
+      setShareDateTime("");
+      setShareLat("");
+      setShareLng("");
+    } catch (e) {
+      setShareMsg(`Share failed: ${String(e?.message || e)}`);
+    } finally {
+      setShareSubmitting(false);
+    }
+  };
+
   const geoStyle = useMemo(() => {
     return (feature) => {
       const t = feature?.geometry?.type;
@@ -935,6 +1025,9 @@ export default function SebringLeaflet() {
       };
     };
   }, []);
+
+  const currentAreaViewerPhoto =
+    areaViewer.open && areaViewer.photos.length ? areaViewer.photos[areaViewer.index] : null;
 
   return (
     <div
@@ -1076,6 +1169,7 @@ export default function SebringLeaflet() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
           {[
             ["lightroom", "Lightroom"],
+            ["share", "Share Photo"],
             ["bounds", "Bounds"],
             ["areaStyle", "Area Style"],
             ["areas", "Areas"],
@@ -1165,6 +1259,131 @@ export default function SebringLeaflet() {
             {syncMsg ? (
               <div style={{ marginTop: 6, color: syncMsg.startsWith("Sync failed") ? "#ff9a9a" : "#9dd8a3" }}>
                 {syncMsg}
+              </div>
+            ) : null}
+          </>
+        ) : null}
+
+        {toolPanels.share ? (
+          <>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Share Photo</div>
+            <div style={{ color: "#b8c4d8", marginBottom: 6 }}>
+              Lightroom short link is required. Date/time and lat/lng are optional.
+            </div>
+            <input
+              type="url"
+              value={shareShortLink}
+              onChange={(e) => setShareShortLink(e.target.value)}
+              placeholder="https://adobe.ly/..."
+              style={{
+                width: "100%",
+                background: "#101827",
+                border: "1px solid #2a3a57",
+                color: "#fff",
+                borderRadius: 8,
+                padding: "6px 8px",
+                fontSize: 12,
+              }}
+            />
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Date / Time (optional)</div>
+              <input
+                type="datetime-local"
+                value={shareDateTime}
+                onChange={(e) => setShareDateTime(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "6px 8px",
+                  fontSize: 12,
+                }}
+              />
+            </div>
+            <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={shareLat}
+                onChange={(e) => setShareLat(e.target.value)}
+                placeholder="Latitude (optional)"
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "6px 8px",
+                  fontSize: 12,
+                }}
+              />
+              <input
+                type="number"
+                inputMode="decimal"
+                value={shareLng}
+                onChange={(e) => setShareLng(e.target.value)}
+                placeholder="Longitude (optional)"
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "6px 8px",
+                  fontSize: 12,
+                }}
+              />
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>
+                Photo area (required when no location)
+              </div>
+              <select
+                value={shareAreaId}
+                onChange={(e) => setShareAreaId(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "6px 8px",
+                  fontSize: 12,
+                }}
+              >
+                <option value="">Select area (optional with location)</option>
+                {allAreaRows.map((area) => (
+                  <option key={`share-area-${area.id}`} value={area.id}>
+                    {area.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={submitSharePhoto}
+              disabled={shareSubmitting}
+              style={{
+                marginTop: 8,
+                width: "100%",
+                background: "#15233a",
+                border: "1px solid #325080",
+                color: "#fff",
+                padding: "6px 8px",
+                borderRadius: 8,
+                cursor: shareSubmitting ? "default" : "pointer",
+                fontSize: 12,
+                opacity: shareSubmitting ? 0.7 : 1,
+              }}
+            >
+              {shareSubmitting ? "Sharing..." : "Share Photo"}
+            </button>
+            {shareMsg ? (
+              <div style={{ marginTop: 6, color: shareMsg.startsWith("Share failed") ? "#ff9a9a" : "#9dd8a3" }}>
+                {shareMsg}
               </div>
             ) : null}
           </>
@@ -1572,7 +1791,7 @@ export default function SebringLeaflet() {
                     {area.photos[0]?.src || area.photos[0]?.fullUrl ? (
                       <>
                         <img
-                          src={area.photos[0].fullUrl || area.photos[0].src}
+                          src={getRenderablePhotoUrl(area.photos[0])}
                           alt={area.photos[0].alt || area.photos[0].name || area.title}
                           onClick={() => openAreaViewer(area)}
                           style={{ width: "100%", height: "auto", maxHeight: "55vh", objectFit: "cover", display: "block", cursor: "pointer" }}
@@ -1682,8 +1901,8 @@ export default function SebringLeaflet() {
           ) : null}
 
           <img
-            src={areaViewer.photos[areaViewer.index].fullUrl}
-            alt={areaViewer.photos[areaViewer.index].alt || areaViewer.photos[areaViewer.index].name}
+            src={getRenderablePhotoUrl(currentAreaViewerPhoto)}
+            alt={currentAreaViewerPhoto?.alt || currentAreaViewerPhoto?.name}
             style={{ maxWidth: "calc(100vw - 120px)", maxHeight: "calc(100vh - 120px)", width: "auto", height: "auto", borderRadius: 18, border: "1px solid #222", boxShadow: "0 10px 40px rgba(0,0,0,0.6)", background: "#111" }}
             draggable={false}
           />
