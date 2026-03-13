@@ -219,10 +219,8 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
   const rect = toLatLngBounds(bounds);
   const safeMax = Math.max(1, Number(maxPhotoCount) || 1);
   const ratio = Math.max(0, Math.min(1, (Number(photoCount) || 0) / safeMax));
-  // Use color temperature style ramp: cool (blue) -> warm (red)
-  const heatColor = ratio < 0.5
-    ? `rgb(${Math.round(80 + ratio * 120)}, ${Math.round(170 + ratio * 40)}, ${Math.round(255 - ratio * 120)})`
-    : `rgb(${Math.round(140 + (ratio - 0.5) * 220)}, ${Math.round(190 - (ratio - 0.5) * 140)}, ${Math.round(195 - (ratio - 0.5) * 170)})`;
+  // Red-only heat ramp: deep red (cool) -> bright red (hot).
+  const heatColor = `rgb(${Math.round(120 + ratio * 135)}, ${Math.round(10 + ratio * 40)}, ${Math.round(10 + ratio * 35)})`;
 
   return (
     <Fragment>
@@ -550,16 +548,16 @@ export default function SebringLeaflet() {
   });
   const [viewBoundsVersion, setViewBoundsVersion] = useState(0);
   const [areaVisualMode, setAreaVisualMode] = useState(() => {
-    if (typeof window === "undefined") return "soft_fill";
+    if (typeof window === "undefined") return "photo_heatmap";
     try {
       const raw = window.localStorage.getItem(AREA_STYLE_STORAGE_KEY);
       if (raw && AREA_VISUAL_MODES.some((m) => m.id === raw)) return raw;
     } catch {
       // ignore localStorage read errors
     }
-    return "soft_fill";
+    return "photo_heatmap";
   });
-  const [areaStyleDraft, setAreaStyleDraft] = useState("soft_fill");
+  const [areaStyleDraft, setAreaStyleDraft] = useState("photo_heatmap");
   const [areaStyleMsg, setAreaStyleMsg] = useState("");
   const [areaViewer, setAreaViewer] = useState({ open: false, areaId: "", title: "", photos: [], index: 0 });
   const [areaViewerMsg, setAreaViewerMsg] = useState("");
