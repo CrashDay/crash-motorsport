@@ -1179,7 +1179,7 @@ export default function SebringLeaflet() {
           position: "absolute",
           zIndex: 10000,
           top: 12,
-          left: 12,
+          left: 64,
           background: "linear-gradient(145deg, rgba(9,18,32,0.92), rgba(8,14,26,0.78))",
           border: "1px solid rgba(137, 179, 255, 0.35)",
           borderRadius: 12,
