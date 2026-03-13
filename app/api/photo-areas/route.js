@@ -53,6 +53,7 @@ async function ensurePostgresSchema() {
       thumb_url TEXT,
       full_url TEXT,
       year INTEGER,
+      race TEXT,
       assigned_at TEXT NOT NULL,
       PRIMARY KEY (track_id, area_id, asset_id)
     )
@@ -60,6 +61,10 @@ async function ensurePostgresSchema() {
   await runPgQuery(`
     ALTER TABLE photo_area_assets
     ADD COLUMN IF NOT EXISTS year INTEGER
+  `);
+  await runPgQuery(`
+    ALTER TABLE photo_area_assets
+    ADD COLUMN IF NOT EXISTS race TEXT
   `);
   postgresReady = true;
 }
@@ -104,6 +109,11 @@ function normalizePhotoYear(raw, fallbackPhoto) {
   return inferYearFromPhotoLike(fallbackPhoto);
 }
 
+function normalizePhotoRace(raw) {
+  const race = String(raw || "").trim();
+  return race || "12 Hours of Sebring";
+}
+
 function groupAssignedRows(rows) {
   const byArea = {};
   for (const r of rows) {
@@ -114,6 +124,7 @@ function groupAssignedRows(rows) {
       thumbUrl: r.thumb_url,
       fullUrl: r.full_url,
       year: normalizePhotoYear(r.year, r),
+      race: normalizePhotoRace(r.race),
       assignedAt: r.assigned_at,
     });
   }
@@ -169,7 +180,7 @@ export async function GET(request) {
       await ensurePostgresSchema();
       const { rows } = await runPgQuery(
         `
-        SELECT track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, assigned_at
+        SELECT track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, race, assigned_at
         FROM photo_area_assets
         WHERE track_id = $1
         ORDER BY assigned_at DESC
@@ -193,7 +204,14 @@ export async function GET(request) {
     photos: assignedByArea[a.id]?.length
       ? assignedByArea[a.id]
       : a.defaultPhoto
-        ? [{ id: a.defaultPhoto.id, name: a.title, thumbUrl: a.defaultPhoto.src, fullUrl: a.defaultPhoto.src, year: 2023 }]
+        ? [{
+            id: a.defaultPhoto.id,
+            name: a.title,
+            thumbUrl: a.defaultPhoto.src,
+            fullUrl: a.defaultPhoto.src,
+            year: 2023,
+            race: "12 Hours of Sebring",
+          }]
         : [],
   }));
   const staticAreaIds = new Set(track.areas.map((a) => a.id));

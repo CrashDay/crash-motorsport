@@ -69,6 +69,7 @@ async function ensurePostgresSchema() {
       thumb_url TEXT,
       full_url TEXT,
       year INTEGER,
+      race TEXT,
       assigned_at TEXT NOT NULL,
       PRIMARY KEY (track_id, area_id, asset_id)
     )
@@ -76,6 +77,10 @@ async function ensurePostgresSchema() {
   await runPgQuery(`
     ALTER TABLE photo_area_assets
     ADD COLUMN IF NOT EXISTS year INTEGER
+  `);
+  await runPgQuery(`
+    ALTER TABLE photo_area_assets
+    ADD COLUMN IF NOT EXISTS race TEXT
   `);
   postgresReady = true;
 }
@@ -115,6 +120,11 @@ function inferYearFromAsset({ assetId, assetName, thumbUrl, fullUrl }) {
   return null;
 }
 
+function normalizeRace(value) {
+  const raw = String(value || "").trim();
+  return raw ? raw : null;
+}
+
 export async function POST(request) {
   let body = null;
   try {
@@ -134,6 +144,7 @@ export async function POST(request) {
   const explicitYear = parseYearValue(asset.year);
   const inferredYear = inferYearFromAsset({ assetId, assetName, thumbUrl, fullUrl });
   const year = explicitYear ?? inferredYear;
+  const race = normalizeRace(asset.race) || "12 Hours of Sebring";
 
   if (!trackId || !VALID_TRACKS[trackId]) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
@@ -161,16 +172,17 @@ export async function POST(request) {
           );
           await client.query(
             `
-              INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, assigned_at)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, race, assigned_at)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
               ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
                 asset_name = EXCLUDED.asset_name,
                 thumb_url = EXCLUDED.thumb_url,
                 full_url = EXCLUDED.full_url,
                 year = EXCLUDED.year,
+                race = EXCLUDED.race,
                 assigned_at = EXCLUDED.assigned_at
             `,
-            [trackId, areaId, canonicalAssetId, assetName || assetId, thumbUrl, fullUrl, year, assignedAt]
+            [trackId, areaId, canonicalAssetId, assetName || assetId, thumbUrl, fullUrl, year, race, assignedAt]
           );
           await client.query("COMMIT");
         } catch (txError) {
@@ -194,6 +206,7 @@ export async function POST(request) {
         thumb_url: thumbUrl,
         full_url: fullUrl,
         year,
+        race,
         assigned_at: assignedAt,
       });
     } else {

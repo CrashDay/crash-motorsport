@@ -59,6 +59,7 @@ async function ensurePostgresSchema() {
         thumb_url TEXT,
         full_url TEXT,
         year INTEGER,
+        race TEXT,
         assigned_at TEXT NOT NULL,
         PRIMARY KEY (track_id, area_id, asset_id)
       )
@@ -66,6 +67,10 @@ async function ensurePostgresSchema() {
     await client.query(`
       ALTER TABLE photo_area_assets
       ADD COLUMN IF NOT EXISTS year INTEGER
+    `);
+    await client.query(`
+      ALTER TABLE photo_area_assets
+      ADD COLUMN IF NOT EXISTS race TEXT
     `);
   });
   postgresReady = true;
@@ -111,6 +116,11 @@ function normalizeYear(value) {
   if (!Number.isInteger(n)) return null;
   if (n < 1900 || n > 2100) return null;
   return n;
+}
+
+function normalizeRace(value) {
+  const raw = String(value || "").trim();
+  return raw || "12 Hours of Sebring";
 }
 
 function withinGeoRange(lat, lng) {
@@ -197,6 +207,7 @@ export async function POST(request) {
   const shortLink = normalizeUrl(body?.shortLink);
   const areaId = String(body?.areaId || "").trim();
   const year = normalizeYear(body?.year);
+  const race = normalizeRace(body?.race);
   const nowIso = new Date().toISOString();
   const captureTime = normalizeCaptureTime(body?.captureTime, nowIso);
   const lat = parseOptionalNumber(body?.lat);
@@ -308,16 +319,17 @@ export async function POST(request) {
             );
             await client.query(
               `
-                INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, assigned_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, race, assigned_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
                   asset_name = EXCLUDED.asset_name,
                   thumb_url = EXCLUDED.thumb_url,
                   full_url = EXCLUDED.full_url,
                   year = EXCLUDED.year,
+                  race = EXCLUDED.race,
                   assigned_at = EXCLUDED.assigned_at
               `,
-              [TRACK_ID, areaId, canonicalAreaAssetId, "Shared Lightroom Photo", shortLink, shortLink, year, nowIso]
+              [TRACK_ID, areaId, canonicalAreaAssetId, "Shared Lightroom Photo", shortLink, shortLink, year, race, nowIso]
             );
             await client.query("COMMIT");
           } catch (txError) {
@@ -340,6 +352,7 @@ export async function POST(request) {
           thumb_url: shortLink,
           full_url: shortLink,
           year,
+          race,
           assigned_at: nowIso,
         });
       } else {
@@ -365,6 +378,7 @@ export async function POST(request) {
     locationSource,
     location: hasLocation ? { lat: effectiveLat, lng: effectiveLng } : null,
     year,
+    race,
     assignedAreaId: areaId || null,
   });
 }

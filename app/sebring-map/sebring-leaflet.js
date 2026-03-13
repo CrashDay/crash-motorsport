@@ -176,6 +176,12 @@ function inferPhotoYear(photo) {
   return n >= 1900 && n <= 2100 ? n : null;
 }
 
+function inferPhotoRace(photo) {
+  const explicit = String(photo?.race || "").trim();
+  if (explicit) return explicit;
+  return "12 Hours of Sebring";
+}
+
 function toLatLngBounds(bounds) {
   return [
     [bounds.south, bounds.west],
@@ -535,6 +541,7 @@ export default function SebringLeaflet() {
   const [photoAreaCopied, setPhotoAreaCopied] = useState(false);
   const [shareShortLink, setShareShortLink] = useState("");
   const [shareYear, setShareYear] = useState("2023");
+  const [shareRace, setShareRace] = useState("12 Hours of Sebring");
   const [shareDateTime, setShareDateTime] = useState("");
   const [shareLat, setShareLat] = useState("");
   const [shareLng, setShareLng] = useState("");
@@ -543,6 +550,7 @@ export default function SebringLeaflet() {
   const [shareMsg, setShareMsg] = useState("");
   const [shareOpen, setShareOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("all");
+  const [raceFilter, setRaceFilter] = useState("all");
   const [assignedAreaPhotos, setAssignedAreaPhotos] = useState({});
   const [photoAreas, setPhotoAreas] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
@@ -604,10 +612,12 @@ export default function SebringLeaflet() {
       .map((p) => ({
         ...p,
         year: inferPhotoYear(p) || 2023,
+        race: inferPhotoRace(p),
       }))
       .filter((p) => {
-        if (yearFilter === "all") return true;
-        return Number(p.year) === Number(yearFilter);
+        const yearOk = yearFilter === "all" ? true : Number(p.year) === Number(yearFilter);
+        const raceOk = raceFilter === "all" ? true : String(p.race || "") === raceFilter;
+        return yearOk && raceOk;
       }),
   }));
 
@@ -1080,6 +1090,7 @@ export default function SebringLeaflet() {
         body: JSON.stringify({
           shortLink: trimmedShortLink,
           year: shareYear ? Number(shareYear) : undefined,
+          race: shareRace || undefined,
           captureTime: shareDateTime || undefined,
           lat: hasLat ? Number(trimmedLat) : undefined,
           lng: hasLng ? Number(trimmedLng) : undefined,
@@ -1093,6 +1104,7 @@ export default function SebringLeaflet() {
       setShareMsg("Shared photo added.");
       setShareShortLink("");
       setShareYear("2023");
+      setShareRace("12 Hours of Sebring");
       setShareDateTime("");
       setShareLat("");
       setShareLng("");
@@ -1277,6 +1289,35 @@ export default function SebringLeaflet() {
             <option value="all">All</option>
             <option value="2023">2023</option>
             <option value="2022">2022</option>
+          </select>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "rgba(8,14,26,0.86)",
+            border: "1px solid rgba(137, 179, 255, 0.32)",
+            borderRadius: 999,
+            padding: "6px 10px",
+          }}
+        >
+          <span style={{ color: "#c7d6ef", fontSize: 11, fontWeight: 700, letterSpacing: 0.2 }}>Race</span>
+          <select
+            value={raceFilter}
+            onChange={(e) => setRaceFilter(e.target.value)}
+            style={{
+              background: "#101827",
+              border: "1px solid #2a3a57",
+              color: "#fff",
+              borderRadius: 999,
+              padding: "4px 10px",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            <option value="all">All</option>
+            <option value="12 Hours of Sebring">12 Hours of Sebring</option>
           </select>
         </div>
         <button
@@ -1956,6 +1997,24 @@ export default function SebringLeaflet() {
               >
                 <option value="2023">2023</option>
                 <option value="2022">2022</option>
+              </select>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Race</div>
+              <select
+                value={shareRace}
+                onChange={(e) => setShareRace(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              >
+                <option value="12 Hours of Sebring">12 Hours of Sebring</option>
               </select>
             </div>
             <div style={{ marginTop: 8 }}>
