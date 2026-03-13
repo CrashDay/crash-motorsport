@@ -308,13 +308,19 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
           <Rectangle
             bounds={rect}
             interactive={false}
-            pathOptions={{ color: heatColor, weight: 1.5, opacity: Math.max(0.2, 0.35 + ratio * 0.45), fillOpacity: 0.04 + ratio * 0.2, fillColor: heatColor }}
+            pathOptions={{
+              color: "#ff3b30",
+              weight: 2,
+              opacity: 0.9,
+              fillOpacity: 0.12 + ratio * 0.2,
+              fillColor: heatColor,
+            }}
           />
           <Circle
             center={center}
             radius={heatRadiusMeters(bounds)}
             interactive={false}
-            pathOptions={{ stroke: false, fillColor: heatColor, fillOpacity: 0.08 + ratio * 0.22 }}
+            pathOptions={{ stroke: false, fillColor: heatColor, fillOpacity: 0.12 + ratio * 0.22 }}
           />
           <Circle
             center={center}
