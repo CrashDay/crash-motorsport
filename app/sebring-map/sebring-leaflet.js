@@ -124,6 +124,7 @@ const AREA_VISUAL_MODES = [
   { id: "dashed_glow", label: "Dashed Glow" },
   { id: "corner_brackets", label: "Corner Brackets" },
   { id: "heat_blur", label: "Heat Blur" },
+  { id: "photo_heatmap", label: "Photo Heatmap" },
 ];
 const AREA_OVERLAY_COLOR = "#5da2ff";
 const AREA_MARKER_COLOR = "#ffd84d";
@@ -213,9 +214,15 @@ function heatRadiusMeters(bounds) {
   return Math.max(10, Math.hypot(latMeters, lngMeters) * 0.45);
 }
 
-function AreaOverlay({ bounds, title, mode }) {
+function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 }) {
   const center = [(bounds.north + bounds.south) / 2, (bounds.east + bounds.west) / 2];
   const rect = toLatLngBounds(bounds);
+  const safeMax = Math.max(1, Number(maxPhotoCount) || 1);
+  const ratio = Math.max(0, Math.min(1, (Number(photoCount) || 0) / safeMax));
+  // Use color temperature style ramp: cool (blue) -> warm (red)
+  const heatColor = ratio < 0.5
+    ? `rgb(${Math.round(80 + ratio * 120)}, ${Math.round(170 + ratio * 40)}, ${Math.round(255 - ratio * 120)})`
+    : `rgb(${Math.round(140 + (ratio - 0.5) * 220)}, ${Math.round(190 - (ratio - 0.5) * 140)}, ${Math.round(195 - (ratio - 0.5) * 170)})`;
 
   return (
     <Fragment>
@@ -267,9 +274,31 @@ function AreaOverlay({ bounds, title, mode }) {
         </Fragment>
       ) : null}
 
+      {mode === "photo_heatmap" ? (
+        <Fragment>
+          <Rectangle
+            bounds={rect}
+            interactive={false}
+            pathOptions={{ color: heatColor, weight: 1.5, opacity: Math.max(0.2, 0.35 + ratio * 0.45), fillOpacity: 0.04 + ratio * 0.2, fillColor: heatColor }}
+          />
+          <Circle
+            center={center}
+            radius={heatRadiusMeters(bounds)}
+            interactive={false}
+            pathOptions={{ stroke: false, fillColor: heatColor, fillOpacity: 0.08 + ratio * 0.22 }}
+          />
+          <Circle
+            center={center}
+            radius={heatRadiusMeters(bounds) * (0.45 + ratio * 0.35)}
+            interactive={false}
+            pathOptions={{ stroke: false, fillColor: heatColor, fillOpacity: 0.12 + ratio * 0.3 }}
+          />
+        </Fragment>
+      ) : null}
+
       <Rectangle bounds={rect} interactive pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 0, fillOpacity: 0, opacity: 0 }}>
         <Tooltip sticky direction="top" opacity={0.95}>
-          {title}
+          {mode === "photo_heatmap" ? `${title} - ${photoCount} photo${photoCount === 1 ? "" : "s"}` : title}
         </Tooltip>
       </Rectangle>
     </Fragment>
@@ -631,6 +660,10 @@ export default function SebringLeaflet() {
         return yearOk && raceOk;
       }),
   }));
+  const maxAreaPhotoCount = useMemo(
+    () => Math.max(1, ...allAreaRows.map((area) => (Array.isArray(area.photos) ? area.photos.length : 0))),
+    [allAreaRows]
+  );
 
   const closeAreaViewer = () => {
     setAreaViewer({ open: false, areaId: "", title: "", photos: [], index: 0 });
@@ -2215,7 +2248,13 @@ export default function SebringLeaflet() {
 
         {allAreaRows.map((area) => (
           <Fragment key={area.id}>
-            <AreaOverlay bounds={area.bounds} title={area.title} mode={areaVisualMode} />
+            <AreaOverlay
+              bounds={area.bounds}
+              title={area.title}
+              mode={areaVisualMode}
+              photoCount={Array.isArray(area.photos) ? area.photos.length : 0}
+              maxPhotoCount={maxAreaPhotoCount}
+            />
             {Array.isArray(area.photos) && area.photos.length > 0 ? (
               <CircleMarker
                 center={Array.isArray(area.center) ? area.center : [((area.bounds.north + area.bounds.south) / 2), ((area.bounds.east + area.bounds.west) / 2)]}
