@@ -458,7 +458,6 @@ export default function SebringLeaflet() {
   const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
   const [toolPanels, setToolPanels] = useState({
     lightroom: true,
-    share: false,
     bounds: false,
     areaStyle: false,
     areas: false,
@@ -525,6 +524,7 @@ export default function SebringLeaflet() {
   const [shareAreaId, setShareAreaId] = useState("");
   const [shareSubmitting, setShareSubmitting] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
+  const [shareOpen, setShareOpen] = useState(false);
   const [assignedAreaPhotos, setAssignedAreaPhotos] = useState({});
   const [photoAreas, setPhotoAreas] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
@@ -998,6 +998,7 @@ export default function SebringLeaflet() {
       setShareDateTime("");
       setShareLat("");
       setShareLng("");
+      setShareOpen(false);
     } catch (e) {
       setShareMsg(`Share failed: ${String(e?.message || e)}`);
     } finally {
@@ -1137,6 +1138,38 @@ export default function SebringLeaflet() {
       >
         <div>Sebring International Raceway</div>
       </div>
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 10000,
+          top: 88,
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setShareOpen(true);
+            setShareMsg("");
+          }}
+          style={{
+            background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
+            border: "1px solid #ffb18f",
+            color: "#fff",
+            padding: "9px 14px",
+            borderRadius: 999,
+            cursor: "pointer",
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: 0.3,
+            boxShadow: "0 10px 24px rgba(255, 77, 20, 0.45), inset 0 0 0 1px rgba(255,255,255,0.2)",
+            textTransform: "uppercase",
+          }}
+        >
+          Share Photo
+        </button>
+      </div>
 
       <div style={{ position: "relative", height: "100%", width: "100%" }}>
       {err ? (
@@ -1169,7 +1202,6 @@ export default function SebringLeaflet() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
           {[
             ["lightroom", "Lightroom"],
-            ["share", "Share Photo"],
             ["bounds", "Bounds"],
             ["areaStyle", "Area Style"],
             ["areas", "Areas"],
@@ -1259,131 +1291,6 @@ export default function SebringLeaflet() {
             {syncMsg ? (
               <div style={{ marginTop: 6, color: syncMsg.startsWith("Sync failed") ? "#ff9a9a" : "#9dd8a3" }}>
                 {syncMsg}
-              </div>
-            ) : null}
-          </>
-        ) : null}
-
-        {toolPanels.share ? (
-          <>
-            <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>Share Photo</div>
-            <div style={{ color: "#b8c4d8", marginBottom: 6 }}>
-              Lightroom short link is required. Date/time and lat/lng are optional.
-            </div>
-            <input
-              type="url"
-              value={shareShortLink}
-              onChange={(e) => setShareShortLink(e.target.value)}
-              placeholder="https://adobe.ly/..."
-              style={{
-                width: "100%",
-                background: "#101827",
-                border: "1px solid #2a3a57",
-                color: "#fff",
-                borderRadius: 8,
-                padding: "6px 8px",
-                fontSize: 12,
-              }}
-            />
-            <div style={{ marginTop: 8 }}>
-              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Date / Time (optional)</div>
-              <input
-                type="datetime-local"
-                value={shareDateTime}
-                onChange={(e) => setShareDateTime(e.target.value)}
-                style={{
-                  width: "100%",
-                  background: "#101827",
-                  border: "1px solid #2a3a57",
-                  color: "#fff",
-                  borderRadius: 8,
-                  padding: "6px 8px",
-                  fontSize: 12,
-                }}
-              />
-            </div>
-            <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-              <input
-                type="number"
-                inputMode="decimal"
-                value={shareLat}
-                onChange={(e) => setShareLat(e.target.value)}
-                placeholder="Latitude (optional)"
-                style={{
-                  width: "100%",
-                  background: "#101827",
-                  border: "1px solid #2a3a57",
-                  color: "#fff",
-                  borderRadius: 8,
-                  padding: "6px 8px",
-                  fontSize: 12,
-                }}
-              />
-              <input
-                type="number"
-                inputMode="decimal"
-                value={shareLng}
-                onChange={(e) => setShareLng(e.target.value)}
-                placeholder="Longitude (optional)"
-                style={{
-                  width: "100%",
-                  background: "#101827",
-                  border: "1px solid #2a3a57",
-                  color: "#fff",
-                  borderRadius: 8,
-                  padding: "6px 8px",
-                  fontSize: 12,
-                }}
-              />
-            </div>
-            <div style={{ marginTop: 8 }}>
-              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>
-                Photo area (required when no location)
-              </div>
-              <select
-                value={shareAreaId}
-                onChange={(e) => setShareAreaId(e.target.value)}
-                style={{
-                  width: "100%",
-                  background: "#101827",
-                  border: "1px solid #2a3a57",
-                  color: "#fff",
-                  borderRadius: 8,
-                  padding: "6px 8px",
-                  fontSize: 12,
-                }}
-              >
-                <option value="">Select area (optional with location)</option>
-                {allAreaRows.map((area) => (
-                  <option key={`share-area-${area.id}`} value={area.id}>
-                    {area.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="button"
-              onClick={submitSharePhoto}
-              disabled={shareSubmitting}
-              style={{
-                marginTop: 8,
-                width: "100%",
-                background: "#15233a",
-                border: "1px solid #325080",
-                color: "#fff",
-                padding: "6px 8px",
-                borderRadius: 8,
-                cursor: shareSubmitting ? "default" : "pointer",
-                fontSize: 12,
-                opacity: shareSubmitting ? 0.7 : 1,
-              }}
-            >
-              {shareSubmitting ? "Sharing..." : "Share Photo"}
-            </button>
-            {shareMsg ? (
-              <div style={{ marginTop: 6, color: shareMsg.startsWith("Share failed") ? "#ff9a9a" : "#9dd8a3" }}>
-                {shareMsg}
               </div>
             ) : null}
           </>
@@ -1741,6 +1648,176 @@ export default function SebringLeaflet() {
           </>
         ) : null}
       </div>
+
+      {shareOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Share photo"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setShareOpen(false);
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 20010,
+            background: "rgba(0,0,0,0.72)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              width: "min(520px, 96vw)",
+              maxHeight: "calc(100vh - 32px)",
+              overflowY: "auto",
+              background: "linear-gradient(165deg, rgba(8,15,27,0.98), rgba(7,12,21,0.94))",
+              color: "#f4f8ff",
+              border: "1px solid rgba(120, 170, 255, 0.36)",
+              borderRadius: 14,
+              boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
+              padding: 12,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Share Photo</div>
+            <div style={{ color: "#b8c4d8", marginBottom: 8, fontSize: 12 }}>
+              Lightroom short link is required. Date/time and lat/lng are optional.
+            </div>
+            <input
+              type="url"
+              value={shareShortLink}
+              onChange={(e) => setShareShortLink(e.target.value)}
+              placeholder="https://adobe.ly/..."
+              style={{
+                width: "100%",
+                background: "#101827",
+                border: "1px solid #2a3a57",
+                color: "#fff",
+                borderRadius: 8,
+                padding: "8px 10px",
+                fontSize: 13,
+              }}
+            />
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Date / Time (optional)</div>
+              <input
+                type="datetime-local"
+                value={shareDateTime}
+                onChange={(e) => setShareDateTime(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              />
+            </div>
+            <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={shareLat}
+                onChange={(e) => setShareLat(e.target.value)}
+                placeholder="Latitude (optional)"
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              />
+              <input
+                type="number"
+                inputMode="decimal"
+                value={shareLng}
+                onChange={(e) => setShareLng(e.target.value)}
+                placeholder="Longitude (optional)"
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              />
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>
+                Photo area (required when no location)
+              </div>
+              <select
+                value={shareAreaId}
+                onChange={(e) => setShareAreaId(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              >
+                <option value="">Select area (optional with location)</option>
+                {allAreaRows.map((area) => (
+                  <option key={`share-area-${area.id}`} value={area.id}>
+                    {area.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setShareOpen(false)}
+                style={{
+                  background: "#111",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={submitSharePhoto}
+                disabled={shareSubmitting}
+                style={{
+                  background: "#15233a",
+                  border: "1px solid #325080",
+                  color: "#fff",
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  cursor: shareSubmitting ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: shareSubmitting ? 0.7 : 1,
+                }}
+              >
+                {shareSubmitting ? "Sharing..." : "Share Photo"}
+              </button>
+            </div>
+            {shareMsg ? (
+              <div style={{ marginTop: 8, color: shareMsg.startsWith("Share failed") ? "#ff9a9a" : "#9dd8a3", fontSize: 12 }}>
+                {shareMsg}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <MapContainer
         center={[27.4564, -81.3483]}
