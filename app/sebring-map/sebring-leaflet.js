@@ -515,6 +515,7 @@ export default function SebringLeaflet() {
   const [areaViewerMsg, setAreaViewerMsg] = useState("");
   const [removingAreaPhoto, setRemovingAreaPhoto] = useState(false);
   const [photoAreaName, setPhotoAreaName] = useState("New photo area");
+  const [editingAreaId, setEditingAreaId] = useState("");
   const [photoAreaMsg, setPhotoAreaMsg] = useState("");
   const [photoAreaCopied, setPhotoAreaCopied] = useState(false);
   const [shareShortLink, setShareShortLink] = useState("");
@@ -532,13 +533,24 @@ export default function SebringLeaflet() {
       const raw = window.localStorage.getItem(PHOTO_AREA_STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       const localAreas = Array.isArray(parsed) ? parsed : [];
-      const merged = [...DEFAULT_PHOTO_AREAS];
+      const mergedMap = new Map(DEFAULT_PHOTO_AREAS.map((area) => [area.id, area]));
       for (const area of localAreas) {
         if (!area || typeof area !== "object") continue;
-        if (merged.some((d) => d.id === area.id)) continue;
-        merged.push(area);
+        if (!area.id) continue;
+        // Local entries should override default definitions by id (bounds/title edits).
+        if (mergedMap.has(area.id)) {
+          const base = mergedMap.get(area.id) || {};
+          mergedMap.set(area.id, {
+            ...base,
+            ...area,
+            bounds: area.bounds || base.bounds,
+            center: area.center || base.center,
+          });
+          continue;
+        }
+        mergedMap.set(area.id, area);
       }
-      return merged;
+      return Array.from(mergedMap.values());
     } catch {
       return DEFAULT_PHOTO_AREAS;
     }
@@ -655,12 +667,62 @@ export default function SebringLeaflet() {
       photos: [],
     };
     setPhotoAreas((prev) => [...prev, next]);
+    setEditingAreaId(next.id);
     setPhotoAreaMsg(`Created: ${title}`);
   };
 
   const deletePhotoArea = (id) => {
     setPhotoAreas((prev) => prev.filter((a) => a.id !== id));
+    if (editingAreaId === id) setEditingAreaId("");
     setPhotoAreaMsg("Area deleted");
+  };
+
+  const loadAreaForEditing = (id) => {
+    const area = photoAreas.find((a) => a.id === id);
+    if (!area?.bounds) {
+      setPhotoAreaMsg("Selected area not found");
+      return;
+    }
+    setEditingAreaId(id);
+    setPhotoAreaName(area.title || "Photo area");
+    setBounds({
+      north: Number(area.bounds.north),
+      south: Number(area.bounds.south),
+      east: Number(area.bounds.east),
+      west: Number(area.bounds.west),
+    });
+    setPickMode(true);
+    setPhotoAreaMsg(`Loaded: ${area.title}`);
+  };
+
+  const updatePhotoAreaFromBounds = () => {
+    if (!bounds || !editingAreaId) {
+      setPhotoAreaMsg("Select an area and draw or load bounds first");
+      return;
+    }
+    const north = Number(bounds.north.toFixed(6));
+    const south = Number(bounds.south.toFixed(6));
+    const east = Number(bounds.east.toFixed(6));
+    const west = Number(bounds.west.toFixed(6));
+    const center = [
+      Number(((north + south) / 2).toFixed(6)),
+      Number(((east + west) / 2).toFixed(6)),
+    ];
+    const nextTitle = (photoAreaName || "").trim();
+    let updated = false;
+    setPhotoAreas((prev) =>
+      prev.map((a) => {
+        if (a.id !== editingAreaId) return a;
+        updated = true;
+        return {
+          ...a,
+          title: nextTitle || a.title,
+          bounds: { north, south, east, west },
+          center,
+        };
+      })
+    );
+    setPhotoAreaMsg(updated ? "Area bounds updated" : "Selected area not found");
   };
 
   const copyPhotoAreaJson = async () => {
@@ -890,6 +952,13 @@ export default function SebringLeaflet() {
       // ignore storage write failures
     }
   }, [photoAreas]);
+
+  useEffect(() => {
+    if (!editingAreaId) return;
+    if (!photoAreas.some((a) => a.id === editingAreaId)) {
+      setEditingAreaId("");
+    }
+  }, [photoAreas, editingAreaId]);
 
   useEffect(() => {
     try {
@@ -1398,6 +1467,92 @@ export default function SebringLeaflet() {
                 ) : null}
               </div>
             ) : null}
+            {photoAreas.length ? (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>Edit Existing Area</div>
+                <select
+                  value={editingAreaId}
+                  onChange={(e) => setEditingAreaId(e.target.value)}
+                  style={{
+                    width: "100%",
+                    background: "#101827",
+                    border: "1px solid #2a3a57",
+                    color: "#fff",
+                    borderRadius: 8,
+                    padding: "6px 8px",
+                    fontSize: 12,
+                  }}
+                >
+                  <option value="">Select area to edit</option>
+                  {photoAreas.map((area) => (
+                    <option key={`edit-area-${area.id}`} value={area.id}>
+                      {area.title}
+                    </option>
+                  ))}
+                </select>
+                <div style={{ marginTop: 6, display: "flex", gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => loadAreaForEditing(editingAreaId)}
+                    disabled={!editingAreaId}
+                    style={{
+                      flex: 1,
+                      background: "#101827",
+                      border: "1px solid #2a3a57",
+                      color: "#fff",
+                      padding: "6px 8px",
+                      borderRadius: 8,
+                      cursor: editingAreaId ? "pointer" : "default",
+                      fontSize: 12,
+                      opacity: editingAreaId ? 1 : 0.65,
+                    }}
+                  >
+                    Load bounds
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPickMode(true);
+                      setCornerPickMode(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      background: pickMode ? "#0f1726" : "#101827",
+                      border: "1px solid #2a3a57",
+                      color: "#fff",
+                      padding: "6px 8px",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      fontSize: 12,
+                    }}
+                  >
+                    {pickMode ? "Redraw mode on" : "Redraw on map"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={updatePhotoAreaFromBounds}
+                    disabled={!editingAreaId || !bounds}
+                    style={{
+                      flex: 1,
+                      background: "#15233a",
+                      border: "1px solid #325080",
+                      color: "#fff",
+                      padding: "6px 8px",
+                      borderRadius: 8,
+                      cursor: editingAreaId && bounds ? "pointer" : "default",
+                      fontSize: 12,
+                      opacity: editingAreaId && bounds ? 1 : 0.65,
+                    }}
+                  >
+                    Save bounds
+                  </button>
+                </div>
+                {!bounds ? <div style={{ marginTop: 6, color: "#9fb2d6", fontSize: 11 }}>Load an area or draw bounds before saving.</div> : null}
+                <div style={{ marginTop: 6, color: "#9fb2d6", fontSize: 11 }}>
+                  Redraw: click and drag on the map to define the new rectangle, then click Save bounds.
+                </div>
+              </div>
+            ) : null}
           </>
         ) : null}
         {toolPanels.areas ? <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {allAreaRows.length}</div> : null}
@@ -1484,24 +1639,45 @@ export default function SebringLeaflet() {
                     <div style={{ color: "#dfe9ff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{area.title}</div>
                     <div style={{ color: "#9fb2d6", fontSize: 11 }}>{count} photo{count === 1 ? "" : "s"}</div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => deletePhotoArea(area.id)}
-                    disabled={!!area.locked}
-                    style={{
-                      background: "#1f1020",
-                      border: "1px solid #6f2b5a",
-                      color: "#fff",
-                      padding: "4px 6px",
-                      borderRadius: 8,
-                      cursor: area.locked ? "default" : "pointer",
-                      fontSize: 11,
-                      flexShrink: 0,
-                      opacity: area.locked ? 0.5 : 1,
-                    }}
-                  >
-                    {area.locked ? "Built-in" : "Delete"}
-                  </button>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    {!area.locked ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          loadAreaForEditing(area.id);
+                          setToolPanels((prev) => ({ ...prev, bounds: true }));
+                        }}
+                        style={{
+                          background: "#101827",
+                          border: "1px solid #2a3a57",
+                          color: "#fff",
+                          padding: "4px 6px",
+                          borderRadius: 8,
+                          cursor: "pointer",
+                          fontSize: 11,
+                        }}
+                      >
+                        Edit
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => deletePhotoArea(area.id)}
+                      disabled={!!area.locked}
+                      style={{
+                        background: "#1f1020",
+                        border: "1px solid #6f2b5a",
+                        color: "#fff",
+                        padding: "4px 6px",
+                        borderRadius: 8,
+                        cursor: area.locked ? "default" : "pointer",
+                        fontSize: 11,
+                        opacity: area.locked ? 0.5 : 1,
+                      }}
+                    >
+                      {area.locked ? "Built-in" : "Delete"}
+                    </button>
+                  </div>
                 </div>
               );
             })}
