@@ -552,6 +552,7 @@ export default function SebringLeaflet() {
   const [yearFilter, setYearFilter] = useState("all");
   const [raceFilter, setRaceFilter] = useState("all");
   const [isMobileToolsHidden, setIsMobileToolsHidden] = useState(false);
+  const [toolsVisible, setToolsVisible] = useState(false);
   const [assignedAreaPhotos, setAssignedAreaPhotos] = useState({});
   const [photoAreas, setPhotoAreas] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
@@ -1362,25 +1363,53 @@ export default function SebringLeaflet() {
       ) : null}
 
       {!isMobileToolsHidden ? (
-        <div
-          style={{
-            position: "absolute",
-            zIndex: 9999,
-            bottom: 12,
-            right: 12,
-            background: "linear-gradient(165deg, rgba(8,15,27,0.95), rgba(7,12,21,0.88))",
-            color: "#f4f8ff",
-            padding: "12px 12px",
-            borderRadius: 14,
-            fontSize: 12,
-            border: "1px solid rgba(120, 170, 255, 0.36)",
-            boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
-            backdropFilter: "blur(10px)",
-            width: "min(340px, calc(100vw - 24px))",
-            maxHeight: "calc(100vh - 136px)",
-            overflowY: "auto",
-          }}
-        >
+        <>
+          <div
+            style={{
+              position: "absolute",
+              zIndex: 10000,
+              bottom: 12,
+              right: 12,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setToolsVisible((v) => !v)}
+              style={{
+                background: "linear-gradient(150deg, #17335e, #123058)",
+                border: "1px solid #75b7ff",
+                color: "#fff",
+                padding: "8px 10px",
+                borderRadius: 10,
+                cursor: "pointer",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: 0.2,
+              }}
+            >
+              Track Tools: {toolsVisible ? "On" : "Off"}
+            </button>
+          </div>
+          {toolsVisible ? (
+            <div
+              style={{
+                position: "absolute",
+                zIndex: 9999,
+                bottom: 56,
+                right: 12,
+                background: "linear-gradient(165deg, rgba(8,15,27,0.95), rgba(7,12,21,0.88))",
+                color: "#f4f8ff",
+                padding: "12px 12px",
+                borderRadius: 14,
+                fontSize: 12,
+                border: "1px solid rgba(120, 170, 255, 0.36)",
+                boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
+                backdropFilter: "blur(10px)",
+                width: "min(340px, calc(100vw - 24px))",
+                maxHeight: "calc(100vh - 136px)",
+                overflowY: "auto",
+              }}
+            >
         <div style={{ fontWeight: 800, marginBottom: 2, letterSpacing: 0.4 }}>Track Tools</div>
         <div style={{ color: "#91a6cb", fontSize: 11, marginBottom: 8 }}>Toggle sections on demand</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
@@ -1938,7 +1967,9 @@ export default function SebringLeaflet() {
             ) : null}
           </>
         ) : null}
-        </div>
+            </div>
+          ) : null}
+        </>
       ) : null}
 
       {shareOpen ? (
