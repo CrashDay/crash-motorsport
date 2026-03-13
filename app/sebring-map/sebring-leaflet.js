@@ -330,7 +330,7 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
             bounds={rect}
             interactive={false}
             pathOptions={{
-              color: "#ff3b30",
+              color: AREA_OVERLAY_COLOR,
               weight: 2,
               opacity: 0.9,
               fillOpacity: 0.12 + ratio * 0.2,
