@@ -100,6 +100,79 @@ function isValidAreaId(areaId) {
   return areaId.startsWith("area-");
 }
 
+function withinGeoRange(lat, lng) {
+  return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
+
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function tryParseLocationFromHtml(html) {
+  const metaLat = html.match(/<meta\s+property=["']place:location:latitude["']\s+content=["']([^"']+)["']/i)
+    || html.match(/<meta\s+content=["']([^"']+)["']\s+property=["']place:location:latitude["']/i);
+  const metaLng = html.match(/<meta\s+property=["']place:location:longitude["']\s+content=["']([^"']+)["']/i)
+    || html.match(/<meta\s+content=["']([^"']+)["']\s+property=["']place:location:longitude["']/i);
+  const latFromMeta = toNumber(metaLat?.[1]);
+  const lngFromMeta = toNumber(metaLng?.[1]);
+  if (withinGeoRange(latFromMeta, lngFromMeta)) {
+    return { lat: latFromMeta, lng: lngFromMeta };
+  }
+
+  const geoPosition = html.match(/<meta\s+name=["']geo\.position["']\s+content=["']([^"']+)["']/i)
+    || html.match(/<meta\s+content=["']([^"']+)["']\s+name=["']geo\.position["']/i);
+  if (geoPosition?.[1]) {
+    const parts = String(geoPosition[1]).split(/[;,]/).map((p) => p.trim());
+    const lat = toNumber(parts[0]);
+    const lng = toNumber(parts[1]);
+    if (withinGeoRange(lat, lng)) {
+      return { lat, lng };
+    }
+  }
+
+  const latLngPairs = [
+    /"latitude"\s*:\s*(-?\d+(?:\.\d+)?)\s*,\s*"longitude"\s*:\s*(-?\d+(?:\.\d+)?)/i,
+    /"longitude"\s*:\s*(-?\d+(?:\.\d+)?)\s*,\s*"latitude"\s*:\s*(-?\d+(?:\.\d+)?)/i,
+    /"lat"\s*:\s*(-?\d+(?:\.\d+)?)\s*,\s*"lng"\s*:\s*(-?\d+(?:\.\d+)?)/i,
+    /"lng"\s*:\s*(-?\d+(?:\.\d+)?)\s*,\s*"lat"\s*:\s*(-?\d+(?:\.\d+)?)/i,
+  ];
+  for (const pattern of latLngPairs) {
+    const match = html.match(pattern);
+    if (!match) continue;
+    const a = toNumber(match[1]);
+    const b = toNumber(match[2]);
+    if (pattern.source.includes("\"longitude\"\\s*:") || pattern.source.includes("\"lng\"\\s*:")) {
+      if (withinGeoRange(b, a)) return { lat: b, lng: a };
+    } else if (withinGeoRange(a, b)) {
+      return { lat: a, lng: b };
+    }
+  }
+
+  return null;
+}
+
+async function scrapeLocationFromShareLink(shortLink) {
+  try {
+    const res = await fetch(shortLink, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; CrashDayPics/1.0; +https://crashdaypics.com)",
+        Accept: "text/html,application/xhtml+xml",
+      },
+      cache: "no-store",
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return null;
+    const contentType = String(res.headers.get("content-type") || "").toLowerCase();
+    if (!contentType.includes("text/html")) return null;
+    const html = await res.text();
+    return tryParseLocationFromHtml(html);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request) {
   let body = null;
   try {
@@ -118,7 +191,7 @@ export async function POST(request) {
   const lngInvalid = Number.isNaN(lng);
   const hasLat = Number.isFinite(lat);
   const hasLng = Number.isFinite(lng);
-  const hasLocation = hasLat && hasLng;
+  const hasProvidedLocation = hasLat && hasLng;
 
   if (!shortLink) {
     return NextResponse.json({ error: "A valid Lightroom shared short link is required" }, { status: 400 });
@@ -132,7 +205,7 @@ export async function POST(request) {
   if ((hasLat && !hasLng) || (hasLng && !hasLat)) {
     return NextResponse.json({ error: "Both lat and lng are required when location is provided" }, { status: 400 });
   }
-  if (hasLocation) {
+  if (hasProvidedLocation) {
     if (lat < -90 || lat > 90) {
       return NextResponse.json({ error: "lat must be between -90 and 90" }, { status: 400 });
     }
@@ -140,11 +213,27 @@ export async function POST(request) {
       return NextResponse.json({ error: "lng must be between -180 and 180" }, { status: 400 });
     }
   }
-  if (!hasLocation && !areaId) {
-    return NextResponse.json({ error: "areaId is required when no location is provided" }, { status: 400 });
-  }
   if (areaId && !isValidAreaId(areaId)) {
     return NextResponse.json({ error: "Invalid areaId" }, { status: 400 });
+  }
+
+  let effectiveLat = hasProvidedLocation ? lat : null;
+  let effectiveLng = hasProvidedLocation ? lng : null;
+  let locationSource = hasProvidedLocation ? "provided" : "none";
+  if (!hasProvidedLocation) {
+    const scraped = await scrapeLocationFromShareLink(shortLink);
+    if (withinGeoRange(scraped?.lat, scraped?.lng)) {
+      effectiveLat = scraped.lat;
+      effectiveLng = scraped.lng;
+      locationSource = "scraped";
+    }
+  }
+  const hasLocation = withinGeoRange(effectiveLat, effectiveLng);
+  if (!hasLocation && !areaId) {
+    return NextResponse.json(
+      { error: "areaId is required when no location is provided or found in shared link metadata" },
+      { status: 400 }
+    );
   }
 
   const db = getDb();
@@ -169,7 +258,7 @@ export async function POST(request) {
     if (!projector) {
       return NextResponse.json({ error: "Track projector unavailable" }, { status: 500 });
     }
-    const pos = projector(lng, lat);
+    const pos = projector(effectiveLng, effectiveLat);
     pinId = `gps:${assetId}`;
     upsertGpsPin(db, {
       pin_id: pinId,
@@ -254,6 +343,8 @@ export async function POST(request) {
     assetId,
     pinId,
     hasLocation,
+    locationSource,
+    location: hasLocation ? { lat: effectiveLat, lng: effectiveLng } : null,
     assignedAreaId: areaId || null,
   });
 }
