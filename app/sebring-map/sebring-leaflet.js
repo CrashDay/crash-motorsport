@@ -628,6 +628,14 @@ export default function SebringLeaflet() {
   }, []);
 
   useEffect(() => {
+    if (!isMobileToolsHidden) return;
+    if (areaVisualMode !== "photo_heatmap") {
+      setAreaVisualMode("photo_heatmap");
+      setAreaStyleDraft("photo_heatmap");
+    }
+  }, [isMobileToolsHidden, areaVisualMode]);
+
+  useEffect(() => {
     setAreaStyleDraft(areaVisualMode);
   }, [areaVisualMode]);
 
