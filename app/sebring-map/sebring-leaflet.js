@@ -551,6 +551,7 @@ export default function SebringLeaflet() {
   const [shareOpen, setShareOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("all");
   const [raceFilter, setRaceFilter] = useState("all");
+  const [isMobileToolsHidden, setIsMobileToolsHidden] = useState(false);
   const [assignedAreaPhotos, setAssignedAreaPhotos] = useState({});
   const [photoAreas, setPhotoAreas] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
@@ -588,6 +589,15 @@ export default function SebringLeaflet() {
   useEffect(() => {
     if (!toolPanels.corner) setCornerPickMode(false);
   }, [toolPanels.corner]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 900px)");
+    const apply = () => setIsMobileToolsHidden(media.matches);
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, []);
 
   useEffect(() => {
     setAreaStyleDraft(areaVisualMode);
@@ -1351,25 +1361,26 @@ export default function SebringLeaflet() {
         </div>
       ) : null}
 
-      <div
-        style={{
-          position: "absolute",
-          zIndex: 9999,
-          bottom: 12,
-          right: 12,
-          background: "linear-gradient(165deg, rgba(8,15,27,0.95), rgba(7,12,21,0.88))",
-          color: "#f4f8ff",
-          padding: "12px 12px",
-          borderRadius: 14,
-          fontSize: 12,
-          border: "1px solid rgba(120, 170, 255, 0.36)",
-          boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
-          backdropFilter: "blur(10px)",
-          width: "min(340px, calc(100vw - 24px))",
-          maxHeight: "calc(100vh - 136px)",
-          overflowY: "auto",
-        }}
-      >
+      {!isMobileToolsHidden ? (
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 9999,
+            bottom: 12,
+            right: 12,
+            background: "linear-gradient(165deg, rgba(8,15,27,0.95), rgba(7,12,21,0.88))",
+            color: "#f4f8ff",
+            padding: "12px 12px",
+            borderRadius: 14,
+            fontSize: 12,
+            border: "1px solid rgba(120, 170, 255, 0.36)",
+            boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
+            backdropFilter: "blur(10px)",
+            width: "min(340px, calc(100vw - 24px))",
+            maxHeight: "calc(100vh - 136px)",
+            overflowY: "auto",
+          }}
+        >
         <div style={{ fontWeight: 800, marginBottom: 2, letterSpacing: 0.4 }}>Track Tools</div>
         <div style={{ color: "#91a6cb", fontSize: 11, marginBottom: 8 }}>Toggle sections on demand</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
@@ -1927,7 +1938,8 @@ export default function SebringLeaflet() {
             ) : null}
           </>
         ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {shareOpen ? (
         <div
