@@ -52,9 +52,14 @@ async function ensurePostgresSchema() {
       asset_name TEXT,
       thumb_url TEXT,
       full_url TEXT,
+      year INTEGER,
       assigned_at TEXT NOT NULL,
       PRIMARY KEY (track_id, area_id, asset_id)
     )
+  `);
+  await runPgQuery(`
+    ALTER TABLE photo_area_assets
+    ADD COLUMN IF NOT EXISTS year INTEGER
   `);
   postgresReady = true;
 }
@@ -71,6 +76,34 @@ function isVercelRuntime() {
   return process.env.VERCEL === "1" || String(process.env.VERCEL || "").toLowerCase() === "true";
 }
 
+function inferYearFromPhotoLike(photo) {
+  const source = [
+    photo?.id,
+    photo?.name,
+    photo?.thumbUrl,
+    photo?.fullUrl,
+    photo?.asset_id,
+    photo?.asset_name,
+    photo?.thumb_url,
+    photo?.full_url,
+  ]
+    .map((v) => String(v || ""))
+    .join(" ")
+    .toLowerCase();
+  if (source.includes("sebring_2022") || source.includes("sebring-2022")) return 2022;
+  if (source.includes("sebring2023") || source.includes("sebring_2023") || source.includes("sebring-2023")) return 2023;
+  const match = source.match(/\b(19|20)\d{2}\b/);
+  if (!match) return null;
+  const n = Number(match[0]);
+  return n >= 1900 && n <= 2100 ? n : null;
+}
+
+function normalizePhotoYear(raw, fallbackPhoto) {
+  const n = Number(raw);
+  if (Number.isInteger(n) && n >= 1900 && n <= 2100) return n;
+  return inferYearFromPhotoLike(fallbackPhoto);
+}
+
 function groupAssignedRows(rows) {
   const byArea = {};
   for (const r of rows) {
@@ -80,6 +113,7 @@ function groupAssignedRows(rows) {
       name: r.asset_name || r.asset_id,
       thumbUrl: r.thumb_url,
       fullUrl: r.full_url,
+      year: normalizePhotoYear(r.year, r),
       assignedAt: r.assigned_at,
     });
   }
@@ -135,7 +169,7 @@ export async function GET(request) {
       await ensurePostgresSchema();
       const { rows } = await runPgQuery(
         `
-        SELECT track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at
+        SELECT track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, assigned_at
         FROM photo_area_assets
         WHERE track_id = $1
         ORDER BY assigned_at DESC
@@ -159,7 +193,7 @@ export async function GET(request) {
     photos: assignedByArea[a.id]?.length
       ? assignedByArea[a.id]
       : a.defaultPhoto
-        ? [{ id: a.defaultPhoto.id, name: a.title, thumbUrl: a.defaultPhoto.src, fullUrl: a.defaultPhoto.src }]
+        ? [{ id: a.defaultPhoto.id, name: a.title, thumbUrl: a.defaultPhoto.src, fullUrl: a.defaultPhoto.src, year: 2023 }]
         : [],
   }));
   const staticAreaIds = new Set(track.areas.map((a) => a.id));

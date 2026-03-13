@@ -161,6 +161,21 @@ function getRenderablePhotoUrl(photo) {
   return String(photo.fullUrl || photo.src || photo.thumbUrl || "").trim();
 }
 
+function inferPhotoYear(photo) {
+  const explicit = Number(photo?.year);
+  if (Number.isInteger(explicit) && explicit >= 1900 && explicit <= 2100) return explicit;
+  const source = [photo?.id, photo?.name, photo?.fullUrl, photo?.thumbUrl, photo?.src]
+    .map((v) => String(v || ""))
+    .join(" ")
+    .toLowerCase();
+  if (source.includes("sebring_2022") || source.includes("sebring-2022")) return 2022;
+  if (source.includes("sebring2023") || source.includes("sebring_2023") || source.includes("sebring-2023")) return 2023;
+  const match = source.match(/\b(19|20)\d{2}\b/);
+  if (!match) return null;
+  const n = Number(match[0]);
+  return n >= 1900 && n <= 2100 ? n : null;
+}
+
 function toLatLngBounds(bounds) {
   return [
     [bounds.south, bounds.west],
@@ -519,6 +534,7 @@ export default function SebringLeaflet() {
   const [photoAreaMsg, setPhotoAreaMsg] = useState("");
   const [photoAreaCopied, setPhotoAreaCopied] = useState(false);
   const [shareShortLink, setShareShortLink] = useState("");
+  const [shareYear, setShareYear] = useState("2023");
   const [shareDateTime, setShareDateTime] = useState("");
   const [shareLat, setShareLat] = useState("");
   const [shareLng, setShareLng] = useState("");
@@ -526,6 +542,7 @@ export default function SebringLeaflet() {
   const [shareSubmitting, setShareSubmitting] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
   const [shareOpen, setShareOpen] = useState(false);
+  const [yearFilter, setYearFilter] = useState("all");
   const [assignedAreaPhotos, setAssignedAreaPhotos] = useState({});
   const [photoAreas, setPhotoAreas] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
@@ -577,11 +594,21 @@ export default function SebringLeaflet() {
     ...photoAreas,
   ].map((area) => ({
     ...area,
-    photos: Array.isArray(assignedAreaPhotos[area.id]) && assignedAreaPhotos[area.id].length
-      ? assignedAreaPhotos[area.id]
-      : Array.isArray(area.photos)
-        ? area.photos
-        : [],
+    photos: (
+      Array.isArray(assignedAreaPhotos[area.id]) && assignedAreaPhotos[area.id].length
+        ? assignedAreaPhotos[area.id]
+        : Array.isArray(area.photos)
+          ? area.photos
+          : []
+    )
+      .map((p) => ({
+        ...p,
+        year: inferPhotoYear(p) || 2023,
+      }))
+      .filter((p) => {
+        if (yearFilter === "all") return true;
+        return Number(p.year) === Number(yearFilter);
+      }),
   }));
 
   const closeAreaViewer = () => {
@@ -1052,6 +1079,7 @@ export default function SebringLeaflet() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           shortLink: trimmedShortLink,
+          year: shareYear ? Number(shareYear) : undefined,
           captureTime: shareDateTime || undefined,
           lat: hasLat ? Number(trimmedLat) : undefined,
           lng: hasLng ? Number(trimmedLng) : undefined,
@@ -1064,6 +1092,7 @@ export default function SebringLeaflet() {
       await Promise.all([loadPinsCount(), loadAssignedAreaPhotos()]);
       setShareMsg("Shared photo added.");
       setShareShortLink("");
+      setShareYear("2023");
       setShareDateTime("");
       setShareLat("");
       setShareLng("");
@@ -1215,8 +1244,41 @@ export default function SebringLeaflet() {
           top: 88,
           left: "50%",
           transform: "translateX(-50%)",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
         }}
       >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "rgba(8,14,26,0.86)",
+            border: "1px solid rgba(137, 179, 255, 0.32)",
+            borderRadius: 999,
+            padding: "6px 10px",
+          }}
+        >
+          <span style={{ color: "#c7d6ef", fontSize: 11, fontWeight: 700, letterSpacing: 0.2 }}>Year</span>
+          <select
+            value={yearFilter}
+            onChange={(e) => setYearFilter(e.target.value)}
+            style={{
+              background: "#101827",
+              border: "1px solid #2a3a57",
+              color: "#fff",
+              borderRadius: 999,
+              padding: "4px 10px",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            <option value="all">All</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+          </select>
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -1877,6 +1939,25 @@ export default function SebringLeaflet() {
                 fontSize: 13,
               }}
             />
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Year</div>
+              <select
+                value={shareYear}
+                onChange={(e) => setShareYear(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              >
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+              </select>
+            </div>
             <div style={{ marginTop: 8 }}>
               <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Date / Time (optional)</div>
               <input

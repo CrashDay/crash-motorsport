@@ -58,9 +58,14 @@ async function ensurePostgresSchema() {
         asset_name TEXT,
         thumb_url TEXT,
         full_url TEXT,
+        year INTEGER,
         assigned_at TEXT NOT NULL,
         PRIMARY KEY (track_id, area_id, asset_id)
       )
+    `);
+    await client.query(`
+      ALTER TABLE photo_area_assets
+      ADD COLUMN IF NOT EXISTS year INTEGER
     `);
   });
   postgresReady = true;
@@ -98,6 +103,14 @@ function isValidAreaId(areaId) {
   if (!areaId) return false;
   if (STATIC_AREA_IDS.has(areaId)) return true;
   return areaId.startsWith("area-");
+}
+
+function normalizeYear(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  if (!Number.isInteger(n)) return null;
+  if (n < 1900 || n > 2100) return null;
+  return n;
 }
 
 function withinGeoRange(lat, lng) {
@@ -183,6 +196,7 @@ export async function POST(request) {
 
   const shortLink = normalizeUrl(body?.shortLink);
   const areaId = String(body?.areaId || "").trim();
+  const year = normalizeYear(body?.year);
   const nowIso = new Date().toISOString();
   const captureTime = normalizeCaptureTime(body?.captureTime, nowIso);
   const lat = parseOptionalNumber(body?.lat);
@@ -215,6 +229,9 @@ export async function POST(request) {
   }
   if (areaId && !isValidAreaId(areaId)) {
     return NextResponse.json({ error: "Invalid areaId" }, { status: 400 });
+  }
+  if (body?.year !== undefined && body?.year !== null && body?.year !== "" && year === null) {
+    return NextResponse.json({ error: "year must be a 4-digit number" }, { status: 400 });
   }
 
   let effectiveLat = hasProvidedLocation ? lat : null;
@@ -291,15 +308,16 @@ export async function POST(request) {
             );
             await client.query(
               `
-                INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, assigned_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
                   asset_name = EXCLUDED.asset_name,
                   thumb_url = EXCLUDED.thumb_url,
                   full_url = EXCLUDED.full_url,
+                  year = EXCLUDED.year,
                   assigned_at = EXCLUDED.assigned_at
               `,
-              [TRACK_ID, areaId, canonicalAreaAssetId, "Shared Lightroom Photo", shortLink, shortLink, nowIso]
+              [TRACK_ID, areaId, canonicalAreaAssetId, "Shared Lightroom Photo", shortLink, shortLink, year, nowIso]
             );
             await client.query("COMMIT");
           } catch (txError) {
@@ -321,6 +339,7 @@ export async function POST(request) {
           asset_name: "Shared Lightroom Photo",
           thumb_url: shortLink,
           full_url: shortLink,
+          year,
           assigned_at: nowIso,
         });
       } else {
@@ -345,6 +364,7 @@ export async function POST(request) {
     hasLocation,
     locationSource,
     location: hasLocation ? { lat: effectiveLat, lng: effectiveLng } : null,
+    year,
     assignedAreaId: areaId || null,
   });
 }

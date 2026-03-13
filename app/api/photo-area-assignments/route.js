@@ -68,9 +68,14 @@ async function ensurePostgresSchema() {
       asset_name TEXT,
       thumb_url TEXT,
       full_url TEXT,
+      year INTEGER,
       assigned_at TEXT NOT NULL,
       PRIMARY KEY (track_id, area_id, asset_id)
     )
+  `);
+  await runPgQuery(`
+    ALTER TABLE photo_area_assets
+    ADD COLUMN IF NOT EXISTS year INTEGER
   `);
   postgresReady = true;
 }
@@ -85,6 +90,29 @@ function hasPostgresConfig() {
 
 function isVercelRuntime() {
   return process.env.VERCEL === "1" || String(process.env.VERCEL || "").toLowerCase() === "true";
+}
+
+function parseYearValue(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  if (!Number.isInteger(n)) return null;
+  if (n < 1900 || n > 2100) return null;
+  return n;
+}
+
+function inferYearFromAsset({ assetId, assetName, thumbUrl, fullUrl }) {
+  const source = [assetId, assetName, thumbUrl, fullUrl]
+    .map((v) => String(v || ""))
+    .join(" ")
+    .toLowerCase();
+  if (source.includes("sebring_2022") || source.includes("sebring-2022")) return 2022;
+  if (source.includes("sebring2023") || source.includes("sebring_2023") || source.includes("sebring-2023")) return 2023;
+  const match = source.match(/\b(19|20)\d{2}\b/);
+  if (match) {
+    const n = Number(match[0]);
+    if (n >= 1900 && n <= 2100) return n;
+  }
+  return null;
 }
 
 export async function POST(request) {
@@ -103,6 +131,9 @@ export async function POST(request) {
   const thumbUrl = String(asset.thumbUrl || "").trim();
   const fullUrl = String(asset.fullUrl || "").trim();
   const canonicalAssetId = [assetId, fullUrl || thumbUrl].filter(Boolean).join("::");
+  const explicitYear = parseYearValue(asset.year);
+  const inferredYear = inferYearFromAsset({ assetId, assetName, thumbUrl, fullUrl });
+  const year = explicitYear ?? inferredYear;
 
   if (!trackId || !VALID_TRACKS[trackId]) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
@@ -130,15 +161,16 @@ export async function POST(request) {
           );
           await client.query(
             `
-              INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, assigned_at)
-              VALUES ($1, $2, $3, $4, $5, $6, $7)
+              INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, assigned_at)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
               ON CONFLICT (track_id, area_id, asset_id) DO UPDATE SET
                 asset_name = EXCLUDED.asset_name,
                 thumb_url = EXCLUDED.thumb_url,
                 full_url = EXCLUDED.full_url,
+                year = EXCLUDED.year,
                 assigned_at = EXCLUDED.assigned_at
             `,
-            [trackId, areaId, canonicalAssetId, assetName || assetId, thumbUrl, fullUrl, assignedAt]
+            [trackId, areaId, canonicalAssetId, assetName || assetId, thumbUrl, fullUrl, year, assignedAt]
           );
           await client.query("COMMIT");
         } catch (txError) {
@@ -161,6 +193,7 @@ export async function POST(request) {
         asset_name: assetName || assetId,
         thumb_url: thumbUrl,
         full_url: fullUrl,
+        year,
         assigned_at: assignedAt,
       });
     } else {
