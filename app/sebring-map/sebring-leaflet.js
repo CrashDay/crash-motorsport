@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -212,6 +212,37 @@ function heatRadiusMeters(bounds) {
   const latMeters = Math.abs(bounds.north - bounds.south) * 111320;
   const lngMeters = Math.abs(bounds.east - bounds.west) * 111320 * Math.cos((centerLat * Math.PI) / 180);
   return Math.max(10, Math.hypot(latMeters, lngMeters) * 0.45);
+}
+
+function normalizePhotoArea(area) {
+  if (!area || typeof area !== "object") return null;
+  const id = String(area.id || "").trim();
+  if (!id || id === TURN3_INSIDE_AREA.id) return null;
+  const title = String(area.title || id).trim();
+  const north = Number(area?.bounds?.north);
+  const south = Number(area?.bounds?.south);
+  const east = Number(area?.bounds?.east);
+  const west = Number(area?.bounds?.west);
+  if (![north, south, east, west].every(Number.isFinite)) return null;
+  const bounds = {
+    north: Number(Math.max(north, south).toFixed(6)),
+    south: Number(Math.min(north, south).toFixed(6)),
+    east: Number(Math.max(east, west).toFixed(6)),
+    west: Number(Math.min(east, west).toFixed(6)),
+  };
+  let centerLat = Number(area?.center?.[0]);
+  let centerLng = Number(area?.center?.[1]);
+  if (!Number.isFinite(centerLat) || !Number.isFinite(centerLng)) {
+    centerLat = (bounds.north + bounds.south) / 2;
+    centerLng = (bounds.east + bounds.west) / 2;
+  }
+  return {
+    id,
+    title,
+    bounds,
+    center: [Number(centerLat.toFixed(6)), Number(centerLng.toFixed(6))],
+    photos: Array.isArray(area.photos) ? area.photos : [],
+  };
 }
 
 function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 }) {
@@ -609,6 +640,8 @@ export default function SebringLeaflet() {
       return DEFAULT_PHOTO_AREAS;
     }
   });
+  const initialPhotoAreasRef = useRef(photoAreas);
+  const didRunPhotoAreaPersistRef = useRef(false);
 
   useEffect(() => {
     if (!toolPanels.bounds) setPickMode(false);
@@ -960,6 +993,31 @@ export default function SebringLeaflet() {
     }
   };
 
+  const savePhotoAreasToCloud = async (areasToSave) => {
+    const cleaned = (Array.isArray(areasToSave) ? areasToSave : [])
+      .map((a) => normalizePhotoArea(a))
+      .filter(Boolean);
+    if (!cleaned.length) return;
+    const res = await fetch("/api/photo-areas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trackId: "sebring", areas: cleaned }),
+    });
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload?.error || `HTTP ${res.status}`);
+    }
+  };
+
+  const loadPhotoAreasFromCloud = async () => {
+    const res = await fetch("/api/photo-areas?trackId=sebring", { cache: "no-store" });
+    if (!res.ok) throw new Error(`Areas HTTP ${res.status}`);
+    const payload = await res.json();
+    return (Array.isArray(payload?.areas) ? payload.areas : [])
+      .map((a) => normalizePhotoArea(a))
+      .filter(Boolean);
+  };
+
   const loadAuthStatus = async () => {
     if (useMock || useLocalExports) {
       setAuth({ loading: false, connected: false, error: "" });
@@ -1069,6 +1127,53 @@ export default function SebringLeaflet() {
   useEffect(() => {
     loadAssignedAreaPhotos();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncPhotoAreas = async () => {
+      try {
+        const remoteAreas = await loadPhotoAreasFromCloud();
+        if (cancelled || !remoteAreas.length) return;
+
+        const localRaw = window.localStorage.getItem(PHOTO_AREA_STORAGE_KEY);
+        const hasLocalSnapshot = !!localRaw;
+        const localAreas = (Array.isArray(initialPhotoAreasRef.current) ? initialPhotoAreasRef.current : [])
+          .map((a) => normalizePhotoArea(a))
+          .filter(Boolean);
+        const remoteIds = new Set(remoteAreas.map((a) => a.id));
+        const localHasExtraIds = localAreas.some((a) => !remoteIds.has(a.id));
+
+        if (hasLocalSnapshot && localHasExtraIds) {
+          await savePhotoAreasToCloud(localAreas);
+          if (!cancelled) setPhotoAreaMsg("Synced local area definitions");
+          return;
+        }
+
+        if (!cancelled) setPhotoAreas(remoteAreas);
+      } catch {
+        // ignore area sync failures and keep local/default fallback
+      }
+    };
+
+    syncPhotoAreas();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!didRunPhotoAreaPersistRef.current) {
+      didRunPhotoAreaPersistRef.current = true;
+      return;
+    }
+    const timer = setTimeout(() => {
+      savePhotoAreasToCloud(photoAreas).catch(() => {
+        // keep local storage fallback if cloud persistence fails
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [photoAreas]);
 
   useEffect(() => {
     let cancelled = false;

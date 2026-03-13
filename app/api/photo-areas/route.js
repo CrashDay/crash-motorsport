@@ -42,6 +42,21 @@ async function runPgQuery(text, values = []) {
   }
 }
 
+async function withPgClient(fn) {
+  const connectionString = getPostgresConnectionString();
+  if (!connectionString) throw new Error("Missing Postgres connection string");
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+  });
+  await client.connect();
+  try {
+    return await fn(client);
+  } finally {
+    await client.end();
+  }
+}
+
 async function ensurePostgresSchema() {
   if (postgresReady) return;
   await runPgQuery(`
@@ -65,6 +80,21 @@ async function ensurePostgresSchema() {
   await runPgQuery(`
     ALTER TABLE photo_area_assets
     ADD COLUMN IF NOT EXISTS race TEXT
+  `);
+  await runPgQuery(`
+    CREATE TABLE IF NOT EXISTS photo_areas (
+      track_id TEXT NOT NULL,
+      area_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      north DOUBLE PRECISION NOT NULL,
+      south DOUBLE PRECISION NOT NULL,
+      east DOUBLE PRECISION NOT NULL,
+      west DOUBLE PRECISION NOT NULL,
+      center_lat DOUBLE PRECISION NOT NULL,
+      center_lng DOUBLE PRECISION NOT NULL,
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY (track_id, area_id)
+    )
   `);
   postgresReady = true;
 }
@@ -156,6 +186,75 @@ function keepMostRecentByAsset(assignedByArea) {
   return out;
 }
 
+function normalizeAreaDefinition(rawArea) {
+  if (!rawArea || typeof rawArea !== "object") return null;
+  const id = String(rawArea.id || "").trim();
+  if (!id) return null;
+  const title = String(rawArea.title || id).trim();
+  const north = Number(rawArea?.bounds?.north);
+  const south = Number(rawArea?.bounds?.south);
+  const east = Number(rawArea?.bounds?.east);
+  const west = Number(rawArea?.bounds?.west);
+  if (![north, south, east, west].every(Number.isFinite)) return null;
+  const bounds = {
+    north: Math.max(north, south),
+    south: Math.min(north, south),
+    east: Math.max(east, west),
+    west: Math.min(east, west),
+  };
+  let centerLat = Number(rawArea?.center?.[0]);
+  let centerLng = Number(rawArea?.center?.[1]);
+  if (!Number.isFinite(centerLat) || !Number.isFinite(centerLng)) {
+    centerLat = (bounds.north + bounds.south) / 2;
+    centerLng = (bounds.east + bounds.west) / 2;
+  }
+  return {
+    id,
+    title,
+    bounds,
+    center: [Number(centerLat.toFixed(6)), Number(centerLng.toFixed(6))],
+    defaultPhoto: rawArea.defaultPhoto || null,
+  };
+}
+
+async function loadTrackAreas(trackId, track) {
+  if (!hasPostgresConfig()) return track.areas;
+  await ensurePostgresSchema();
+  const { rows } = await runPgQuery(
+    `
+      SELECT area_id, title, north, south, east, west, center_lat, center_lng
+      FROM photo_areas
+      WHERE track_id = $1
+      ORDER BY area_id
+    `,
+    [trackId]
+  );
+  if (!Array.isArray(rows) || rows.length === 0) return track.areas;
+  const synced = rows
+    .map((r) =>
+      normalizeAreaDefinition({
+        id: r.area_id,
+        title: r.title,
+        bounds: {
+          north: r.north,
+          south: r.south,
+          east: r.east,
+          west: r.west,
+        },
+        center: [r.center_lat, r.center_lng],
+      })
+    )
+    .filter(Boolean);
+  if (!synced.length) return track.areas;
+  const defaultsById = new Map(
+    track.areas.filter((a) => a?.defaultPhoto).map((a) => [String(a.id), a.defaultPhoto])
+  );
+  return synced.map((a) => ({
+    ...a,
+    defaultPhoto: defaultsById.get(String(a.id)) || null,
+  }));
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const trackId = String(searchParams.get("trackId") || "").trim().toLowerCase();
@@ -198,8 +297,16 @@ export async function GET(request) {
     console.error("[photo-areas:GET] storage error", error);
     assignedByArea = {};
   }
+  let trackAreas = track.areas;
+  try {
+    trackAreas = await loadTrackAreas(trackId, track);
+  } catch (error) {
+    console.error("[photo-areas:GET] area-definition load error", error);
+    trackAreas = track.areas;
+  }
+
   assignedByArea = keepMostRecentByAsset(assignedByArea);
-  const areas = track.areas.map((a) => ({
+  const areas = trackAreas.map((a) => ({
     ...a,
     photos: assignedByArea[a.id]?.length
       ? assignedByArea[a.id]
@@ -214,7 +321,7 @@ export async function GET(request) {
           }]
         : [],
   }));
-  const staticAreaIds = new Set(track.areas.map((a) => a.id));
+  const staticAreaIds = new Set(trackAreas.map((a) => a.id));
   for (const [areaId, photos] of Object.entries(assignedByArea)) {
     if (staticAreaIds.has(areaId)) continue;
     areas.push({
@@ -231,4 +338,68 @@ export async function GET(request) {
     },
     { headers: { "Cache-Control": "no-store" } }
   );
+}
+
+export async function POST(request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const trackId = String(body?.trackId || "").trim().toLowerCase();
+  const track = TRACKS[trackId];
+  if (!track) {
+    return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
+  }
+
+  if (!hasPostgresConfig()) {
+    return NextResponse.json({ error: "Area sync storage is not configured" }, { status: 400 });
+  }
+
+  const inputAreas = Array.isArray(body?.areas) ? body.areas : [];
+  const normalized = inputAreas.map(normalizeAreaDefinition).filter(Boolean);
+  if (!normalized.length) {
+    return NextResponse.json({ error: "No valid areas provided" }, { status: 400 });
+  }
+
+  try {
+    await ensurePostgresSchema();
+    await withPgClient(async (client) => {
+      try {
+        await client.query("BEGIN");
+        await client.query("DELETE FROM photo_areas WHERE track_id = $1", [trackId]);
+        const updatedAt = new Date().toISOString();
+        for (const area of normalized) {
+          await client.query(
+            `
+              INSERT INTO photo_areas (track_id, area_id, title, north, south, east, west, center_lat, center_lng, updated_at)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            `,
+            [
+              trackId,
+              area.id,
+              area.title,
+              area.bounds.north,
+              area.bounds.south,
+              area.bounds.east,
+              area.bounds.west,
+              area.center[0],
+              area.center[1],
+              updatedAt,
+            ]
+          );
+        }
+        await client.query("COMMIT");
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
+    });
+    return NextResponse.json({ ok: true, count: normalized.length });
+  } catch (error) {
+    console.error("[photo-areas:POST] area-definition save error", error);
+    return NextResponse.json({ error: "Failed to save area definitions" }, { status: 500 });
+  }
 }
