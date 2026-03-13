@@ -214,6 +214,27 @@ function heatRadiusMeters(bounds) {
   return Math.max(10, Math.hypot(latMeters, lngMeters) * 0.45);
 }
 
+function normalizeCornerMap(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out = {};
+  for (const [cornerIdRaw, value] of Object.entries(raw)) {
+    const cornerId = String(cornerIdRaw || "").trim();
+    if (!cornerId) continue;
+    const lat = Number(value?.lat);
+    const lng = Number(value?.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    out[cornerId] = {
+      lat: Number(lat.toFixed(6)),
+      lng: Number(lng.toFixed(6)),
+    };
+  }
+  return out;
+}
+
+function hasCornerData(cornerMap) {
+  return Object.keys(normalizeCornerMap(cornerMap)).length > 0;
+}
+
 function normalizePhotoArea(area) {
   if (!area || typeof area !== "object") return null;
   const id = String(area.id || "").trim();
@@ -564,6 +585,8 @@ export default function SebringLeaflet() {
       return DEFAULT_CORNERS;
     }
   });
+  const initialCornersRef = useRef(corners);
+  const didRunCornerPersistRef = useRef(false);
   const [cornerCopied, setCornerCopied] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [importText, setImportText] = useState("");
@@ -999,6 +1022,27 @@ export default function SebringLeaflet() {
     }
   };
 
+  const saveCornersToCloud = async (cornersToSave) => {
+    const cleaned = normalizeCornerMap(cornersToSave);
+    if (!Object.keys(cleaned).length) return;
+    const res = await fetch("/api/track-corners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trackId: "sebring", corners: cleaned }),
+    });
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload?.error || `HTTP ${res.status}`);
+    }
+  };
+
+  const loadCornersFromCloud = async () => {
+    const res = await fetch("/api/track-corners?trackId=sebring", { cache: "no-store" });
+    if (!res.ok) throw new Error(`Corners HTTP ${res.status}`);
+    const payload = await res.json();
+    return normalizeCornerMap(payload?.corners);
+  };
+
   const savePhotoAreasToCloud = async (areasToSave) => {
     const cleaned = (Array.isArray(areasToSave) ? areasToSave : [])
       .map((a) => normalizePhotoArea(a))
@@ -1133,6 +1177,50 @@ export default function SebringLeaflet() {
   useEffect(() => {
     loadAssignedAreaPhotos();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncCorners = async () => {
+      try {
+        const remoteCorners = await loadCornersFromCloud();
+        if (cancelled) return;
+
+        const localRaw = window.localStorage.getItem(CORNER_STORAGE_KEY);
+        const hasLocalSnapshot = !!localRaw;
+        const localCorners = normalizeCornerMap(initialCornersRef.current);
+
+        if (hasCornerData(remoteCorners)) {
+          if (!cancelled) setCorners((prev) => ({ ...prev, ...remoteCorners }));
+          return;
+        }
+
+        if (hasLocalSnapshot && hasCornerData(localCorners)) {
+          await saveCornersToCloud(localCorners);
+        }
+      } catch {
+        // keep local/default fallback
+      }
+    };
+
+    syncCorners();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!didRunCornerPersistRef.current) {
+      didRunCornerPersistRef.current = true;
+      return;
+    }
+    const timer = setTimeout(() => {
+      saveCornersToCloud(corners).catch(() => {
+        // keep local storage fallback if cloud persistence fails
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [corners]);
 
   useEffect(() => {
     let cancelled = false;
