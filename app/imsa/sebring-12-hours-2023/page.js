@@ -21,5 +21,11 @@ function listSebring2023Images() {
 
 export default function IMSASebring2023Page() {
   const images = listSebring2023Images();
-  return <SebringGalleryClient images={images} />;
+  return (
+    <SebringGalleryClient
+      images={images}
+      title="Sebring 12 Hours - 2023"
+      emptyMessage="No sebring2023 images found in /public/photos/imsa."
+    />
+  );
 }

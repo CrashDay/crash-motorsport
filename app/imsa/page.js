@@ -1,9 +1,24 @@
-import imsaImages from "@/data/imsa-images.json";
+import fs from "fs";
+import path from "path";
+
+function listAllImsaImages() {
+  const absDir = path.join(process.cwd(), "public", "photos", "imsa");
+  let files = [];
+  try {
+    files = fs.readdirSync(absDir);
+  } catch {
+    return [];
+  }
+  return files
+    .filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+}
 
 function listImages(prefix = "") {
-  if (!prefix) return imsaImages.slice();
+  const files = listAllImsaImages();
+  if (!prefix) return files;
   const p = prefix.toLowerCase();
-  return imsaImages.filter((f) => f.toLowerCase().startsWith(p));
+  return files.filter((f) => f.toLowerCase().startsWith(p));
 }
 
 function pickRandomImage(prefix = "") {
@@ -18,6 +33,8 @@ export default function IMSAIndex() {
   const daytonaCoverSrc = pickRandomImage("imsa");
   const sebring2023Images = listImages("sebring2023-");
   const sebringCoverSrc = pickRandomImage("sebring2023");
+  const sebring2022Images = listImages("sebring_2022-");
+  const sebring2022CoverSrc = pickRandomImage("sebring_2022-");
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
@@ -99,6 +116,29 @@ export default function IMSAIndex() {
                 <div style={{ fontWeight: 800 }}>Sebring 12 Hours - 2023</div>
                 <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
                   {sebring2023Images.length ? `${sebring2023Images.length} photos` : "View gallery -&gt;"}
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a href="/imsa/sebring-12-hours-2022" style={{ textDecoration: "none", color: "#fff" }}>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: 18, overflow: "hidden", width: 320 }}>
+              {sebring2022CoverSrc ? (
+                <img
+                  src={sebring2022CoverSrc}
+                  alt="Sebring 12 Hours 2022 cover"
+                  style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
+                />
+              ) : (
+                <div style={{ height: 180, background: "#222", display: "flex", alignItems: "center", justifyContent: "center", color: "#777" }}>
+                  Add sebring_2022 images to /public/photos/imsa
+                </div>
+              )}
+
+              <div style={{ padding: 14 }}>
+                <div style={{ fontWeight: 800 }}>Sebring 12 Hours - 2022</div>
+                <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
+                  {sebring2022Images.length ? `${sebring2022Images.length} photos` : "View gallery -&gt;"}
                 </div>
               </div>
             </div>

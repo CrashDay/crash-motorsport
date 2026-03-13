@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
 
-export default function SebringGalleryClient({ images }) {
+export default function SebringGalleryClient({
+  images,
+  title = "Sebring 12 Hours - 2023",
+  emptyMessage = "No sebring2023 images found in /public/photos/imsa.",
+}) {
   const [openIndex, setOpenIndex] = useState(null);
   const isOpen = openIndex !== null;
 
@@ -69,7 +73,7 @@ export default function SebringGalleryClient({ images }) {
       </nav>
 
       <section style={{ padding: "28px 24px" }}>
-        <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>Sebring 12 Hours - 2023</h1>
+        <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>{title}</h1>
         <p style={{ color: "#aaa", marginTop: 8, maxWidth: 760 }}>
           Click any image to open full-screen. Use &larr; &rarr; to navigate, Esc to close.
         </p>
@@ -108,7 +112,7 @@ export default function SebringGalleryClient({ images }) {
           </div>
         ) : (
           <div style={{ color: "#888", marginTop: 16 }}>
-            No sebring2023 images found in /public/photos/imsa.
+            {emptyMessage}
           </div>
         )}
       </section>
