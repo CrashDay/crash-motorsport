@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
@@ -169,6 +170,7 @@ function inferPhotoYear(photo) {
     .map((v) => String(v || ""))
     .join(" ")
     .toLowerCase();
+  if (source.includes("wec-sebring-2023") || source.includes("/photos/wec_1000/")) return 2023;
   if (source.includes("sebring_2022") || source.includes("sebring-2022")) return 2022;
   if (source.includes("sebring2023") || source.includes("sebring_2023") || source.includes("sebring-2023")) return 2023;
   const match = source.match(/\b(19|20)\d{2}\b/);
@@ -180,6 +182,13 @@ function inferPhotoYear(photo) {
 function inferPhotoRace(photo) {
   const explicit = String(photo?.race || "").trim();
   if (explicit) return explicit;
+  const source = [photo?.id, photo?.name, photo?.fullUrl, photo?.thumbUrl, photo?.src]
+    .map((v) => String(v || ""))
+    .join(" ")
+    .toLowerCase();
+  if (source.includes("wec-sebring-2023") || source.includes("/photos/wec_1000/")) {
+    return "1000 Miles of Sebring";
+  }
   return "12 Hours of Sebring";
 }
 
@@ -1431,9 +1440,9 @@ export default function SebringLeaflet() {
           maxWidth: "calc(100vw - 24px)",
         }}
       >
-        <a href="/" style={{ color: "#ecf3ff", textDecoration: "none", fontSize: 12, fontWeight: 700, letterSpacing: 0.4 }}>
+        <Link href="/" style={{ color: "#ecf3ff", textDecoration: "none", fontSize: 12, fontWeight: 700, letterSpacing: 0.4 }}>
           Home
-        </a>
+        </Link>
         <a href="/imsa" style={{ color: "#c9d7ef", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
           IMSA
         </a>
@@ -1567,6 +1576,7 @@ export default function SebringLeaflet() {
           >
             <option value="all">All</option>
             <option value="12 Hours of Sebring">12 Hours of Sebring</option>
+            <option value="1000 Miles of Sebring">1000 Miles of Sebring</option>
           </select>
         </div>
         <button
@@ -2296,6 +2306,7 @@ export default function SebringLeaflet() {
                 }}
               >
                 <option value="12 Hours of Sebring">12 Hours of Sebring</option>
+                <option value="1000 Miles of Sebring">1000 Miles of Sebring</option>
               </select>
             </div>
             <div style={{ marginTop: 8 }}>
@@ -2616,4 +2627,3 @@ export default function SebringLeaflet() {
     </div>
   );
 }
-

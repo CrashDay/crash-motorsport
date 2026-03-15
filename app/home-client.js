@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AssignPhotoToArea from "./components/assign-photo-to-area";
 
@@ -204,7 +205,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
 
       <nav className="navWrap">
         {/* BIG logo, tight header */}
-        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
             <span style={{ fontSize: "clamp(22px, 3.4vw, 42px)", fontWeight: 900, letterSpacing: 0.2 }}>
               CrashDayPics
@@ -213,17 +214,20 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
               Mapped by corner, light and speed.
             </span>
           </div>
-        </a>
+        </Link>
 
         <div className="navLinks">
-          <a href="/" style={{ color: "#fff", textDecoration: "none" }}>
+          <Link href="/" style={{ color: "#fff", textDecoration: "none" }}>
             Home
-          </a>
+          </Link>
           <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
             IMSA
           </a>
           <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
             F1
+          </a>
+          <a href="/wec" style={{ color: "#bbb", textDecoration: "none" }}>
+            WEC
           </a>
           <div className="mapsMenu">
             <button type="button" className="mapsButton" aria-haspopup="true">

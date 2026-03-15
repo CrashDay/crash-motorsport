@@ -125,6 +125,7 @@ function inferYearFromPhotoLike(photo) {
     .map((v) => String(v || ""))
     .join(" ")
     .toLowerCase();
+  if (source.includes("wec-sebring-2023") || source.includes("/photos/wec_1000/")) return 2023;
   if (source.includes("sebring_2022") || source.includes("sebring-2022")) return 2022;
   if (source.includes("sebring2023") || source.includes("sebring_2023") || source.includes("sebring-2023")) return 2023;
   const match = source.match(/\b(19|20)\d{2}\b/);
@@ -133,15 +134,34 @@ function inferYearFromPhotoLike(photo) {
   return n >= 1900 && n <= 2100 ? n : null;
 }
 
+function inferRaceFromPhotoLike(photo) {
+  const source = [
+    photo?.id,
+    photo?.name,
+    photo?.thumbUrl,
+    photo?.fullUrl,
+    photo?.asset_id,
+    photo?.asset_name,
+    photo?.thumb_url,
+    photo?.full_url,
+  ]
+    .map((v) => String(v || ""))
+    .join(" ")
+    .toLowerCase();
+  if (source.includes("wec-sebring-2023") || source.includes("/photos/wec_1000/")) return "1000 Miles of Sebring";
+  return "12 Hours of Sebring";
+}
+
 function normalizePhotoYear(raw, fallbackPhoto) {
   const n = Number(raw);
   if (Number.isInteger(n) && n >= 1900 && n <= 2100) return n;
   return inferYearFromPhotoLike(fallbackPhoto);
 }
 
-function normalizePhotoRace(raw) {
+function normalizePhotoRace(raw, fallbackPhoto) {
   const race = String(raw || "").trim();
-  return race || "12 Hours of Sebring";
+  if (race) return race;
+  return inferRaceFromPhotoLike(fallbackPhoto);
 }
 
 function groupAssignedRows(rows) {
@@ -154,7 +174,7 @@ function groupAssignedRows(rows) {
       thumbUrl: r.thumb_url,
       fullUrl: r.full_url,
       year: normalizePhotoYear(r.year, r),
-      race: normalizePhotoRace(r.race),
+      race: normalizePhotoRace(r.race, r),
       assignedAt: r.assigned_at,
     });
   }

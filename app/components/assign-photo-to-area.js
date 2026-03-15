@@ -211,6 +211,8 @@ export default function AssignPhotoToArea({ asset }) {
           name: asset.name || asset.id,
           thumbUrl: asset.thumbUrl || asset.fullUrl,
           fullUrl: asset.fullUrl || asset.thumbUrl,
+          year: asset.year,
+          race: asset.race,
         },
       });
       setMsg("Assigned");
@@ -327,4 +329,3 @@ export default function AssignPhotoToArea({ asset }) {
     </>
   );
 }
-

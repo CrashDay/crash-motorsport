@@ -110,6 +110,7 @@ function inferYearFromAsset({ assetId, assetName, thumbUrl, fullUrl }) {
     .map((v) => String(v || ""))
     .join(" ")
     .toLowerCase();
+  if (source.includes("wec-sebring-2023") || source.includes("/photos/wec_1000/")) return 2023;
   if (source.includes("sebring_2022") || source.includes("sebring-2022")) return 2022;
   if (source.includes("sebring2023") || source.includes("sebring_2023") || source.includes("sebring-2023")) return 2023;
   const match = source.match(/\b(19|20)\d{2}\b/);

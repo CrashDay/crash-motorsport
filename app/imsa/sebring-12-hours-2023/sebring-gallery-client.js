@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
 
@@ -7,6 +8,12 @@ export default function SebringGalleryClient({
   images,
   title = "Sebring 12 Hours - 2023",
   emptyMessage = "No sebring2023 images found in /public/photos/imsa.",
+  basePath = "/photos/imsa",
+  backHref = "/imsa",
+  backLabel = "Back to IMSA",
+  assetSeries = "imsa",
+  assetYear = null,
+  assetRace = "",
 }) {
   const [openIndex, setOpenIndex] = useState(null);
   const isOpen = openIndex !== null;
@@ -49,15 +56,22 @@ export default function SebringGalleryClient({
   }, [isOpen]);
 
   const activeName = openIndex !== null ? images[openIndex] : null;
-  const activeSrc = activeName ? `/photos/imsa/${activeName}` : null;
+  const activeSrc = activeName ? `${basePath}/${activeName}` : null;
   const activeAsset = activeName
-    ? { id: `imsa:${activeName}`, name: activeName, thumbUrl: activeSrc, fullUrl: activeSrc }
+    ? {
+        id: `${assetSeries}:${activeName}`,
+        name: activeName,
+        thumbUrl: activeSrc,
+        fullUrl: activeSrc,
+        year: assetYear,
+        race: assetRace,
+      }
     : null;
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
       <nav style={{ display: "flex", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #222" }}>
-        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
             <span style={{ fontSize: "clamp(22px, 3.4vw, 42px)", fontWeight: 900, letterSpacing: 0.2 }}>
               CrashDayPics
@@ -66,10 +80,10 @@ export default function SebringGalleryClient({
               Mapped by corner, light and speed.
             </span>
           </div>
-        </a>
-        <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>
-          &larr; Back to IMSA
-        </a>
+        </Link>
+        <Link href={backHref} style={{ color: "#bbb", textDecoration: "none" }}>
+          &larr; {backLabel}
+        </Link>
       </nav>
 
       <section style={{ padding: "28px 24px" }}>
@@ -96,7 +110,7 @@ export default function SebringGalleryClient({
                 aria-label={`Open ${name}`}
               >
                 <img
-                  src={`/photos/imsa/${name}`}
+                  src={`${basePath}/${name}`}
                   alt={name}
                   style={{
                     width: "100%",
