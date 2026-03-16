@@ -1,6 +1,7 @@
 import fs from "fs";
 import Link from "next/link";
 import path from "path";
+import { loadSharedAlbums } from "@/lib/shared-albums";
 
 function listWecImages() {
   const absDir = path.join(process.cwd(), "public", "photos", "wec_1000");
@@ -21,9 +22,18 @@ function pickRandomImage(images) {
   return `/photos/wec_1000/${pick}`;
 }
 
-export default function WECIndexPage() {
+function toCardImage(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  return raw.startsWith("https://photos.adobe.io/")
+    ? `/api/remote-image?url=${encodeURIComponent(raw)}`
+    : raw;
+}
+
+export default async function WECIndexPage() {
   const sebringImages = listWecImages();
   const coverSrc = pickRandomImage(sebringImages);
+  const sharedAlbums = await loadSharedAlbums("wec");
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
@@ -74,6 +84,31 @@ export default function WECIndexPage() {
               </div>
             </div>
           </Link>
+
+          {sharedAlbums.map((album) => (
+            <Link key={album.albumKey} href={`/wec/albums/${album.slug}`} style={{ textDecoration: "none", color: "#fff" }}>
+              <div style={{ background: "#111", border: "1px solid #222", borderRadius: 18, overflow: "hidden", width: 320 }}>
+                {album.coverThumbUrl ? (
+                  <img
+                    src={toCardImage(album.coverThumbUrl)}
+                    alt={`${album.title} cover`}
+                    style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
+                  />
+                ) : (
+                  <div style={{ height: 180, background: "#222", display: "flex", alignItems: "center", justifyContent: "center", color: "#777" }}>
+                    Shared album
+                  </div>
+                )}
+
+                <div style={{ padding: 14 }}>
+                  <div style={{ fontWeight: 800 }}>{album.title}</div>
+                  <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
+                    {album.race && album.year ? `${album.race} - ${album.year}` : "Shared Lightroom album"}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
     </div>

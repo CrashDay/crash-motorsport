@@ -1,4 +1,6 @@
 import f1Images from "@/data/f1-images.json";
+import Link from "next/link";
+import { loadSharedAlbums } from "@/lib/shared-albums";
 
 function listImages(prefix = "") {
   if (!prefix) return f1Images.slice();
@@ -13,16 +15,25 @@ function pickRandomImage(prefix = "") {
   return `/photos/f1/${pick}`;
 }
 
-export default function F1Index() {
+function toCardImage(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  return raw.startsWith("https://photos.adobe.io/")
+    ? `/api/remote-image?url=${encodeURIComponent(raw)}`
+    : raw;
+}
+
+export default async function F1Index() {
   const imolaImages = listImages("imola");
   const monacoImages = listImages("monaco");
   const imolaCoverSrc = pickRandomImage("imola");
   const monacoCoverSrc = pickRandomImage("monaco");
+  const sharedAlbums = await loadSharedAlbums("f1");
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#fff", fontFamily: "system-ui" }}>
       <nav style={{ display: "flex", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #222" }}>
-        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
             <span style={{ fontSize: "clamp(22px, 3.4vw, 42px)", fontWeight: 900, letterSpacing: 0.2 }}>
               CrashDayPics
@@ -31,10 +42,10 @@ export default function F1Index() {
               Mapped by corner, light and speed.
             </span>
           </div>
-        </a>
+        </Link>
 
         <div style={{ display: "flex", gap: 18, fontSize: 12, letterSpacing: 3, textTransform: "uppercase", color: "#bbb", alignItems: "center" }}>
-          <a href="/" style={{ color: "#bbb", textDecoration: "none" }}>Home</a>
+          <Link href="/" style={{ color: "#bbb", textDecoration: "none" }}>Home</Link>
           <a href="/imsa" style={{ color: "#bbb", textDecoration: "none" }}>IMSA</a>
           <a href="/f1" style={{ color: "#fff", textDecoration: "none" }}>F1</a>
           <details style={{ position: "relative" }}>
@@ -103,6 +114,31 @@ export default function F1Index() {
               </div>
             </div>
           </a>
+
+          {sharedAlbums.map((album) => (
+            <a key={album.albumKey} href={`/f1/albums/${album.slug}`} style={{ textDecoration: "none", color: "#fff" }}>
+              <div style={{ background: "#111", border: "1px solid #222", borderRadius: 18, overflow: "hidden", width: 320 }}>
+                {album.coverThumbUrl ? (
+                  <img
+                    src={toCardImage(album.coverThumbUrl)}
+                    alt={`${album.title} cover`}
+                    style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
+                  />
+                ) : (
+                  <div style={{ height: 180, background: "#222", display: "flex", alignItems: "center", justifyContent: "center", color: "#777" }}>
+                    Shared album
+                  </div>
+                )}
+
+                <div style={{ padding: 14 }}>
+                  <div style={{ fontWeight: 800 }}>{album.title}</div>
+                  <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
+                    {album.race && album.year ? `${album.race} - ${album.year}` : "Shared Lightroom album"}
+                  </div>
+                </div>
+              </div>
+            </a>
+          ))}
         </div>
       </section>
     </div>

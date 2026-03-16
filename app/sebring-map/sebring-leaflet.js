@@ -5,6 +5,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { SHARED_ALBUM_SERIES } from "@/lib/shared-album-constants";
 
 const CORNER_ORDER = [
   { short: "T1", name: "Turn 1" },
@@ -160,7 +161,11 @@ function getRenderablePhotoUrl(photo) {
     if (!link) return "";
     return `/api/share-photo/preview?url=${encodeURIComponent(link)}`;
   }
-  return String(photo.fullUrl || photo.src || photo.thumbUrl || "").trim();
+  const raw = String(photo.fullUrl || photo.src || photo.thumbUrl || "").trim();
+  if (raw.startsWith("https://photos.adobe.io/")) {
+    return `/api/remote-image?url=${encodeURIComponent(raw)}`;
+  }
+  return raw;
 }
 
 function inferPhotoYear(photo) {
@@ -645,6 +650,14 @@ export default function SebringLeaflet() {
   const [shareSubmitting, setShareSubmitting] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
   const [shareOpen, setShareOpen] = useState(false);
+  const [shareAlbumShortLink, setShareAlbumShortLink] = useState("");
+  const [shareAlbumSeries, setShareAlbumSeries] = useState("imsa");
+  const [shareAlbumYear, setShareAlbumYear] = useState("2023");
+  const [shareAlbumRace, setShareAlbumRace] = useState("12 Hours of Sebring");
+  const [shareAlbumAreaId, setShareAlbumAreaId] = useState("");
+  const [shareAlbumSubmitting, setShareAlbumSubmitting] = useState(false);
+  const [shareAlbumMsg, setShareAlbumMsg] = useState("");
+  const [shareAlbumOpen, setShareAlbumOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("all");
   const [raceFilter, setRaceFilter] = useState("all");
   const [isMobileToolsHidden, setIsMobileToolsHidden] = useState(false);
@@ -710,7 +723,7 @@ export default function SebringLeaflet() {
     setAreaStyleDraft(areaVisualMode);
   }, [areaVisualMode]);
 
-  const allAreaRows = [
+  const allAreaRowsBase = [
     {
       ...TURN3_INSIDE_AREA,
       photos: [{ id: "builtin-photo-turn3", src: "/photos/imsa/sebring1.jpg", alt: "Turn 3 Inside" }],
@@ -725,18 +738,42 @@ export default function SebringLeaflet() {
         : Array.isArray(area.photos)
           ? area.photos
           : []
-    )
-      .map((p) => ({
-        ...p,
-        year: inferPhotoYear(p) || 2023,
-        race: inferPhotoRace(p),
-      }))
+    ).map((p) => ({
+      ...p,
+      year: inferPhotoYear(p) || 2023,
+      race: inferPhotoRace(p),
+    })),
+  }));
+  const availableYears = useMemo(() => {
+    const years = new Set([2022, 2023]);
+    allAreaRowsBase.forEach((area) => {
+      area.photos.forEach((photo) => {
+        const year = Number(photo?.year);
+        if (Number.isInteger(year)) years.add(year);
+      });
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [allAreaRowsBase]);
+  const availableRaces = useMemo(() => {
+    const races = new Set(["12 Hours of Sebring", "1000 Miles of Sebring"]);
+    allAreaRowsBase.forEach((area) => {
+      area.photos.forEach((photo) => {
+        const race = String(photo?.race || "").trim();
+        if (race) races.add(race);
+      });
+    });
+    return Array.from(races).sort((a, b) => a.localeCompare(b));
+  }, [allAreaRowsBase]);
+  const allAreaRows = allAreaRowsBase
+    .map((area) => ({
+      ...area,
+      photos: area.photos
       .filter((p) => {
         const yearOk = yearFilter === "all" ? true : Number(p.year) === Number(yearFilter);
         const raceOk = raceFilter === "all" ? true : String(p.race || "") === raceFilter;
         return yearOk && raceOk;
       }),
-  }));
+    }));
   const maxAreaPhotoCount = useMemo(
     () => Math.max(1, ...allAreaRows.map((area) => (Array.isArray(area.photos) ? area.photos.length : 0))),
     [allAreaRows]
@@ -1374,6 +1411,62 @@ export default function SebringLeaflet() {
     }
   };
 
+  const submitShareAlbum = async () => {
+    const trimmedShortLink = (shareAlbumShortLink || "").trim();
+    const trimmedAreaId = (shareAlbumAreaId || "").trim();
+    const trimmedSeries = (shareAlbumSeries || "").trim();
+    const trimmedRace = (shareAlbumRace || "").trim();
+    const trimmedYear = (shareAlbumYear || "").trim();
+
+    if (!trimmedShortLink) {
+      setShareAlbumMsg("Lightroom shared album short link is required.");
+      return;
+    }
+    if (!trimmedSeries) {
+      setShareAlbumMsg("Series is required.");
+      return;
+    }
+    if (!trimmedYear || !/^\d{4}$/.test(trimmedYear)) {
+      setShareAlbumMsg("Year must be a 4-digit number.");
+      return;
+    }
+    if (!trimmedRace) {
+      setShareAlbumMsg("Race is required.");
+      return;
+    }
+
+    setShareAlbumSubmitting(true);
+    setShareAlbumMsg("");
+    try {
+      const res = await fetch("/api/share-album", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shortLink: trimmedShortLink,
+          series: trimmedSeries,
+          year: Number(trimmedYear),
+          race: trimmedRace,
+          areaId: trimmedAreaId,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+
+      await Promise.all([loadPinsCount(), loadAssignedAreaPhotos()]);
+      setShareAlbumMsg(`Imported ${payload?.imported_count || 0} album photos.`);
+      setShareAlbumShortLink("");
+      setShareAlbumSeries("imsa");
+      setShareAlbumYear("2023");
+      setShareAlbumRace("12 Hours of Sebring");
+      setShareAlbumAreaId("");
+      setShareAlbumOpen(false);
+    } catch (e) {
+      setShareAlbumMsg(`Share failed: ${String(e?.message || e)}`);
+    } finally {
+      setShareAlbumSubmitting(false);
+    }
+  };
+
 
   const geoStyle = useMemo(() => {
     return (feature) => {
@@ -1545,8 +1638,11 @@ export default function SebringLeaflet() {
             }}
           >
             <option value="all">All</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
+            {availableYears.map((year) => (
+              <option key={`filter-year-${year}`} value={String(year)}>
+                {year}
+              </option>
+            ))}
           </select>
         </div>
         <div
@@ -1575,8 +1671,11 @@ export default function SebringLeaflet() {
             }}
           >
             <option value="all">All</option>
-            <option value="12 Hours of Sebring">12 Hours of Sebring</option>
-            <option value="1000 Miles of Sebring">1000 Miles of Sebring</option>
+            {availableRaces.map((race) => (
+              <option key={`filter-race-${race}`} value={race}>
+                {race}
+              </option>
+            ))}
           </select>
         </div>
         <button
@@ -1600,6 +1699,28 @@ export default function SebringLeaflet() {
           }}
         >
           Share Photo
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setShareAlbumOpen(true);
+            setShareAlbumMsg("");
+          }}
+          style={{
+            background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
+            border: "1px solid #ffb18f",
+            color: "#fff",
+            padding: "9px 14px",
+            borderRadius: 999,
+            cursor: "pointer",
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: 0.3,
+            boxShadow: "0 10px 24px rgba(255, 77, 20, 0.45), inset 0 0 0 1px rgba(255,255,255,0.2)",
+            textTransform: "uppercase",
+          }}
+        >
+          Share Album
         </button>
       </div>
 
@@ -2422,6 +2543,187 @@ export default function SebringLeaflet() {
             {shareMsg ? (
               <div style={{ marginTop: 8, color: shareMsg.startsWith("Share failed") ? "#ff9a9a" : "#9dd8a3", fontSize: 12 }}>
                 {shareMsg}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {shareAlbumOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Share album"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setShareAlbumOpen(false);
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 20010,
+            background: "rgba(0,0,0,0.72)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              width: "min(520px, 96vw)",
+              maxHeight: "calc(100vh - 32px)",
+              overflowY: "auto",
+              background: "linear-gradient(165deg, rgba(8,15,27,0.98), rgba(7,12,21,0.94))",
+              color: "#f4f8ff",
+              border: "1px solid rgba(120, 170, 255, 0.36)",
+              borderRadius: 14,
+              boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
+              padding: 12,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Share Album</div>
+            <div style={{ color: "#b8c4d8", marginBottom: 8, fontSize: 12 }}>
+              Lightroom shared album short link is required. The album title comes from Lightroom and a new album page is created under the selected series. Race and year are published with it.
+            </div>
+            <input
+              type="url"
+              value={shareAlbumShortLink}
+              onChange={(e) => setShareAlbumShortLink(e.target.value)}
+              placeholder="https://adobe.ly/..."
+              style={{
+                width: "100%",
+                background: "#101827",
+                border: "1px solid #2a3a57",
+                color: "#fff",
+                borderRadius: 8,
+                padding: "8px 10px",
+                fontSize: 13,
+              }}
+            />
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Series</div>
+              <select
+                value={shareAlbumSeries}
+                onChange={(e) => setShareAlbumSeries(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              >
+                {SHARED_ALBUM_SERIES.map((series) => (
+                  <option key={`share-album-series-${series.key}`} value={series.key}>
+                    {series.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Year</div>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={shareAlbumYear}
+                onChange={(e) => setShareAlbumYear(e.target.value)}
+                placeholder="2025"
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              />
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Race</div>
+              <input
+                list="share-album-race-options"
+                value={shareAlbumRace}
+                onChange={(e) => setShareAlbumRace(e.target.value)}
+                placeholder="12 Hours of Sebring"
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              />
+              <datalist id="share-album-race-options">
+                {availableRaces.map((race) => (
+                  <option key={`share-album-race-${race}`} value={race} />
+                ))}
+              </datalist>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Photo area (optional)</div>
+              <select
+                value={shareAlbumAreaId}
+                onChange={(e) => setShareAlbumAreaId(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              >
+                <option value="">Assign later</option>
+                {allAreaRows.map((area) => (
+                  <option key={`share-album-area-${area.id}`} value={area.id}>
+                    {area.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setShareAlbumOpen(false)}
+                style={{
+                  background: "#111",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontSize: 12,
+                }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={submitShareAlbum}
+                disabled={shareAlbumSubmitting}
+                style={{
+                  background: "#15233a",
+                  border: "1px solid #325080",
+                  color: "#fff",
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  cursor: shareAlbumSubmitting ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: shareAlbumSubmitting ? 0.7 : 1,
+                }}
+              >
+                {shareAlbumSubmitting ? "Sharing..." : "Share Album"}
+              </button>
+            </div>
+            {shareAlbumMsg ? (
+              <div style={{ marginTop: 8, color: shareAlbumMsg.startsWith("Share failed") ? "#ff9a9a" : "#9dd8a3", fontSize: 12 }}>
+                {shareAlbumMsg}
               </div>
             ) : null}
           </div>

@@ -4,8 +4,23 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
 
+function getDisplayImageUrl(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw);
+    if (parsed.hostname.toLowerCase() === "photos.adobe.io") {
+      return `/api/remote-image?url=${encodeURIComponent(raw)}`;
+    }
+  } catch {
+    // local path or invalid URL; return as-is
+  }
+  return raw;
+}
+
 export default function SebringGalleryClient({
   images,
+  sharedAssets = [],
   title = "Sebring 12 Hours - 2023",
   emptyMessage = "No sebring2023 images found in /public/photos/imsa.",
   basePath = "/photos/imsa",
@@ -15,6 +30,27 @@ export default function SebringGalleryClient({
   assetYear = null,
   assetRace = "",
 }) {
+  const items = [
+    ...images.map((name) => {
+      const src = `${basePath}/${name}`;
+      return {
+        id: `${assetSeries}:${name}`,
+        name,
+        thumbUrl: src,
+        fullUrl: src,
+        year: assetYear,
+        race: assetRace,
+      };
+    }),
+    ...sharedAssets.map((asset) => ({
+      id: String(asset?.id || ""),
+      name: String(asset?.name || asset?.id || "Shared album photo"),
+      thumbUrl: String(asset?.thumbUrl || asset?.fullUrl || "").trim(),
+      fullUrl: String(asset?.fullUrl || asset?.thumbUrl || "").trim(),
+      year: asset?.year ?? assetYear,
+      race: asset?.race || assetRace,
+    })),
+  ].filter((item) => item.id && item.thumbUrl && item.fullUrl);
   const [openIndex, setOpenIndex] = useState(null);
   const isOpen = openIndex !== null;
 
@@ -24,15 +60,15 @@ export default function SebringGalleryClient({
 
   function prev() {
     setOpenIndex((i) => {
-      if (i === null || !images.length) return i;
-      return (i - 1 + images.length) % images.length;
+      if (i === null || !items.length) return i;
+      return (i - 1 + items.length) % items.length;
     });
   }
 
   function next() {
     setOpenIndex((i) => {
-      if (i === null || !images.length) return i;
-      return (i + 1) % images.length;
+      if (i === null || !items.length) return i;
+      return (i + 1) % items.length;
     });
   }
 
@@ -55,16 +91,17 @@ export default function SebringGalleryClient({
     };
   }, [isOpen]);
 
-  const activeName = openIndex !== null ? images[openIndex] : null;
-  const activeSrc = activeName ? `${basePath}/${activeName}` : null;
-  const activeAsset = activeName
+  const activeItem = openIndex !== null ? items[openIndex] : null;
+  const activeName = activeItem?.name || null;
+  const activeSrc = activeItem?.fullUrl || null;
+  const activeAsset = activeItem
     ? {
-        id: `${assetSeries}:${activeName}`,
-        name: activeName,
-        thumbUrl: activeSrc,
-        fullUrl: activeSrc,
-        year: assetYear,
-        race: assetRace,
+        id: activeItem.id,
+        name: activeItem.name,
+        thumbUrl: activeItem.thumbUrl,
+        fullUrl: activeItem.fullUrl,
+        year: activeItem.year,
+        race: activeItem.race,
       }
     : null;
 
@@ -92,11 +129,11 @@ export default function SebringGalleryClient({
           Click any image to open full-screen. Use &larr; &rarr; to navigate, Esc to close.
         </p>
 
-        {images.length ? (
+        {items.length ? (
           <div className="galleryGrid">
-            {images.map((name, idx) => (
+            {items.map((item, idx) => (
               <button
-                key={name}
+                key={item.id}
                 type="button"
                 onClick={() => setOpenIndex(idx)}
                 style={{
@@ -107,11 +144,11 @@ export default function SebringGalleryClient({
                   cursor: "pointer",
                   overflow: "hidden",
                 }}
-                aria-label={`Open ${name}`}
+                aria-label={`Open ${item.name}`}
               >
                 <img
-                  src={`${basePath}/${name}`}
-                  alt={name}
+                  src={getDisplayImageUrl(item.thumbUrl)}
+                  alt={item.name}
                   style={{
                     width: "100%",
                     height: "auto",
@@ -163,7 +200,7 @@ export default function SebringGalleryClient({
             }}
           >
             <div style={{ color: "#bbb", fontSize: 13 }}>
-              {openIndex + 1} / {images.length} - {activeName}
+              {openIndex + 1} / {items.length} - {activeName}
             </div>
 
             <div style={{ display: "flex", gap: 8 }}>
@@ -229,7 +266,7 @@ export default function SebringGalleryClient({
           </button>
 
           <img
-            src={activeSrc}
+            src={getDisplayImageUrl(activeSrc)}
             alt={activeName || "Selected image"}
             style={{
               maxWidth: "calc(100vw - 120px)",
