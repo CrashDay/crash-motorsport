@@ -105,7 +105,7 @@ export default async function WECIndexPage() {
                 <div style={{ padding: 14 }}>
                   <div style={{ fontWeight: 800 }}>{album.title}</div>
                   <div style={{ color: "#aaa", fontSize: 13, marginTop: 4 }}>
-                    {album.race && album.year ? `${album.race} - ${album.year}` : "Shared Lightroom album"}
+                    {album.photoCount ? `${album.photoCount} photos` : "View gallery -&gt;"}
                   </div>
                 </div>
               </div>
