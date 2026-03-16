@@ -1,5 +1,7 @@
 import SharedAlbumPage from "@/app/components/shared-album-page";
 
+export const dynamic = "force-dynamic";
+
 export default async function F1SharedAlbumPage({ params }) {
   const awaitedParams = await params;
   return SharedAlbumPage({

@@ -3,6 +3,8 @@ import Link from "next/link";
 import path from "path";
 import { loadSharedAlbums } from "@/lib/shared-albums";
 
+export const dynamic = "force-dynamic";
+
 function listWecImages() {
   const absDir = path.join(process.cwd(), "public", "photos", "wec_1000");
   let files = [];

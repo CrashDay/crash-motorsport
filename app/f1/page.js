@@ -2,6 +2,8 @@ import f1Images from "@/data/f1-images.json";
 import Link from "next/link";
 import { loadSharedAlbums } from "@/lib/shared-albums";
 
+export const dynamic = "force-dynamic";
+
 function listImages(prefix = "") {
   if (!prefix) return f1Images.slice();
   const p = prefix.toLowerCase();

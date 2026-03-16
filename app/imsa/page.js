@@ -3,6 +3,8 @@ import path from "path";
 import Link from "next/link";
 import { loadSharedAlbums } from "@/lib/shared-albums";
 
+export const dynamic = "force-dynamic";
+
 function listAllImsaImages() {
   const absDir = path.join(process.cwd(), "public", "photos", "imsa");
   let files = [];
