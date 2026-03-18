@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { Client } from "pg";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import { getAreaAssetsByTrack, getDb } from "@/lib/db";
+import lightroomImageUrl from "@/lib/lightroom-image-url";
+
+const { normalizeLightroomImageUrl } = lightroomImageUrl;
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -171,8 +174,8 @@ function groupAssignedRows(rows) {
     byArea[r.area_id].push({
       id: r.asset_id,
       name: r.asset_name || r.asset_id,
-      thumbUrl: r.thumb_url,
-      fullUrl: r.full_url,
+      thumbUrl: normalizeLightroomImageUrl(r.thumb_url),
+      fullUrl: normalizeLightroomImageUrl(r.full_url),
       year: normalizePhotoYear(r.year, r),
       race: normalizePhotoRace(r.race, r),
       assignedAt: r.assigned_at,

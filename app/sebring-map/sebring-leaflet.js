@@ -5,7 +5,10 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import lightroomImageUrl from "@/lib/lightroom-image-url";
 import { SHARED_ALBUM_SERIES } from "@/lib/shared-album-constants";
+
+const { normalizeLightroomImageUrl } = lightroomImageUrl;
 
 const CORNER_ORDER = [
   { short: "T1", name: "Turn 1" },
@@ -161,11 +164,7 @@ function getRenderablePhotoUrl(photo) {
     if (!link) return "";
     return `/api/share-photo/preview?url=${encodeURIComponent(link)}`;
   }
-  const raw = String(photo.fullUrl || photo.src || photo.thumbUrl || "").trim();
-  if (raw.startsWith("https://photos.adobe.io/")) {
-    return `/api/remote-image?url=${encodeURIComponent(raw)}`;
-  }
-  return raw;
+  return normalizeLightroomImageUrl(photo.fullUrl || photo.src || photo.thumbUrl || "");
 }
 
 function inferPhotoYear(photo) {

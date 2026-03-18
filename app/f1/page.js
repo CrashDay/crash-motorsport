@@ -1,6 +1,9 @@
 import f1Images from "@/data/f1-images.json";
 import Link from "next/link";
+import lightroomImageUrl from "@/lib/lightroom-image-url";
 import { loadSharedAlbums } from "@/lib/shared-albums";
+
+const { normalizeLightroomImageUrl } = lightroomImageUrl;
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +21,7 @@ function pickRandomImage(prefix = "") {
 }
 
 function toCardImage(url) {
-  const raw = String(url || "").trim();
-  if (!raw) return "";
-  return raw.startsWith("https://photos.adobe.io/")
-    ? `/api/remote-image?url=${encodeURIComponent(raw)}`
-    : raw;
+  return normalizeLightroomImageUrl(url);
 }
 
 export default async function F1Index() {

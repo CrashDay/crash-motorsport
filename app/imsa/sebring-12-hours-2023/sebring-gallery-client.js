@@ -3,18 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
+import lightroomImageUrl from "@/lib/lightroom-image-url";
+
+const { normalizeLightroomImageUrl } = lightroomImageUrl;
 
 function getDisplayImageUrl(url) {
-  const raw = String(url || "").trim();
+  const raw = normalizeLightroomImageUrl(url);
   if (!raw) return "";
-  try {
-    const parsed = new URL(raw);
-    if (parsed.hostname.toLowerCase() === "photos.adobe.io") {
-      return `/api/remote-image?url=${encodeURIComponent(raw)}`;
-    }
-  } catch {
-    // local path or invalid URL; return as-is
-  }
   return raw;
 }
 

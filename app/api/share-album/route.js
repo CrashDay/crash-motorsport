@@ -12,7 +12,10 @@ import {
   upsertSharedAlbum,
 } from "@/lib/db";
 import { getProjectorForTrack } from "@/lib/geo-projector";
+import lightroomImageUrl from "@/lib/lightroom-image-url";
 import { isValidSharedAlbumSeries, slugifyAlbumTitle } from "@/lib/shared-albums";
+
+const { normalizeLightroomImageUrl } = lightroomImageUrl;
 
 const TRACK_ID = "sebring";
 const STATIC_AREA_IDS = new Set(sebringAreas.map((a) => a.id));
@@ -474,10 +477,13 @@ export async function POST(request) {
       const sharedAssetId = `shared-album:${series}:${slug}:${asset.id}`;
       const captureTime = pickCaptureTime(asset);
       const fileName = String(asset?.payload?.importSource?.fileName || asset?.id).trim() || asset.id;
-      const thumbUrl = toAbsoluteUrl(assetsBase, asset?.links?.["/rels/rendition_type/thumbnail2x"]?.href);
-      const fullUrl =
+      const thumbUrl = normalizeLightroomImageUrl(
+        toAbsoluteUrl(assetsBase, asset?.links?.["/rels/rendition_type/thumbnail2x"]?.href)
+      );
+      const fullUrl = normalizeLightroomImageUrl(
         toAbsoluteUrl(assetsBase, asset?.links?.["/rels/rendition_type/2048"]?.href) ||
-        toAbsoluteUrl(assetsBase, asset?.links?.["/rels/rendition_type/fullsize"]?.href);
+          toAbsoluteUrl(assetsBase, asset?.links?.["/rels/rendition_type/fullsize"]?.href)
+      );
       const photoName = fileName;
 
       if (!thumbUrl || !fullUrl) continue;
