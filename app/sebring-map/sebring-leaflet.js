@@ -1847,6 +1847,52 @@ export default function SebringLeaflet() {
           Share Album
         </button>
       </div>
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 10000,
+          top: 136,
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+          justifyContent: "center",
+          background: "rgba(8,14,26,0.86)",
+          border: "1px solid rgba(137, 179, 255, 0.32)",
+          borderRadius: 999,
+          padding: "6px 12px",
+          maxWidth: "calc(100vw - 24px)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#dfe8ff", fontSize: 11, fontWeight: 700 }}>
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: 999,
+              background: "rgb(210, 40, 40)",
+              boxShadow: "0 0 0 6px rgba(210, 40, 40, 0.18)",
+              display: "inline-block",
+            }}
+          />
+          Photo Areas
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#dfe8ff", fontSize: 11, fontWeight: 700 }}>
+          <span
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: 999,
+              background: "#ffd84d",
+              boxShadow: "0 0 0 6px rgba(255, 216, 77, 0.2)",
+              display: "inline-block",
+            }}
+          />
+          Geo Located
+        </div>
+      </div>
 
       <div style={{ position: "relative", height: "100%", width: "100%" }}>
       {err ? (
