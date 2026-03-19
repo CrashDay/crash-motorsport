@@ -778,10 +778,33 @@ export default function SebringLeaflet() {
     () => Math.max(1, ...allAreaRows.map((area) => (Array.isArray(area.photos) ? area.photos.length : 0))),
     [allAreaRows]
   );
-  const visibleGpsPins = useMemo(
-    () => pins.filter((pin) => Number.isFinite(pin?.lat) && Number.isFinite(pin?.lng)),
-    [pins]
-  );
+  const visibleGpsPins = useMemo(() => {
+    const grouped = new Map();
+    for (const pin of pins) {
+      if (!Number.isFinite(pin?.lat) || !Number.isFinite(pin?.lng)) continue;
+      const key = `${Number(pin.lat).toFixed(6)}:${Number(pin.lng).toFixed(6)}`;
+      const existing = grouped.get(key);
+      const photoCount = Number(pin?.photo_count || 0);
+      if (existing) {
+        existing.photo_count += photoCount;
+        if (!existing.cover_thumb_url && pin?.cover_thumb_url) {
+          existing.cover_thumb_url = pin.cover_thumb_url;
+        }
+        existing.pin_ids.push(pin.pin_id);
+        continue;
+      }
+      grouped.set(key, {
+        pin_id: `cluster:${key}`,
+        pin_ids: [pin.pin_id],
+        lat: Number(pin.lat),
+        lng: Number(pin.lng),
+        title: pin.title || "GPS Photos",
+        photo_count: photoCount,
+        cover_thumb_url: pin.cover_thumb_url || null,
+      });
+    }
+    return Array.from(grouped.values());
+  }, [pins]);
 
   const closeAreaViewer = () => {
     setAreaViewer({ open: false, areaId: "", title: "", photos: [], index: 0 });
@@ -2799,12 +2822,17 @@ export default function SebringLeaflet() {
           <CircleMarker
             key={pin.pin_id}
             center={[pin.lat, pin.lng]}
-            radius={6}
+            radius={Math.min(16, Math.max(6, 6 + Math.log2(Math.max(1, Number(pin.photo_count || 1))) * 2))}
             pathOptions={{ color: "#ff7a18", fillColor: "#ffd84d", fillOpacity: 0.95, weight: 2 }}
           >
+            <Tooltip direction="top" offset={[0, -8]} opacity={1} permanent>
+              <div style={{ fontSize: 11, fontWeight: 800 }}>{pin.photo_count || 0}</div>
+            </Tooltip>
             <Popup maxWidth={360} minWidth={220}>
               <div style={{ width: "min(320px, 82vw)" }}>
-                <div style={{ fontWeight: 700 }}>{pin.title || "GPS Photo"}</div>
+                <div style={{ fontWeight: 700 }}>
+                  {Number(pin.photo_count || 0) > 1 ? "GPS Photo Cluster" : pin.title || "GPS Photo"}
+                </div>
                 <div style={{ marginTop: 4, color: "#9fb2d6", fontSize: 12 }}>
                   {pin.photo_count || 0} photo{Number(pin.photo_count || 0) === 1 ? "" : "s"}
                 </div>
