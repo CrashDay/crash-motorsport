@@ -1851,19 +1851,18 @@ export default function SebringLeaflet() {
         style={{
           position: "absolute",
           zIndex: 10000,
-          top: 136,
-          left: "50%",
-          transform: "translateX(-50%)",
+          top: 12,
+          right: 12,
           display: "flex",
           alignItems: "center",
           gap: 12,
           flexWrap: "wrap",
-          justifyContent: "center",
+          justifyContent: "flex-end",
           background: "rgba(8,14,26,0.86)",
           border: "1px solid rgba(137, 179, 255, 0.32)",
           borderRadius: 999,
           padding: "6px 12px",
-          maxWidth: "calc(100vw - 24px)",
+          maxWidth: "min(360px, calc(100vw - 24px))",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#dfe8ff", fontSize: 11, fontWeight: 700 }}>
