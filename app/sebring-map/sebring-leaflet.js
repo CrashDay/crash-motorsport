@@ -1728,22 +1728,24 @@ export default function SebringLeaflet() {
         style={{
           position: "absolute",
           zIndex: 10000,
-          top: 88,
-          left: "50%",
-          transform: "translateX(-50%)",
+          top: 72,
+          left: 12,
           display: "flex",
-          alignItems: "center",
+          flexDirection: "column",
+          alignItems: "stretch",
           gap: 8,
+          maxWidth: "min(220px, calc(100vw - 24px))",
         }}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             gap: 6,
             background: "rgba(8,14,26,0.86)",
             border: "1px solid rgba(137, 179, 255, 0.32)",
-            borderRadius: 999,
+            borderRadius: 12,
             padding: "6px 10px",
           }}
         >
@@ -1773,10 +1775,11 @@ export default function SebringLeaflet() {
           style={{
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             gap: 6,
             background: "rgba(8,14,26,0.86)",
             border: "1px solid rgba(137, 179, 255, 0.32)",
-            borderRadius: 999,
+            borderRadius: 12,
             padding: "6px 10px",
           }}
         >
