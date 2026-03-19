@@ -2961,9 +2961,6 @@ export default function SebringLeaflet() {
                   radius={coreRadius}
                   pathOptions={{ color: heatColor, fillColor: heatColor, fillOpacity: 0.92, weight: 1.5 }}
                 >
-                  <Tooltip direction="top" offset={[0, -8]} opacity={1} permanent>
-                    <div style={{ fontSize: 11, fontWeight: 800 }}>{pin.photo_count || 0}</div>
-                  </Tooltip>
                   <Popup maxWidth={360} minWidth={220}>
                     <div style={{ width: "min(320px, 82vw)" }}>
                       <div style={{ fontWeight: 700 }}>
