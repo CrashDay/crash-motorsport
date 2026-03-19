@@ -224,13 +224,13 @@ function heatRadiusMeters(bounds) {
   const centerLat = (bounds.north + bounds.south) / 2;
   const latMeters = Math.abs(bounds.north - bounds.south) * 111320;
   const lngMeters = Math.abs(bounds.east - bounds.west) * 111320 * Math.cos((centerLat * Math.PI) / 180);
-  return Math.max(10, Math.hypot(latMeters, lngMeters) * 0.32);
+  return Math.max(10, Math.hypot(latMeters, lngMeters) * 0.28);
 }
 
 function areaPhotoHeatRadiusMeters(bounds, ratio) {
   const geometryRadius = heatRadiusMeters(bounds);
-  const countRadius = 52 + Math.max(0, Math.min(1, ratio)) * 82;
-  return Math.max(countRadius, Math.min(geometryRadius, 128));
+  const countRadius = 46 + Math.max(0, Math.min(1, ratio)) * 72;
+  return Math.max(countRadius, Math.min(geometryRadius, 112));
 }
 
 function normalizeCornerMap(raw) {
@@ -2966,8 +2966,8 @@ export default function SebringLeaflet() {
           (() => {
             const ratio = Math.max(0, Math.min(1, Number(pin.photo_count || 0) / maxGpsClusterPhotoCount));
             const heatColor = gpsClusterHeatColor(ratio);
-            const outerRadius = 18 + ratio * 24;
-            const innerRadius = 9 + ratio * 12;
+            const outerRadius = 15 + ratio * 20;
+            const innerRadius = 7 + ratio * 10;
             const coreRadius = Math.max(4, 8 - ratio * 3.2);
 
             return (
