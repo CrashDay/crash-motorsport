@@ -1728,7 +1728,7 @@ export default function SebringLeaflet() {
         style={{
           position: "absolute",
           zIndex: 10000,
-          top: 72,
+          top: 112,
           left: 12,
           display: "flex",
           flexDirection: "column",
@@ -1749,7 +1749,7 @@ export default function SebringLeaflet() {
             padding: "6px 10px",
           }}
         >
-          <span style={{ color: "#c7d6ef", fontSize: 11, fontWeight: 700, letterSpacing: 0.2 }}>Year</span>
+          <span style={{ color: "#c7d6ef", fontSize: 11, fontWeight: 700, letterSpacing: 0.2, flexShrink: 0 }}>Year</span>
           <select
             value={yearFilter}
             onChange={(e) => setYearFilter(e.target.value)}
@@ -1761,6 +1761,8 @@ export default function SebringLeaflet() {
               padding: "4px 10px",
               fontSize: 12,
               fontWeight: 700,
+              minWidth: 0,
+              width: 112,
             }}
           >
             <option value="all">All</option>
@@ -1783,7 +1785,7 @@ export default function SebringLeaflet() {
             padding: "6px 10px",
           }}
         >
-          <span style={{ color: "#c7d6ef", fontSize: 11, fontWeight: 700, letterSpacing: 0.2 }}>Race</span>
+          <span style={{ color: "#c7d6ef", fontSize: 11, fontWeight: 700, letterSpacing: 0.2, flexShrink: 0 }}>Race</span>
           <select
             value={raceFilter}
             onChange={(e) => setRaceFilter(e.target.value)}
@@ -1795,6 +1797,8 @@ export default function SebringLeaflet() {
               padding: "4px 10px",
               fontSize: 12,
               fontWeight: 700,
+              minWidth: 0,
+              width: 112,
             }}
           >
             <option value="all">All</option>
