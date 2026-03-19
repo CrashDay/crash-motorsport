@@ -1802,50 +1802,6 @@ export default function SebringLeaflet() {
             ))}
           </select>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setShareOpen(true);
-            setShareMsg("");
-          }}
-          style={{
-            background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
-            border: "1px solid #ffb18f",
-            color: "#fff",
-            padding: "9px 14px",
-            borderRadius: 999,
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 800,
-            letterSpacing: 0.3,
-            boxShadow: "0 10px 24px rgba(255, 77, 20, 0.45), inset 0 0 0 1px rgba(255,255,255,0.2)",
-            textTransform: "uppercase",
-          }}
-        >
-          Share Photo
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setShareAlbumOpen(true);
-            setShareAlbumMsg("");
-          }}
-          style={{
-            background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
-            border: "1px solid #ffb18f",
-            color: "#fff",
-            padding: "9px 14px",
-            borderRadius: 999,
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 800,
-            letterSpacing: 0.3,
-            boxShadow: "0 10px 24px rgba(255, 77, 20, 0.45), inset 0 0 0 1px rgba(255,255,255,0.2)",
-            textTransform: "uppercase",
-          }}
-        >
-          Share Album
-        </button>
       </div>
       <div
         style={{
@@ -1891,6 +1847,65 @@ export default function SebringLeaflet() {
           />
           Geo Located
         </div>
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 10000,
+          top: 60,
+          right: 12,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
+          maxWidth: "min(360px, calc(100vw - 24px))",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setShareOpen(true);
+            setShareMsg("");
+          }}
+          style={{
+            background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
+            border: "1px solid #ffb18f",
+            color: "#fff",
+            padding: "7px 10px",
+            borderRadius: 999,
+            cursor: "pointer",
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: 0.25,
+            boxShadow: "0 8px 18px rgba(255, 77, 20, 0.35), inset 0 0 0 1px rgba(255,255,255,0.16)",
+            textTransform: "uppercase",
+          }}
+        >
+          Share Photo
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setShareAlbumOpen(true);
+            setShareAlbumMsg("");
+          }}
+          style={{
+            background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
+            border: "1px solid #ffb18f",
+            color: "#fff",
+            padding: "7px 10px",
+            borderRadius: 999,
+            cursor: "pointer",
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: 0.25,
+            boxShadow: "0 8px 18px rgba(255, 77, 20, 0.35), inset 0 0 0 1px rgba(255,255,255,0.16)",
+            textTransform: "uppercase",
+          }}
+        >
+          Share Album
+        </button>
       </div>
 
       <div style={{ position: "relative", height: "100%", width: "100%" }}>
