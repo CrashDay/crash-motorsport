@@ -227,6 +227,12 @@ function heatRadiusMeters(bounds) {
   return Math.max(10, Math.hypot(latMeters, lngMeters) * 0.45);
 }
 
+function areaPhotoHeatRadiusMeters(bounds, ratio) {
+  const geometryRadius = heatRadiusMeters(bounds);
+  const countRadius = 75 + Math.max(0, Math.min(1, ratio)) * 115;
+  return Math.max(countRadius, Math.min(geometryRadius, 180));
+}
+
 function normalizeCornerMap(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
   const out = {};
@@ -285,6 +291,7 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
   const safeMax = Math.max(1, Number(maxPhotoCount) || 1);
   const ratio = Math.max(0, Math.min(1, (Number(photoCount) || 0) / safeMax));
   const heatColor = `rgb(${Math.round(120 + ratio * 135)}, ${Math.round(10 + ratio * 40)}, ${Math.round(10 + ratio * 35)})`;
+  const photoHeatRadius = areaPhotoHeatRadiusMeters(bounds, ratio);
 
   return (
     <Fragment>
@@ -351,13 +358,13 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
           />
           <Circle
             center={center}
-            radius={heatRadiusMeters(bounds)}
+            radius={photoHeatRadius}
             interactive={false}
             pathOptions={{ stroke: false, fillColor: heatColor, fillOpacity: 0.12 + ratio * 0.22 }}
           />
           <Circle
             center={center}
-            radius={heatRadiusMeters(bounds) * (0.45 + ratio * 0.35)}
+            radius={photoHeatRadius * (0.48 + ratio * 0.22)}
             interactive={false}
             pathOptions={{ stroke: false, fillColor: heatColor, fillOpacity: 0.12 + ratio * 0.3 }}
           />
