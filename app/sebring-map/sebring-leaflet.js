@@ -634,6 +634,7 @@ export default function SebringLeaflet() {
   const [areaStyleDraft, setAreaStyleDraft] = useState("photo_heatmap");
   const [areaStyleMsg, setAreaStyleMsg] = useState("");
   const [areaViewer, setAreaViewer] = useState({ open: false, areaId: "", title: "", photos: [], index: 0 });
+  const [gpsViewer, setGpsViewer] = useState({ open: false, title: "", photos: [], index: 0, loading: false, error: "" });
   const [areaViewerMsg, setAreaViewerMsg] = useState("");
   const [removingAreaPhoto, setRemovingAreaPhoto] = useState(false);
   const [photoAreaName, setPhotoAreaName] = useState("New photo area");
@@ -810,6 +811,7 @@ export default function SebringLeaflet() {
     setAreaViewer({ open: false, areaId: "", title: "", photos: [], index: 0 });
     setAreaViewerMsg("");
   };
+  const closeGpsViewer = () => setGpsViewer({ open: false, title: "", photos: [], index: 0, loading: false, error: "" });
   const openAreaViewer = (area) => {
     const photos = (Array.isArray(area.photos) ? area.photos : [])
       .map((p, i) => ({
@@ -824,6 +826,56 @@ export default function SebringLeaflet() {
     setAreaViewer({ open: true, areaId: area.id, title: area.title, photos, index: 0 });
     setAreaViewerMsg("");
   };
+  const openGpsViewer = async (pin) => {
+    setGpsViewer({
+      open: true,
+      title: Number(pin?.photo_count || 0) > 1 ? "GPS Photo Cluster" : pin?.title || "GPS Photo",
+      photos: [],
+      index: 0,
+      loading: true,
+      error: "",
+    });
+    try {
+      const pinIds = Array.isArray(pin?.pin_ids) && pin.pin_ids.length ? pin.pin_ids : [pin?.pin_id].filter(Boolean);
+      const responses = await Promise.all(
+        pinIds.map(async (pinId) => {
+          const res = await fetch(`/api/pins/${encodeURIComponent(pinId)}/assets`, { cache: "no-store" });
+          if (!res.ok) throw new Error(`Assets HTTP ${res.status}`);
+          const payload = await res.json();
+          return Array.isArray(payload?.assets) ? payload.assets : [];
+        })
+      );
+      const photos = responses
+        .flat()
+        .map((asset, i) => ({
+          id: asset.asset_id || `${pin.pin_id}:${i}`,
+          name: asset.alt_text_snapshot || pin?.title || "GPS Photo",
+          fullUrl: asset.full_url,
+          thumbUrl: asset.thumb_url || asset.full_url,
+          alt: asset.alt_text_snapshot || pin?.title || "GPS Photo",
+          captureTime: asset.capture_time || "",
+        }))
+        .filter((photo) => !!photo.fullUrl)
+        .sort((a, b) => String(a.captureTime || "").localeCompare(String(b.captureTime || "")));
+      setGpsViewer({
+        open: true,
+        title: Number(pin?.photo_count || 0) > 1 ? "GPS Photo Cluster" : pin?.title || "GPS Photo",
+        photos,
+        index: 0,
+        loading: false,
+        error: "",
+      });
+    } catch (error) {
+      setGpsViewer({
+        open: true,
+        title: Number(pin?.photo_count || 0) > 1 ? "GPS Photo Cluster" : pin?.title || "GPS Photo",
+        photos: [],
+        index: 0,
+        loading: false,
+        error: String(error?.message || error),
+      });
+    }
+  };
   const nextAreaPhoto = () =>
     setAreaViewer((v) => ({
       ...v,
@@ -831,6 +883,16 @@ export default function SebringLeaflet() {
     }));
   const prevAreaPhoto = () =>
     setAreaViewer((v) => ({
+      ...v,
+      index: v.photos.length ? (v.index - 1 + v.photos.length) % v.photos.length : 0,
+    }));
+  const nextGpsPhoto = () =>
+    setGpsViewer((v) => ({
+      ...v,
+      index: v.photos.length ? (v.index + 1) % v.photos.length : 0,
+    }));
+  const prevGpsPhoto = () =>
+    setGpsViewer((v) => ({
       ...v,
       index: v.photos.length ? (v.index - 1 + v.photos.length) % v.photos.length : 0,
     }));
@@ -2843,6 +2905,23 @@ export default function SebringLeaflet() {
                     style={{ width: "100%", height: "auto", marginTop: 8, borderRadius: 10, display: "block" }}
                   />
                 ) : null}
+                <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    type="button"
+                    onClick={() => openGpsViewer(pin)}
+                    style={{
+                      background: "#111",
+                      border: "1px solid #222",
+                      color: "#fff",
+                      padding: "6px 8px",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      fontSize: 12,
+                    }}
+                  >
+                    Open viewer
+                  </button>
+                </div>
               </div>
             </Popup>
           </CircleMarker>
@@ -2984,6 +3063,79 @@ export default function SebringLeaflet() {
             style={{ maxWidth: "calc(100vw - 120px)", maxHeight: "calc(100vh - 120px)", width: "auto", height: "auto", borderRadius: 18, border: "1px solid #222", boxShadow: "0 10px 40px rgba(0,0,0,0.6)", background: "#111" }}
             draggable={false}
           />
+        </div>
+      ) : null}
+
+      {gpsViewer.open ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="GPS photo viewer"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closeGpsViewer();
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.92)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 20000,
+            padding: 16,
+          }}
+        >
+          <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <div style={{ color: "#bbb", fontSize: 13 }}>
+              {gpsViewer.title}
+              {gpsViewer.photos.length ? ` - ${gpsViewer.index + 1} / ${gpsViewer.photos.length}` : ""}
+            </div>
+            <button
+              type="button"
+              onClick={closeGpsViewer}
+              style={{ background: "#111", border: "1px solid #222", color: "#fff", padding: "10px 12px", borderRadius: 12, cursor: "pointer" }}
+            >
+              Close
+            </button>
+          </div>
+
+          {gpsViewer.loading ? (
+            <div style={{ color: "#fff" }}>Loading photos…</div>
+          ) : gpsViewer.error ? (
+            <div style={{ color: "#ff9a9a" }}>{gpsViewer.error}</div>
+          ) : gpsViewer.photos.length ? (
+            <>
+              {gpsViewer.photos.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={prevGpsPhoto}
+                    style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", background: "#111", border: "1px solid #222", color: "#fff", padding: "12px 14px", borderRadius: 14, cursor: "pointer" }}
+                    aria-label="Previous photo"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextGpsPhoto}
+                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#111", border: "1px solid #222", color: "#fff", padding: "12px 14px", borderRadius: 14, cursor: "pointer" }}
+                    aria-label="Next photo"
+                  >
+                    →
+                  </button>
+                </>
+              ) : null}
+
+              <img
+                src={normalizeLightroomImageUrl(gpsViewer.photos[gpsViewer.index]?.fullUrl)}
+                alt={gpsViewer.photos[gpsViewer.index]?.alt || gpsViewer.photos[gpsViewer.index]?.name}
+                style={{ maxWidth: "calc(100vw - 120px)", maxHeight: "calc(100vh - 120px)", width: "auto", height: "auto", borderRadius: 18, border: "1px solid #222", boxShadow: "0 10px 40px rgba(0,0,0,0.6)", background: "#111" }}
+                draggable={false}
+              />
+            </>
+          ) : (
+            <div style={{ color: "#bbb" }}>No photos found for this marker.</div>
+          )}
         </div>
       ) : null}
 
