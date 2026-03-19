@@ -374,6 +374,10 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
   );
 }
 
+function gpsClusterHeatColor(ratio) {
+  return `rgb(${Math.round(120 + ratio * 135)}, ${Math.round(10 + ratio * 40)}, ${Math.round(10 + ratio * 35)})`;
+}
+
 function cornerIcon(short) {
   return icon({
     iconUrl: `/markers/corners/${short}.svg`,
@@ -806,6 +810,10 @@ export default function SebringLeaflet() {
     }
     return Array.from(grouped.values());
   }, [pins]);
+  const maxGpsClusterPhotoCount = useMemo(
+    () => Math.max(1, ...visibleGpsPins.map((pin) => Number(pin?.photo_count || 0))),
+    [visibleGpsPins]
+  );
 
   const closeAreaViewer = () => {
     setAreaViewer({ open: false, areaId: "", title: "", photos: [], index: 0 });
@@ -2881,50 +2889,73 @@ export default function SebringLeaflet() {
         ))}
 
         {visibleGpsPins.map((pin) => (
-          <CircleMarker
-            key={pin.pin_id}
-            center={[pin.lat, pin.lng]}
-            radius={Math.min(16, Math.max(6, 6 + Math.log2(Math.max(1, Number(pin.photo_count || 1))) * 2))}
-            pathOptions={{ color: "#ff7a18", fillColor: "#ffd84d", fillOpacity: 0.95, weight: 2 }}
-          >
-            <Tooltip direction="top" offset={[0, -8]} opacity={1} permanent>
-              <div style={{ fontSize: 11, fontWeight: 800 }}>{pin.photo_count || 0}</div>
-            </Tooltip>
-            <Popup maxWidth={360} minWidth={220}>
-              <div style={{ width: "min(320px, 82vw)" }}>
-                <div style={{ fontWeight: 700 }}>
-                  {Number(pin.photo_count || 0) > 1 ? "GPS Photo Cluster" : pin.title || "GPS Photo"}
-                </div>
-                <div style={{ marginTop: 4, color: "#9fb2d6", fontSize: 12 }}>
-                  {pin.photo_count || 0} photo{Number(pin.photo_count || 0) === 1 ? "" : "s"}
-                </div>
-                {pin.cover_thumb_url ? (
-                  <img
-                    src={normalizeLightroomImageUrl(pin.cover_thumb_url)}
-                    alt={pin.title || "GPS photo preview"}
-                    style={{ width: "100%", height: "auto", marginTop: 8, borderRadius: 10, display: "block" }}
-                  />
-                ) : null}
-                <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
-                  <button
-                    type="button"
-                    onClick={() => openGpsViewer(pin)}
-                    style={{
-                      background: "#111",
-                      border: "1px solid #222",
-                      color: "#fff",
-                      padding: "6px 8px",
-                      borderRadius: 8,
-                      cursor: "pointer",
-                      fontSize: 12,
-                    }}
-                  >
-                    Open viewer
-                  </button>
-                </div>
-              </div>
-            </Popup>
-          </CircleMarker>
+          (() => {
+            const ratio = Math.max(0, Math.min(1, Number(pin.photo_count || 0) / maxGpsClusterPhotoCount));
+            const heatColor = gpsClusterHeatColor(ratio);
+            const outerRadius = 28 + ratio * 34;
+            const innerRadius = 14 + ratio * 18;
+            const coreRadius = Math.max(4, 8 - ratio * 3.2);
+
+            return (
+              <Fragment key={pin.pin_id}>
+                <Circle
+                  center={[pin.lat, pin.lng]}
+                  radius={outerRadius}
+                  interactive={false}
+                  pathOptions={{ stroke: false, fillColor: heatColor, fillOpacity: 0.12 + ratio * 0.18 }}
+                />
+                <Circle
+                  center={[pin.lat, pin.lng]}
+                  radius={innerRadius}
+                  interactive={false}
+                  pathOptions={{ stroke: false, fillColor: heatColor, fillOpacity: 0.16 + ratio * 0.24 }}
+                />
+                <CircleMarker
+                  center={[pin.lat, pin.lng]}
+                  radius={coreRadius}
+                  pathOptions={{ color: heatColor, fillColor: heatColor, fillOpacity: 0.92, weight: 1.5 }}
+                >
+                  <Tooltip direction="top" offset={[0, -8]} opacity={1} permanent>
+                    <div style={{ fontSize: 11, fontWeight: 800 }}>{pin.photo_count || 0}</div>
+                  </Tooltip>
+                  <Popup maxWidth={360} minWidth={220}>
+                    <div style={{ width: "min(320px, 82vw)" }}>
+                      <div style={{ fontWeight: 700 }}>
+                        {Number(pin.photo_count || 0) > 1 ? "GPS Photo Cluster" : pin.title || "GPS Photo"}
+                      </div>
+                      <div style={{ marginTop: 4, color: "#9fb2d6", fontSize: 12 }}>
+                        {pin.photo_count || 0} photo{Number(pin.photo_count || 0) === 1 ? "" : "s"}
+                      </div>
+                      {pin.cover_thumb_url ? (
+                        <img
+                          src={normalizeLightroomImageUrl(pin.cover_thumb_url)}
+                          alt={pin.title || "GPS photo preview"}
+                          style={{ width: "100%", height: "auto", marginTop: 8, borderRadius: 10, display: "block" }}
+                        />
+                      ) : null}
+                      <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
+                        <button
+                          type="button"
+                          onClick={() => openGpsViewer(pin)}
+                          style={{
+                            background: "#111",
+                            border: "1px solid #222",
+                            color: "#fff",
+                            padding: "6px 8px",
+                            borderRadius: 8,
+                            cursor: "pointer",
+                            fontSize: 12,
+                          }}
+                        >
+                          Open viewer
+                        </button>
+                      </div>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              </Fragment>
+            );
+          })()
         ))}
 
         {allAreaRows.map((area) => (
