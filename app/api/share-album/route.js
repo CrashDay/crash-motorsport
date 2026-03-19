@@ -312,16 +312,26 @@ async function fetchAlbumFeed(initialUrl) {
 
 function collectAssetDetailHrefs(resource, assetsBase) {
   const hrefs = [];
-  const linkMaps = [resource?.links, resource?.asset?.links];
+  const linkMaps = [resource?.links, resource?.asset?.links, resource?.resource?.links];
 
   for (const links of linkMaps) {
     if (!links || typeof links !== "object") continue;
     for (const [rel, value] of Object.entries(links)) {
-      const href = String(value?.href || "").trim();
-      if (!href) continue;
-      if (rel.includes("rendition_type")) continue;
-      if (rel === "self" || rel === "/rels/self" || rel.includes("/assets/") || href.includes("/assets/")) {
-        hrefs.push(toAbsoluteUrl(assetsBase, href));
+      const values = Array.isArray(value) ? value : [value];
+      for (const item of values) {
+        const href = String(item?.href || "").trim();
+        if (!href) continue;
+        if (rel.includes("rendition_type")) continue;
+        if (
+          rel === "self" ||
+          rel === "/rels/self" ||
+          rel.includes("/assets/") ||
+          rel.includes("/asset") ||
+          href.includes("/assets/") ||
+          href.includes("/asset/")
+        ) {
+          hrefs.push(toAbsoluteUrl(assetsBase, href));
+        }
       }
     }
   }
@@ -334,12 +344,29 @@ async function fetchJson(url) {
   return JSON.parse(stripWhile1(text) || "{}");
 }
 
+function normalizeSharedAssetDetailPayload(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  if (payload?.id || payload?.payload || payload?.links) return payload;
+  if (payload?.asset && (payload.asset?.id || payload.asset?.payload || payload.asset?.links)) return payload.asset;
+  if (payload?.resource?.asset && (payload.resource.asset?.id || payload.resource.asset?.payload || payload.resource.asset?.links)) {
+    return payload.resource.asset;
+  }
+  if (Array.isArray(payload?.resources)) {
+    for (const resource of payload.resources) {
+      if (resource?.asset && (resource.asset?.id || resource.asset?.payload || resource.asset?.links)) return resource.asset;
+      if (resource?.id || resource?.payload || resource?.links) return resource;
+    }
+  }
+  return null;
+}
+
 async function fetchSharedAssetDetail(resource, assetsBase) {
   const hrefs = collectAssetDetailHrefs(resource, assetsBase);
   for (const href of hrefs) {
     try {
       const payload = await fetchJson(href);
-      if (payload?.id || payload?.payload || payload?.links) return payload;
+      const normalized = normalizeSharedAssetDetailPayload(payload);
+      if (normalized) return normalized;
     } catch {
       // Ignore detail fetch failures and continue with feed metadata.
     }
