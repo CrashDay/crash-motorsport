@@ -293,6 +293,8 @@ export async function POST(request) {
       track_id: TRACK_ID,
       anchor_x: pos.x,
       anchor_y: pos.y,
+      lat: effectiveLat,
+      lng: effectiveLng,
       title: "Shared Photo",
     });
     upsertPinAsset(db, {

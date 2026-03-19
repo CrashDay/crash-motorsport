@@ -39,6 +39,13 @@ async function withPgClient(fn) {
   }
 }
 
+async function ensurePostgresSchema() {
+  return withPgClient(async (client) => {
+    await client.query(`ALTER TABLE photo_pins ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION`);
+    await client.query(`ALTER TABLE photo_pins ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`);
+  });
+}
+
 async function getPgPinsByTrack(trackId) {
   return withPgClient(async (client) => {
     const rows = await client.query(
@@ -49,6 +56,8 @@ async function getPgPinsByTrack(trackId) {
           p.region_id,
           p.anchor_x,
           p.anchor_y,
+          p.lat,
+          p.lng,
           p.pin_type,
           p.title,
           COUNT(pa.asset_id) AS photo_count,
@@ -76,6 +85,8 @@ async function getPgPinsByTrack(trackId) {
       title: r.title,
       anchor_x: Number(r.anchor_x),
       anchor_y: Number(r.anchor_y),
+      lat: r.lat === null ? null : Number(r.lat),
+      lng: r.lng === null ? null : Number(r.lng),
       pin_type: r.pin_type,
       photo_count: Number(r.photo_count || 0),
       cover_thumb_url: normalizeLightroomImageUrl(r.cover_thumb_url) || null,
@@ -101,6 +112,7 @@ export async function GET(_request, { params }) {
   const debug = searchParams.get("debug");
 
   if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
     const pins = await getPgPinsByTrack(trackId);
     if (debug === "1") {
       const { totalPins, trackPins } = await getPgDebugCounts(trackId);

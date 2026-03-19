@@ -88,6 +88,8 @@ async function ensurePostgresSchema() {
         region_id TEXT,
         anchor_x DOUBLE PRECISION,
         anchor_y DOUBLE PRECISION,
+        lat DOUBLE PRECISION,
+        lng DOUBLE PRECISION,
         pin_type TEXT NOT NULL,
         title TEXT
       )
@@ -122,6 +124,8 @@ async function ensurePostgresSchema() {
     await client.query(`ALTER TABLE photo_assets ADD COLUMN IF NOT EXISTS year INTEGER`);
     await client.query(`ALTER TABLE photo_assets ADD COLUMN IF NOT EXISTS race TEXT`);
     await client.query(`ALTER TABLE photo_assets ADD COLUMN IF NOT EXISTS catalog_id TEXT`);
+    await client.query(`ALTER TABLE photo_pins ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION`);
+    await client.query(`ALTER TABLE photo_pins ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`);
     await client.query(`ALTER TABLE photo_area_assets ADD COLUMN IF NOT EXISTS year INTEGER`);
     await client.query(`ALTER TABLE photo_area_assets ADD COLUMN IF NOT EXISTS race TEXT`);
     await client.query(`
@@ -419,20 +423,22 @@ async function storePhotoAsset({ db, assetId, captureTime, altText, thumbUrl, fu
   });
 }
 
-async function storeGpsPin({ db, pinId, anchorX, anchorY, title }) {
+async function storeGpsPin({ db, pinId, anchorX, anchorY, lat, lng, title }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
     await withPgClient(async (client) => {
       await client.query(
         `
-          INSERT INTO photo_pins (pin_id, track_id, region_id, anchor_x, anchor_y, pin_type, title)
-          VALUES ($1, $2, NULL, $3, $4, $5, $6)
+          INSERT INTO photo_pins (pin_id, track_id, region_id, anchor_x, anchor_y, lat, lng, pin_type, title)
+          VALUES ($1, $2, NULL, $3, $4, $5, $6, $7, $8)
           ON CONFLICT (pin_id) DO UPDATE SET
             anchor_x = EXCLUDED.anchor_x,
             anchor_y = EXCLUDED.anchor_y,
+            lat = EXCLUDED.lat,
+            lng = EXCLUDED.lng,
             title = EXCLUDED.title
         `,
-        [pinId, TRACK_ID, anchorX, anchorY, "gps", title]
+        [pinId, TRACK_ID, anchorX, anchorY, lat, lng, "gps", title]
       );
     });
     return;
@@ -442,6 +448,8 @@ async function storeGpsPin({ db, pinId, anchorX, anchorY, title }) {
     track_id: TRACK_ID,
     anchor_x: anchorX,
     anchor_y: anchorY,
+    lat,
+    lng,
     title,
   });
 }
@@ -693,6 +701,8 @@ export async function POST(request) {
           pinId,
           anchorX: pos.x,
           anchorY: pos.y,
+          lat: gps.lat,
+          lng: gps.lng,
           title: race,
         });
         await storePinAsset({

@@ -143,6 +143,8 @@ export async function POST(request) {
         track_id: trackId,
         anchor_x: pos.x,
         anchor_y: pos.y,
+        lat: gps.lat,
+        lng: gps.lng,
         title: "GPS",
       });
       upsertPinAsset(db, {

@@ -606,6 +606,7 @@ export default function SebringLeaflet() {
   const [importMsg, setImportMsg] = useState("");
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
+  const [pins, setPins] = useState([]);
   const [pinsCount, setPinsCount] = useState(0);
   const [auth, setAuth] = useState({
     loading: !useMock && !useLocalExports,
@@ -776,6 +777,10 @@ export default function SebringLeaflet() {
   const maxAreaPhotoCount = useMemo(
     () => Math.max(1, ...allAreaRows.map((area) => (Array.isArray(area.photos) ? area.photos.length : 0))),
     [allAreaRows]
+  );
+  const visibleGpsPins = useMemo(
+    () => pins.filter((pin) => Number.isFinite(pin?.lat) && Number.isFinite(pin?.lng)),
+    [pins]
   );
 
   const closeAreaViewer = () => {
@@ -1042,12 +1047,25 @@ export default function SebringLeaflet() {
 
   const loadPinsCount = async () => {
     try {
-      const res = await fetch("/api/tracks/sebring/pins");
+      const res = await fetch("/api/tracks/sebring/pins", { cache: "no-store" });
       if (!res.ok) throw new Error(`Pins HTTP ${res.status}`);
       const payload = await res.json();
       setPinsCount(Array.isArray(payload?.pins) ? payload.pins.length : 0);
     } catch {
       // ignore pins count failures in tools panel
+    }
+  };
+
+  const loadPins = async () => {
+    try {
+      const res = await fetch("/api/tracks/sebring/pins", { cache: "no-store" });
+      if (!res.ok) throw new Error(`Pins HTTP ${res.status}`);
+      const payload = await res.json();
+      const nextPins = Array.isArray(payload?.pins) ? payload.pins : [];
+      setPins(nextPins);
+      setPinsCount(nextPins.length);
+    } catch {
+      setPins([]);
     }
   };
 
@@ -1134,7 +1152,7 @@ export default function SebringLeaflet() {
     try {
       const res = await fetch("/api/sync/mock-lightroom?trackId=sebring", { method: "POST" });
       if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
-      await loadPinsCount();
+      await loadPins();
       setSyncMsg("Mock sync complete");
     } catch (e) {
       setSyncMsg(`Sync failed: ${String(e?.message || e)}`);
@@ -1149,7 +1167,7 @@ export default function SebringLeaflet() {
     try {
       const res = await fetch("/api/sync/local-exports?trackId=sebring", { method: "POST" });
       if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
-      await loadPinsCount();
+      await loadPins();
       setSyncMsg("Local export sync complete");
     } catch (e) {
       setSyncMsg(`Sync failed: ${String(e?.message || e)}`);
@@ -1164,7 +1182,7 @@ export default function SebringLeaflet() {
     try {
       const res = await fetch("/api/sync/lightroom?trackId=sebring", { method: "POST" });
       if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
-      await loadPinsCount();
+      await loadPins();
       setSyncMsg("Lightroom sync complete");
     } catch (e) {
       setSyncMsg(`Sync failed: ${String(e?.message || e)}`);
@@ -1350,7 +1368,7 @@ export default function SebringLeaflet() {
   }, []);
 
   useEffect(() => {
-    loadPinsCount();
+    loadPins();
     loadAuthStatus();
   }, []);
 
@@ -1394,7 +1412,7 @@ export default function SebringLeaflet() {
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
 
-      await Promise.all([loadPinsCount(), loadAssignedAreaPhotos()]);
+      await Promise.all([loadPins(), loadAssignedAreaPhotos()]);
       setShareMsg("Shared photo added.");
       setShareShortLink("");
       setShareYear("2023");
@@ -1451,7 +1469,7 @@ export default function SebringLeaflet() {
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
 
-      await Promise.all([loadPinsCount(), loadAssignedAreaPhotos()]);
+      await Promise.all([loadPins(), loadAssignedAreaPhotos()]);
       setShareAlbumMsg(`Imported ${payload?.imported_count || 0} album photos.`);
       setShareAlbumShortLink("");
       setShareAlbumSeries("imsa");
@@ -2761,6 +2779,31 @@ export default function SebringLeaflet() {
               </div>
             </Popup>
           </Marker>
+        ))}
+
+        {visibleGpsPins.map((pin) => (
+          <CircleMarker
+            key={pin.pin_id}
+            center={[pin.lat, pin.lng]}
+            radius={6}
+            pathOptions={{ color: "#ff7a18", fillColor: "#ffd84d", fillOpacity: 0.95, weight: 2 }}
+          >
+            <Popup maxWidth={360} minWidth={220}>
+              <div style={{ width: "min(320px, 82vw)" }}>
+                <div style={{ fontWeight: 700 }}>{pin.title || "GPS Photo"}</div>
+                <div style={{ marginTop: 4, color: "#9fb2d6", fontSize: 12 }}>
+                  {pin.photo_count || 0} photo{Number(pin.photo_count || 0) === 1 ? "" : "s"}
+                </div>
+                {pin.cover_thumb_url ? (
+                  <img
+                    src={normalizeLightroomImageUrl(pin.cover_thumb_url)}
+                    alt={pin.title || "GPS photo preview"}
+                    style={{ width: "100%", height: "auto", marginTop: 8, borderRadius: 10, display: "block" }}
+                  />
+                ) : null}
+              </div>
+            </Popup>
+          </CircleMarker>
         ))}
 
         {allAreaRows.map((area) => (
