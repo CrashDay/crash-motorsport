@@ -16,6 +16,7 @@ import {
   fetchXmp,
   extractAltTextFromXmp,
 } from "@/lib/lightroom-client";
+import { extractGpsFromLightroomAsset } from "@/lib/lightroom-gps";
 import { getProjectorForTrack } from "@/lib/geo-projector";
 import { upsertGpsPin } from "@/lib/db";
 
@@ -118,14 +119,8 @@ export async function POST(request) {
       // ignore XMP fetch errors; fall back to metadata description
     }
 
-    const gpsCandidate =
-      assetDetail?.payload?.gps ||
-      assetDetail?.payload?.location ||
-      assetDetail?.payload?.coordinate ||
-      null;
-    const gpsLat = Number(gpsCandidate?.latitude ?? assetDetail?.payload?.latitude);
-    const gpsLon = Number(gpsCandidate?.longitude ?? assetDetail?.payload?.longitude);
-    const hasGps = Number.isFinite(gpsLat) && Number.isFinite(gpsLon);
+    const gps = extractGpsFromLightroomAsset(assetDetail);
+    const hasGps = Boolean(gps);
 
     const captureTime = pickCaptureTime(assetDetail);
 
@@ -141,7 +136,7 @@ export async function POST(request) {
     });
 
     if (hasGps && projector) {
-      const pos = projector(gpsLon, gpsLat);
+      const pos = projector(gps.lng, gps.lat);
       const gpsPinId = `gps:${assetId}`;
       upsertGpsPin(db, {
         pin_id: gpsPinId,

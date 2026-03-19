@@ -12,6 +12,7 @@ import {
   upsertSharedAlbum,
 } from "@/lib/db";
 import { getProjectorForTrack } from "@/lib/geo-projector";
+import { extractGpsFromLightroomAsset } from "@/lib/lightroom-gps";
 import lightroomImageUrl from "@/lib/lightroom-image-url";
 import { isValidSharedAlbumSeries, slugifyAlbumTitle } from "@/lib/shared-albums";
 
@@ -67,6 +68,44 @@ async function ensurePostgresSchema() {
   if (postgresReady) return;
   await withPgClient(async (client) => {
     await client.query(`
+      CREATE TABLE IF NOT EXISTS photo_assets (
+        asset_id TEXT PRIMARY KEY,
+        track_id TEXT NOT NULL,
+        capture_time TEXT,
+        alt_text_snapshot TEXT,
+        thumb_url TEXT,
+        full_url TEXT,
+        year INTEGER,
+        race TEXT,
+        last_synced_at TEXT,
+        catalog_id TEXT
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS photo_pins (
+        pin_id TEXT PRIMARY KEY,
+        track_id TEXT NOT NULL,
+        region_id TEXT,
+        anchor_x DOUBLE PRECISION,
+        anchor_y DOUBLE PRECISION,
+        pin_type TEXT NOT NULL,
+        title TEXT
+      )
+    `);
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_photo_pins_track_region
+      ON photo_pins(track_id, region_id)
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pin_assets (
+        pin_id TEXT NOT NULL,
+        asset_id TEXT NOT NULL,
+        sort_order BIGINT,
+        added_at TEXT,
+        PRIMARY KEY (pin_id, asset_id)
+      )
+    `);
+    await client.query(`
       CREATE TABLE IF NOT EXISTS photo_area_assets (
         track_id TEXT NOT NULL,
         area_id TEXT NOT NULL,
@@ -80,6 +119,9 @@ async function ensurePostgresSchema() {
         PRIMARY KEY (track_id, area_id, asset_id)
       )
     `);
+    await client.query(`ALTER TABLE photo_assets ADD COLUMN IF NOT EXISTS year INTEGER`);
+    await client.query(`ALTER TABLE photo_assets ADD COLUMN IF NOT EXISTS race TEXT`);
+    await client.query(`ALTER TABLE photo_assets ADD COLUMN IF NOT EXISTS catalog_id TEXT`);
     await client.query(`ALTER TABLE photo_area_assets ADD COLUMN IF NOT EXISTS year INTEGER`);
     await client.query(`ALTER TABLE photo_area_assets ADD COLUMN IF NOT EXISTS race TEXT`);
     await client.query(`
@@ -246,24 +288,6 @@ function pickCaptureTime(asset) {
   );
 }
 
-function parseOptionalNumber(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-function extractGps(asset) {
-  const gpsCandidate =
-    asset?.payload?.gps ||
-    asset?.payload?.location ||
-    asset?.payload?.coordinate ||
-    null;
-  const lat = parseOptionalNumber(gpsCandidate?.latitude ?? asset?.payload?.latitude);
-  const lng = parseOptionalNumber(gpsCandidate?.longitude ?? asset?.payload?.longitude);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
-  return { lat, lng };
-}
-
 async function fetchAlbumFeed(initialUrl) {
   const resources = [];
   let nextUrl = initialUrl;
@@ -280,6 +304,43 @@ async function fetchAlbumFeed(initialUrl) {
     base,
     resources: resources.slice(0, MAX_ALBUM_ASSETS),
   };
+}
+
+function collectAssetDetailHrefs(resource, assetsBase) {
+  const hrefs = [];
+  const linkMaps = [resource?.links, resource?.asset?.links];
+
+  for (const links of linkMaps) {
+    if (!links || typeof links !== "object") continue;
+    for (const [rel, value] of Object.entries(links)) {
+      const href = String(value?.href || "").trim();
+      if (!href) continue;
+      if (rel.includes("rendition_type")) continue;
+      if (rel === "self" || rel === "/rels/self" || rel.includes("/assets/") || href.includes("/assets/")) {
+        hrefs.push(toAbsoluteUrl(assetsBase, href));
+      }
+    }
+  }
+
+  return [...new Set(hrefs.filter(Boolean))];
+}
+
+async function fetchJson(url) {
+  const { text } = await fetchText(url);
+  return JSON.parse(stripWhile1(text) || "{}");
+}
+
+async function fetchSharedAssetDetail(resource, assetsBase) {
+  const hrefs = collectAssetDetailHrefs(resource, assetsBase);
+  for (const href of hrefs) {
+    try {
+      const payload = await fetchJson(href);
+      if (payload?.id || payload?.payload || payload?.links) return payload;
+    } catch {
+      // Ignore detail fetch failures and continue with feed metadata.
+    }
+  }
+  return null;
 }
 
 async function storeAreaAssignment({ db, areaId, assetId, name, thumbUrl, fullUrl, year, race, assignedAt }) {
@@ -317,6 +378,96 @@ async function storeAreaAssignment({ db, areaId, assetId, name, thumbUrl, fullUr
     year,
     race,
     assigned_at: assignedAt,
+  });
+}
+
+async function storePhotoAsset({ db, assetId, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt }) {
+  if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
+    await withPgClient(async (client) => {
+      await client.query(
+        `
+          INSERT INTO photo_assets (asset_id, track_id, capture_time, alt_text_snapshot, thumb_url, full_url, year, race, last_synced_at, catalog_id)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL)
+          ON CONFLICT (asset_id) DO UPDATE SET
+            track_id = EXCLUDED.track_id,
+            capture_time = EXCLUDED.capture_time,
+            alt_text_snapshot = EXCLUDED.alt_text_snapshot,
+            thumb_url = EXCLUDED.thumb_url,
+            full_url = EXCLUDED.full_url,
+            year = EXCLUDED.year,
+            race = EXCLUDED.race,
+            last_synced_at = EXCLUDED.last_synced_at,
+            catalog_id = EXCLUDED.catalog_id
+        `,
+        [assetId, TRACK_ID, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt]
+      );
+    });
+    return;
+  }
+  upsertPhotoAsset(db, {
+    asset_id: assetId,
+    track_id: TRACK_ID,
+    capture_time: captureTime,
+    alt_text_snapshot: altText,
+    thumb_url: thumbUrl,
+    full_url: fullUrl,
+    year,
+    race,
+    last_synced_at: lastSyncedAt,
+    catalog_id: null,
+  });
+}
+
+async function storeGpsPin({ db, pinId, anchorX, anchorY, title }) {
+  if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
+    await withPgClient(async (client) => {
+      await client.query(
+        `
+          INSERT INTO photo_pins (pin_id, track_id, region_id, anchor_x, anchor_y, pin_type, title)
+          VALUES ($1, $2, NULL, $3, $4, $5, $6)
+          ON CONFLICT (pin_id) DO UPDATE SET
+            anchor_x = EXCLUDED.anchor_x,
+            anchor_y = EXCLUDED.anchor_y,
+            title = EXCLUDED.title
+        `,
+        [pinId, TRACK_ID, anchorX, anchorY, "gps", title]
+      );
+    });
+    return;
+  }
+  upsertGpsPin(db, {
+    pin_id: pinId,
+    track_id: TRACK_ID,
+    anchor_x: anchorX,
+    anchor_y: anchorY,
+    title,
+  });
+}
+
+async function storePinAsset({ db, pinId, assetId, sortOrder, addedAt }) {
+  if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
+    await withPgClient(async (client) => {
+      await client.query(
+        `
+          INSERT INTO pin_assets (pin_id, asset_id, sort_order, added_at)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (pin_id, asset_id) DO UPDATE SET
+            sort_order = EXCLUDED.sort_order,
+            added_at = EXCLUDED.added_at
+        `,
+        [pinId, assetId, sortOrder, addedAt]
+      );
+    });
+    return;
+  }
+  upsertPinAsset(db, {
+    pin_id: pinId,
+    asset_id: assetId,
+    sort_order: sortOrder,
+    added_at: addedAt,
   });
 }
 
@@ -455,8 +606,8 @@ export async function POST(request) {
 
   const assetsBase = String(albumFeed?.base || photosBase).trim();
   const assets = (albumFeed?.resources || [])
-    .map((row) => row?.asset)
-    .filter((asset) => asset?.id && String(asset?.subtype || "").toLowerCase() !== "video");
+    .map((row) => ({ row, asset: row?.asset || row }))
+    .filter(({ asset }) => asset?.id && String(asset?.subtype || "").toLowerCase() !== "video");
 
   if (!assets.length) {
     return NextResponse.json({ error: "No shared album images were found" }, { status: 400 });
@@ -473,33 +624,53 @@ export async function POST(request) {
   let coverThumbUrl = "";
 
   try {
-    for (const asset of assets) {
+    for (const { row, asset } of assets) {
+      let assetDetail = asset;
+      let gps = extractGpsFromLightroomAsset(assetDetail);
+      if (!gps) {
+        const fetchedDetail = await fetchSharedAssetDetail(row, assetsBase);
+        if (fetchedDetail) {
+          assetDetail = fetchedDetail;
+          gps = extractGpsFromLightroomAsset(assetDetail);
+        }
+      }
+
       const sharedAssetId = `shared-album:${series}:${slug}:${asset.id}`;
-      const captureTime = pickCaptureTime(asset);
-      const fileName = String(asset?.payload?.importSource?.fileName || asset?.id).trim() || asset.id;
+      const captureTime = pickCaptureTime(assetDetail);
+      const fileName = String(assetDetail?.payload?.importSource?.fileName || asset?.id).trim() || asset.id;
       const thumbUrl = normalizeLightroomImageUrl(
-        toAbsoluteUrl(assetsBase, asset?.links?.["/rels/rendition_type/thumbnail2x"]?.href)
+        toAbsoluteUrl(
+          assetsBase,
+          assetDetail?.links?.["/rels/rendition_type/thumbnail2x"]?.href ||
+            asset?.links?.["/rels/rendition_type/thumbnail2x"]?.href
+        )
       );
       const fullUrl = normalizeLightroomImageUrl(
-        toAbsoluteUrl(assetsBase, asset?.links?.["/rels/rendition_type/2048"]?.href) ||
-          toAbsoluteUrl(assetsBase, asset?.links?.["/rels/rendition_type/fullsize"]?.href)
+        toAbsoluteUrl(
+          assetsBase,
+          assetDetail?.links?.["/rels/rendition_type/2048"]?.href || asset?.links?.["/rels/rendition_type/2048"]?.href
+        ) ||
+          toAbsoluteUrl(
+            assetsBase,
+            assetDetail?.links?.["/rels/rendition_type/fullsize"]?.href ||
+              asset?.links?.["/rels/rendition_type/fullsize"]?.href
+          )
       );
       const photoName = fileName;
 
       if (!thumbUrl || !fullUrl) continue;
       if (!coverThumbUrl) coverThumbUrl = thumbUrl;
 
-      upsertPhotoAsset(db, {
-        asset_id: sharedAssetId,
-        track_id: TRACK_ID,
-        capture_time: captureTime,
-        alt_text_snapshot: `${albumTitle} via Lightroom shared album`,
-        thumb_url: thumbUrl,
-        full_url: fullUrl,
+      await storePhotoAsset({
+        db,
+        assetId: sharedAssetId,
+        captureTime,
+        altText: `${albumTitle} via Lightroom shared album`,
+        thumbUrl,
+        fullUrl,
         year,
         race,
-        last_synced_at: nowIso,
-        catalog_id: null,
+        lastSyncedAt: nowIso,
       });
 
       await storeSharedAlbumAsset({
@@ -514,22 +685,22 @@ export async function POST(request) {
         assignedAt: nowIso,
       });
 
-      const gps = extractGps(asset);
       if (gps && projector) {
         const pos = projector(gps.lng, gps.lat);
         const pinId = `gps:${sharedAssetId}`;
-        upsertGpsPin(db, {
-          pin_id: pinId,
-          track_id: TRACK_ID,
-          anchor_x: pos.x,
-          anchor_y: pos.y,
+        await storeGpsPin({
+          db,
+          pinId,
+          anchorX: pos.x,
+          anchorY: pos.y,
           title: race,
         });
-        upsertPinAsset(db, {
-          pin_id: pinId,
-          asset_id: sharedAssetId,
-          sort_order: Date.parse(captureTime) || Date.now(),
-          added_at: nowIso,
+        await storePinAsset({
+          db,
+          pinId,
+          assetId: sharedAssetId,
+          sortOrder: Date.parse(captureTime) || Date.now(),
+          addedAt: nowIso,
         });
         pinned += 1;
       }
