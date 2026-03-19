@@ -131,7 +131,7 @@ const AREA_VISUAL_MODES = [
   { id: "heat_blur", label: "Heat Blur" },
   { id: "photo_heatmap", label: "Photo Heatmap" },
 ];
-const AREA_OVERLAY_COLOR = "#ffd84d";
+const AREA_OVERLAY_COLOR = "#5da2ff";
 const AREA_MARKER_COLOR = "#ffd84d";
 
 function isSharedLinkPhoto(photo) {
@@ -284,7 +284,7 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
   const rect = toLatLngBounds(bounds);
   const safeMax = Math.max(1, Number(maxPhotoCount) || 1);
   const ratio = Math.max(0, Math.min(1, (Number(photoCount) || 0) / safeMax));
-  const heatColor = gpsClusterHeatColor(ratio);
+  const heatColor = `rgb(${Math.round(120 + ratio * 135)}, ${Math.round(10 + ratio * 40)}, ${Math.round(10 + ratio * 35)})`;
 
   return (
     <Fragment>
