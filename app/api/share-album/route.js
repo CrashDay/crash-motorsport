@@ -657,16 +657,22 @@ export async function POST(request) {
   let assigned = 0;
   let pinned = 0;
   let coverThumbUrl = "";
+  let gpsFoundInFeed = 0;
+  let gpsFoundInDetail = 0;
+  let gpsMissing = 0;
+  const gpsMissingSamples = [];
 
   try {
     for (const { row, asset } of assets) {
       let assetDetail = asset;
+      let gpsSource = "feed";
       let gps = extractGpsFromLightroomAsset(assetDetail);
       if (!gps) {
         const fetchedDetail = await fetchSharedAssetDetail(row, assetsBase);
         if (fetchedDetail) {
           assetDetail = fetchedDetail;
           gps = extractGpsFromLightroomAsset(assetDetail);
+          if (gps) gpsSource = "detail";
         }
       }
 
@@ -692,6 +698,18 @@ export async function POST(request) {
           )
       );
       const photoName = fileName;
+      if (gps) {
+        if (gpsSource === "detail") gpsFoundInDetail += 1;
+        else gpsFoundInFeed += 1;
+      } else {
+        gpsMissing += 1;
+        if (gpsMissingSamples.length < 12) {
+          gpsMissingSamples.push({
+            asset_id: asset.id,
+            file_name: photoName,
+          });
+        }
+      }
 
       if (!thumbUrl || !fullUrl) continue;
       if (!coverThumbUrl) coverThumbUrl = thumbUrl;
@@ -782,6 +800,10 @@ export async function POST(request) {
     imported_count: imported,
     assigned_count: assigned,
     pinned_count: pinned,
+    gps_found_in_feed_count: gpsFoundInFeed,
+    gps_found_in_detail_count: gpsFoundInDetail,
+    gps_missing_count: gpsMissing,
+    gps_missing_samples: gpsMissingSamples,
     album_title: albumTitle,
     album_slug: slug,
     album_href: `/${series}/albums/${slug}`,

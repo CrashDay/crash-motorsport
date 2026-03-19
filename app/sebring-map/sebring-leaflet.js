@@ -1470,7 +1470,22 @@ export default function SebringLeaflet() {
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
 
       await Promise.all([loadPins(), loadAssignedAreaPhotos()]);
-      setShareAlbumMsg(`Imported ${payload?.imported_count || 0} album photos.`);
+      const importedCount = Number(payload?.imported_count || 0);
+      const pinnedCount = Number(payload?.pinned_count || 0);
+      const gpsFeedCount = Number(payload?.gps_found_in_feed_count || 0);
+      const gpsDetailCount = Number(payload?.gps_found_in_detail_count || 0);
+      const gpsMissingCount = Number(payload?.gps_missing_count || 0);
+      const missingSamples = Array.isArray(payload?.gps_missing_samples) ? payload.gps_missing_samples : [];
+      const sampleText = missingSamples.length
+        ? ` Missing GPS sample: ${missingSamples
+            .slice(0, 3)
+            .map((item) => item?.file_name || item?.asset_id || "unknown")
+            .filter(Boolean)
+            .join(", ")}.`
+        : "";
+      setShareAlbumMsg(
+        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}`
+      );
       setShareAlbumShortLink("");
       setShareAlbumSeries("imsa");
       setShareAlbumYear("2023");
