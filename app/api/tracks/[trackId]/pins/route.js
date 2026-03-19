@@ -62,6 +62,22 @@ async function getPgPinsByTrack(trackId) {
           p.title,
           COUNT(pa.asset_id) AS photo_count,
           (
+            SELECT a.year
+            FROM pin_assets pa2
+            JOIN photo_assets a ON a.asset_id = pa2.asset_id
+            WHERE pa2.pin_id = p.pin_id
+            ORDER BY a.capture_time DESC
+            LIMIT 1
+          ) AS year,
+          (
+            SELECT a.race
+            FROM pin_assets pa2
+            JOIN photo_assets a ON a.asset_id = pa2.asset_id
+            WHERE pa2.pin_id = p.pin_id
+            ORDER BY a.capture_time DESC
+            LIMIT 1
+          ) AS race,
+          (
             SELECT a.thumb_url
             FROM pin_assets pa2
             JOIN photo_assets a ON a.asset_id = pa2.asset_id
@@ -89,6 +105,8 @@ async function getPgPinsByTrack(trackId) {
       lng: r.lng === null ? null : Number(r.lng),
       pin_type: r.pin_type,
       photo_count: Number(r.photo_count || 0),
+      year: Number.isFinite(Number(r.year)) ? Number(r.year) : null,
+      race: r.race || null,
       cover_thumb_url: normalizeLightroomImageUrl(r.cover_thumb_url) || null,
     }));
   });

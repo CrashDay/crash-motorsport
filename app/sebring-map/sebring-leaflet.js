@@ -764,8 +764,12 @@ export default function SebringLeaflet() {
         if (Number.isInteger(year)) years.add(year);
       });
     });
+    pins.forEach((pin) => {
+      const year = Number(pin?.year);
+      if (Number.isInteger(year)) years.add(year);
+    });
     return Array.from(years).sort((a, b) => b - a);
-  }, [allAreaRowsBase]);
+  }, [allAreaRowsBase, pins]);
   const availableRaces = useMemo(() => {
     const races = new Set(["12 Hours of Sebring", "1000 Miles of Sebring"]);
     allAreaRowsBase.forEach((area) => {
@@ -774,8 +778,12 @@ export default function SebringLeaflet() {
         if (race) races.add(race);
       });
     });
+    pins.forEach((pin) => {
+      const race = String(pin?.race || "").trim();
+      if (race) races.add(race);
+    });
     return Array.from(races).sort((a, b) => a.localeCompare(b));
-  }, [allAreaRowsBase]);
+  }, [allAreaRowsBase, pins]);
   const allAreaRows = allAreaRowsBase
     .map((area) => ({
       ...area,
@@ -794,6 +802,9 @@ export default function SebringLeaflet() {
     const grouped = new Map();
     for (const pin of pins) {
       if (!Number.isFinite(pin?.lat) || !Number.isFinite(pin?.lng)) continue;
+      const yearOk = yearFilter === "all" ? true : Number(pin?.year) === Number(yearFilter);
+      const raceOk = raceFilter === "all" ? true : String(pin?.race || "") === raceFilter;
+      if (!yearOk || !raceOk) continue;
       const key = `${Number(pin.lat).toFixed(6)}:${Number(pin.lng).toFixed(6)}`;
       const existing = grouped.get(key);
       const photoCount = Number(pin?.photo_count || 0);
@@ -812,11 +823,13 @@ export default function SebringLeaflet() {
         lng: Number(pin.lng),
         title: pin.title || "GPS Photos",
         photo_count: photoCount,
+        year: pin?.year ?? null,
+        race: pin?.race || null,
         cover_thumb_url: pin.cover_thumb_url || null,
       });
     }
     return Array.from(grouped.values());
-  }, [pins]);
+  }, [pins, yearFilter, raceFilter]);
   const maxGpsClusterPhotoCount = useMemo(
     () => Math.max(1, ...visibleGpsPins.map((pin) => Number(pin?.photo_count || 0))),
     [visibleGpsPins]
