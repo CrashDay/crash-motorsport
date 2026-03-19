@@ -132,7 +132,7 @@ const AREA_VISUAL_MODES = [
   { id: "photo_heatmap", label: "Photo Heatmap" },
 ];
 const AREA_OVERLAY_COLOR = "#5da2ff";
-const AREA_MARKER_COLOR = "#ffd84d";
+const AREA_MARKER_COLOR = "rgb(210, 40, 40)";
 
 function isSharedLinkPhoto(photo) {
   const id = String(photo?.id || "").trim().toLowerCase();
