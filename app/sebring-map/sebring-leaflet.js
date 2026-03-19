@@ -1928,7 +1928,7 @@ export default function SebringLeaflet() {
             style={{
               position: "absolute",
               zIndex: 10000,
-              bottom: 12,
+              bottom: 34,
               right: 12,
             }}
           >
@@ -1955,7 +1955,7 @@ export default function SebringLeaflet() {
               style={{
                 position: "absolute",
                 zIndex: 9999,
-                bottom: 56,
+                bottom: 78,
                 right: 12,
                 background: "linear-gradient(165deg, rgba(8,15,27,0.95), rgba(7,12,21,0.88))",
                 color: "#f4f8ff",
