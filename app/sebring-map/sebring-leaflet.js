@@ -1491,7 +1491,6 @@ export default function SebringLeaflet() {
       setShareAlbumYear("2023");
       setShareAlbumRace("12 Hours of Sebring");
       setShareAlbumAreaId("");
-      setShareAlbumOpen(false);
     } catch (e) {
       setShareAlbumMsg(`Share failed: ${String(e?.message || e)}`);
     } finally {
