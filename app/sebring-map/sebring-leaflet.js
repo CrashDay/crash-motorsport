@@ -669,6 +669,7 @@ export default function SebringLeaflet() {
   const [shareAlbumAreaId, setShareAlbumAreaId] = useState("");
   const [shareAlbumSubmitting, setShareAlbumSubmitting] = useState(false);
   const [shareAlbumMsg, setShareAlbumMsg] = useState("");
+  const [shareAlbumDiagnostics, setShareAlbumDiagnostics] = useState(null);
   const [shareAlbumOpen, setShareAlbumOpen] = useState(false);
   const [yearFilter, setYearFilter] = useState("all");
   const [raceFilter, setRaceFilter] = useState("all");
@@ -1567,6 +1568,7 @@ export default function SebringLeaflet() {
 
     setShareAlbumSubmitting(true);
     setShareAlbumMsg("");
+    setShareAlbumDiagnostics(null);
     try {
       const res = await fetch("/api/share-album", {
         method: "POST",
@@ -1601,6 +1603,13 @@ export default function SebringLeaflet() {
       setShareAlbumMsg(
         `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}`
       );
+      setShareAlbumDiagnostics({
+        feedResourceCount: Number(payload?.feed_resource_count || 0),
+        normalizedAssetCount: Number(payload?.normalized_asset_count || 0),
+        missingRenditionsCount: Number(payload?.missing_renditions_count || 0),
+        missingRenditionSamples: Array.isArray(payload?.missing_rendition_samples) ? payload.missing_rendition_samples : [],
+        gpsMissingDiagnostics: missingDiagnostics,
+      });
       setShareAlbumShortLink("");
       setShareAlbumSeries("imsa");
       setShareAlbumYear("2023");
@@ -1608,6 +1617,7 @@ export default function SebringLeaflet() {
       setShareAlbumAreaId("");
     } catch (e) {
       setShareAlbumMsg(`Share failed: ${String(e?.message || e)}`);
+      setShareAlbumDiagnostics(null);
     } finally {
       setShareAlbumSubmitting(false);
     }
@@ -1918,6 +1928,7 @@ export default function SebringLeaflet() {
           onClick={() => {
             setShareAlbumOpen(true);
             setShareAlbumMsg("");
+            setShareAlbumDiagnostics(null);
           }}
           style={{
             background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
@@ -2938,6 +2949,31 @@ export default function SebringLeaflet() {
               <div style={{ marginTop: 8, color: shareAlbumMsg.startsWith("Share failed") ? "#ff9a9a" : "#9dd8a3", fontSize: 12 }}>
                 {shareAlbumMsg}
               </div>
+            ) : null}
+            {shareAlbumDiagnostics ? (
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ cursor: "pointer", color: "#c7d6ef", fontSize: 12 }}>
+                  Diagnostics
+                </summary>
+                <pre
+                  style={{
+                    marginTop: 8,
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    background: "#0b1422",
+                    border: "1px solid #22304a",
+                    color: "#dfe8ff",
+                    borderRadius: 8,
+                    padding: 10,
+                    fontSize: 11,
+                    lineHeight: 1.4,
+                    maxHeight: 260,
+                    overflow: "auto",
+                  }}
+                >
+                  {JSON.stringify(shareAlbumDiagnostics, null, 2)}
+                </pre>
+              </details>
             ) : null}
           </div>
         </div>
