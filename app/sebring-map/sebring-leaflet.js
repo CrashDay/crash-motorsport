@@ -667,8 +667,6 @@ export default function SebringLeaflet() {
   const [shareAlbumYear, setShareAlbumYear] = useState("2023");
   const [shareAlbumRace, setShareAlbumRace] = useState("12 Hours of Sebring");
   const [shareAlbumAreaId, setShareAlbumAreaId] = useState("");
-  const [shareAlbumSlug, setShareAlbumSlug] = useState("");
-  const [shareAlbumLocalFolder, setShareAlbumLocalFolder] = useState("");
   const [shareAlbumSubmitting, setShareAlbumSubmitting] = useState(false);
   const [shareAlbumMsg, setShareAlbumMsg] = useState("");
   const [shareAlbumDiagnostics, setShareAlbumDiagnostics] = useState(null);
@@ -1612,70 +1610,10 @@ export default function SebringLeaflet() {
         missingRenditionSamples: Array.isArray(payload?.missing_rendition_samples) ? payload.missing_rendition_samples : [],
         gpsMissingDiagnostics: missingDiagnostics,
       });
-      setShareAlbumSlug(String(payload?.album_slug || "").trim());
       setShareAlbumShortLink("");
       setShareAlbumYear("2023");
       setShareAlbumRace("12 Hours of Sebring");
       setShareAlbumAreaId("");
-    } catch (e) {
-      setShareAlbumMsg(`Share failed: ${String(e?.message || e)}`);
-      setShareAlbumDiagnostics(null);
-    } finally {
-      setShareAlbumSubmitting(false);
-    }
-  };
-
-  const submitShareAlbumLocalGps = async () => {
-    const trimmedSeries = (shareAlbumSeries || "").trim();
-    const trimmedSlug = (shareAlbumSlug || "").trim();
-    const trimmedLocalFolder = (shareAlbumLocalFolder || "").trim();
-
-    if (!trimmedSlug) {
-      setShareAlbumMsg("Import the shared album first so the local GPS matcher knows which album to target.");
-      return;
-    }
-    if (!trimmedLocalFolder) {
-      setShareAlbumMsg("Local export folder is required for local GPS import.");
-      return;
-    }
-
-    setShareAlbumSubmitting(true);
-    setShareAlbumMsg("");
-    setShareAlbumDiagnostics(null);
-    try {
-      const res = await fetch("/api/share-album/local-gps", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          series: trimmedSeries,
-          albumSlug: trimmedSlug,
-          localFolder: trimmedLocalFolder,
-        }),
-      });
-      const payload = await res.json();
-      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
-
-      await loadPins();
-      const pinnedCount = Number(payload?.pinned_count || 0);
-      const localGpsCount = Number(payload?.local_gps_file_count || 0);
-      const filenameCount = Number(payload?.matched_by_filename_count || 0);
-      const captureCount = Number(payload?.matched_by_capture_time_count || 0);
-      const unmatchedCount = Number(payload?.unmatched_local_gps_count || 0);
-      const ambiguousCount = Number(payload?.ambiguous_match_count || 0);
-      setShareAlbumMsg(
-        `Local GPS matched ${pinnedCount} photos. GPS files ${localGpsCount}, filename matches ${filenameCount}, capture-time matches ${captureCount}, unmatched ${unmatchedCount}, ambiguous ${ambiguousCount}.`
-      );
-      setShareAlbumDiagnostics({
-        albumSlug: String(payload?.album_slug || ""),
-        albumTitle: String(payload?.album_title || ""),
-        localFolder: String(payload?.local_folder || ""),
-        localFileCount: Number(payload?.local_file_count || 0),
-        localGpsFileCount: localGpsCount,
-        pinnedCount,
-        unmatchedAlbumAssetCount: Number(payload?.unmatched_album_asset_count || 0),
-        matchedSamples: Array.isArray(payload?.matched_samples) ? payload.matched_samples : [],
-        unmatchedSamples: Array.isArray(payload?.unmatched_samples) ? payload.unmatched_samples : [],
-      });
     } catch (e) {
       setShareAlbumMsg(`Share failed: ${String(e?.message || e)}`);
       setShareAlbumDiagnostics(null);
@@ -2972,32 +2910,6 @@ export default function SebringLeaflet() {
                 ))}
               </select>
             </div>
-            <div style={{ marginTop: 8 }}>
-              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Local GPS folder (optional)</div>
-              <input
-                type="text"
-                value={shareAlbumLocalFolder}
-                onChange={(e) => setShareAlbumLocalFolder(e.target.value)}
-                placeholder="imsa/2026-large-album"
-                style={{
-                  width: "100%",
-                  background: "#101827",
-                  border: "1px solid #2a3a57",
-                  color: "#fff",
-                  borderRadius: 8,
-                  padding: "8px 10px",
-                  fontSize: 13,
-                }}
-              />
-              <div style={{ color: "#7f93b7", fontSize: 11, marginTop: 4 }}>
-                Relative to `LOCAL_EXPORTS_ROOT`. Use this after Share Album if Adobe strips GPS from the public album data.
-              </div>
-            </div>
-            {shareAlbumSlug ? (
-              <div style={{ marginTop: 8, color: "#7f93b7", fontSize: 11 }}>
-                Local GPS target: {shareAlbumSeries}/{shareAlbumSlug}
-              </div>
-            ) : null}
             <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button
                 type="button"
@@ -3013,23 +2925,6 @@ export default function SebringLeaflet() {
                 }}
               >
                 Close
-              </button>
-              <button
-                type="button"
-                onClick={submitShareAlbumLocalGps}
-                disabled={shareAlbumSubmitting}
-                style={{
-                  background: "#111827",
-                  border: "1px solid #325080",
-                  color: "#fff",
-                  padding: "8px 10px",
-                  borderRadius: 8,
-                  cursor: shareAlbumSubmitting ? "default" : "pointer",
-                  fontSize: 12,
-                  opacity: shareAlbumSubmitting ? 0.7 : 1,
-                }}
-              >
-                {shareAlbumSubmitting ? "Sharing..." : "Import Local GPS"}
               </button>
               <button
                 type="button"
