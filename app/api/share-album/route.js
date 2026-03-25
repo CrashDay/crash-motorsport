@@ -360,6 +360,46 @@ function normalizeSharedAssetDetailPayload(payload) {
   return null;
 }
 
+function normalizeSharedAlbumFeedRow(row) {
+  if (!row || typeof row !== "object") return null;
+
+  const direct = normalizeSharedAssetDetailPayload(row);
+  if (direct) return direct;
+
+  const candidates = [
+    row?.asset,
+    row?.resource,
+    row?.resource?.asset,
+    row?.master,
+    row?.master?.asset,
+    row?.image,
+    row?.image?.asset,
+    row?.item,
+    row?.item?.asset,
+    row?.content,
+    row?.content?.asset,
+    row?.payload?.asset,
+    row?.payload?.resource,
+    row?.payload?.image,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeSharedAssetDetailPayload(candidate);
+    if (normalized) return normalized;
+  }
+
+  if (row?.payload?.id || row?.payload?.links) {
+    return {
+      id: row.payload.id,
+      payload: row.payload,
+      links: row.links || row.payload.links || null,
+      subtype: row.subtype || row.payload.subtype || null,
+    };
+  }
+
+  return null;
+}
+
 async function fetchSharedAssetDetail(resource, assetsBase) {
   const hrefs = collectAssetDetailHrefs(resource, assetsBase);
   for (const href of hrefs) {
@@ -640,9 +680,10 @@ export async function POST(request) {
   }
 
   const assetsBase = String(albumFeed?.base || photosBase).trim();
-  const assets = (albumFeed?.resources || [])
-    .map((row) => ({ row, asset: row?.asset || row }))
-    .filter(({ asset }) => asset?.id && String(asset?.subtype || "").toLowerCase() !== "video");
+  const feedRows = Array.isArray(albumFeed?.resources) ? albumFeed.resources : [];
+  const assets = feedRows
+    .map((row) => ({ row, asset: normalizeSharedAlbumFeedRow(row) }))
+    .filter(({ asset }) => asset?.id && String(asset?.subtype || asset?.payload?.subtype || "").toLowerCase() !== "video");
 
   if (!assets.length) {
     return NextResponse.json({ error: "No shared album images were found" }, { status: 400 });
@@ -797,6 +838,8 @@ export async function POST(request) {
 
   return NextResponse.json({
     ok: true,
+    feed_resource_count: feedRows.length,
+    normalized_asset_count: assets.length,
     imported_count: imported,
     assigned_count: assigned,
     pinned_count: pinned,
