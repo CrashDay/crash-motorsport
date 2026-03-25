@@ -1589,6 +1589,7 @@ export default function SebringLeaflet() {
       const gpsDetailCount = Number(payload?.gps_found_in_detail_count || 0);
       const gpsMissingCount = Number(payload?.gps_missing_count || 0);
       const missingSamples = Array.isArray(payload?.gps_missing_samples) ? payload.gps_missing_samples : [];
+      const missingDiagnostics = Array.isArray(payload?.gps_missing_diagnostics) ? payload.gps_missing_diagnostics : [];
       const sampleText = missingSamples.length
         ? ` Missing GPS sample: ${missingSamples
             .slice(0, 3)
@@ -1596,8 +1597,9 @@ export default function SebringLeaflet() {
             .filter(Boolean)
             .join(", ")}.`
         : "";
+      const diagnosticText = missingDiagnostics.length ? " GPS diagnostics captured for sample assets." : "";
       setShareAlbumMsg(
-        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}`
+        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}`
       );
       setShareAlbumShortLink("");
       setShareAlbumSeries("imsa");

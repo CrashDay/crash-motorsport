@@ -452,6 +452,35 @@ function pickRenditionUrl(assetDetail, asset, assetsBase, kind) {
   return first ? normalizeLightroomImageUrl(first) : "";
 }
 
+function collectGpsDebugSummary(asset) {
+  const payload = asset?.payload;
+  const links = asset?.links;
+  const payloadKeys = payload && typeof payload === "object" ? Object.keys(payload).sort() : [];
+  const linkKeys = links && typeof links === "object" ? Object.keys(links).sort() : [];
+  return {
+    id: asset?.id || null,
+    subtype: asset?.subtype || payload?.subtype || null,
+    payload_keys: payloadKeys,
+    link_keys: linkKeys,
+    has_payload_gps: Boolean(payload?.gps),
+    has_payload_location: Boolean(payload?.location),
+    has_payload_coordinate: Boolean(payload?.coordinate),
+    has_payload_exif: Boolean(payload?.exif),
+    has_payload_xmp: Boolean(payload?.xmp),
+    gps_value_preview: {
+      gps: payload?.gps || null,
+      location: payload?.location || null,
+      coordinate: payload?.coordinate || null,
+      latitude: payload?.latitude ?? null,
+      longitude: payload?.longitude ?? null,
+      exif_gps_latitude: payload?.exif?.GPSLatitude ?? null,
+      exif_gps_longitude: payload?.exif?.GPSLongitude ?? null,
+      xmp_exif_gps_latitude: payload?.xmp?.exif?.GPSLatitude ?? null,
+      xmp_exif_gps_longitude: payload?.xmp?.exif?.GPSLongitude ?? null,
+    },
+  };
+}
+
 async function fetchSharedAssetDetail(resource, assetsBase) {
   const hrefs = collectAssetDetailHrefs(resource, assetsBase);
   for (const href of hrefs) {
@@ -786,6 +815,7 @@ export async function POST(request) {
   let gpsMissing = 0;
   let missingRenditions = 0;
   const gpsMissingSamples = [];
+  const gpsMissingDiagnostics = [];
   const missingRenditionSamples = [];
 
   try {
@@ -826,6 +856,17 @@ export async function POST(request) {
           gpsMissingSamples.push({
             asset_id: asset.id,
             file_name: photoName,
+          });
+        }
+        if (gpsMissingDiagnostics.length < 5) {
+          gpsMissingDiagnostics.push({
+            asset_id: asset.id,
+            file_name: photoName,
+            feed_summary: collectGpsDebugSummary(asset),
+            detail_summary:
+              assetDetail && assetDetail !== asset
+                ? collectGpsDebugSummary(assetDetail)
+                : null,
           });
         }
       }
@@ -948,6 +989,7 @@ export async function POST(request) {
     gps_found_in_detail_count: gpsFoundInDetail,
     gps_missing_count: gpsMissing,
     gps_missing_samples: gpsMissingSamples,
+    gps_missing_diagnostics: gpsMissingDiagnostics,
     missing_renditions_count: missingRenditions,
     missing_rendition_samples: missingRenditionSamples,
     album_title: albumTitle,
