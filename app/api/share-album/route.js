@@ -466,11 +466,11 @@ async function fetchSharedAssetDetail(resource, assetsBase) {
   return null;
 }
 
-async function storeAreaAssignment({ db, areaId, assetId, name, thumbUrl, fullUrl, year, race, assignedAt }) {
+async function storeAreaAssignment({ db, pgClient = null, areaId, assetId, name, thumbUrl, fullUrl, year, race, assignedAt }) {
   if (!areaId) return;
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
-    await withPgClient(async (client) => {
+    const run = async (client) => {
       await client.query(
         `
           INSERT INTO photo_area_assets (track_id, area_id, asset_id, asset_name, thumb_url, full_url, year, race, assigned_at)
@@ -485,7 +485,12 @@ async function storeAreaAssignment({ db, areaId, assetId, name, thumbUrl, fullUr
         `,
         [TRACK_ID, areaId, assetId, name, thumbUrl, fullUrl, year, race, assignedAt]
       );
-    });
+    };
+    if (pgClient) {
+      await run(pgClient);
+    } else {
+      await withPgClient(run);
+    }
     return;
   }
   if (isVercelRuntime()) {
@@ -504,10 +509,10 @@ async function storeAreaAssignment({ db, areaId, assetId, name, thumbUrl, fullUr
   });
 }
 
-async function storePhotoAsset({ db, assetId, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt }) {
+async function storePhotoAsset({ db, pgClient = null, assetId, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
-    await withPgClient(async (client) => {
+    const run = async (client) => {
       await client.query(
         `
           INSERT INTO photo_assets (asset_id, track_id, capture_time, alt_text_snapshot, thumb_url, full_url, year, race, last_synced_at, catalog_id)
@@ -525,7 +530,12 @@ async function storePhotoAsset({ db, assetId, captureTime, altText, thumbUrl, fu
         `,
         [assetId, TRACK_ID, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt]
       );
-    });
+    };
+    if (pgClient) {
+      await run(pgClient);
+    } else {
+      await withPgClient(run);
+    }
     return;
   }
   upsertPhotoAsset(db, {
@@ -542,10 +552,10 @@ async function storePhotoAsset({ db, assetId, captureTime, altText, thumbUrl, fu
   });
 }
 
-async function storeGpsPin({ db, pinId, anchorX, anchorY, lat, lng, title }) {
+async function storeGpsPin({ db, pgClient = null, pinId, anchorX, anchorY, lat, lng, title }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
-    await withPgClient(async (client) => {
+    const run = async (client) => {
       await client.query(
         `
           INSERT INTO photo_pins (pin_id, track_id, region_id, anchor_x, anchor_y, lat, lng, pin_type, title)
@@ -559,7 +569,12 @@ async function storeGpsPin({ db, pinId, anchorX, anchorY, lat, lng, title }) {
         `,
         [pinId, TRACK_ID, anchorX, anchorY, lat, lng, "gps", title]
       );
-    });
+    };
+    if (pgClient) {
+      await run(pgClient);
+    } else {
+      await withPgClient(run);
+    }
     return;
   }
   upsertGpsPin(db, {
@@ -573,10 +588,10 @@ async function storeGpsPin({ db, pinId, anchorX, anchorY, lat, lng, title }) {
   });
 }
 
-async function storePinAsset({ db, pinId, assetId, sortOrder, addedAt }) {
+async function storePinAsset({ db, pgClient = null, pinId, assetId, sortOrder, addedAt }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
-    await withPgClient(async (client) => {
+    const run = async (client) => {
       await client.query(
         `
           INSERT INTO pin_assets (pin_id, asset_id, sort_order, added_at)
@@ -587,7 +602,12 @@ async function storePinAsset({ db, pinId, assetId, sortOrder, addedAt }) {
         `,
         [pinId, assetId, sortOrder, addedAt]
       );
-    });
+    };
+    if (pgClient) {
+      await run(pgClient);
+    } else {
+      await withPgClient(run);
+    }
     return;
   }
   upsertPinAsset(db, {
@@ -598,10 +618,10 @@ async function storePinAsset({ db, pinId, assetId, sortOrder, addedAt }) {
   });
 }
 
-async function storeSharedAlbum({ db, albumKey, series, slug, title, year, race, coverThumbUrl, createdAt, updatedAt }) {
+async function storeSharedAlbum({ db, pgClient = null, albumKey, series, slug, title, year, race, coverThumbUrl, createdAt, updatedAt }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
-    await withPgClient(async (client) => {
+    const run = async (client) => {
       await client.query(
         `
           INSERT INTO shared_albums (album_key, series, slug, title, year, race, cover_thumb_url, created_at, updated_at)
@@ -617,7 +637,12 @@ async function storeSharedAlbum({ db, albumKey, series, slug, title, year, race,
         `,
         [albumKey, series, slug, title, year, race, coverThumbUrl, createdAt, updatedAt]
       );
-    });
+    };
+    if (pgClient) {
+      await run(pgClient);
+    } else {
+      await withPgClient(run);
+    }
     return;
   }
   upsertSharedAlbum(db, {
@@ -633,10 +658,10 @@ async function storeSharedAlbum({ db, albumKey, series, slug, title, year, race,
   });
 }
 
-async function storeSharedAlbumAsset({ db, albumKey, assetId, name, thumbUrl, fullUrl, year, race, assignedAt }) {
+async function storeSharedAlbumAsset({ db, pgClient = null, albumKey, assetId, name, thumbUrl, fullUrl, year, race, assignedAt }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
-    await withPgClient(async (client) => {
+    const run = async (client) => {
       await client.query(
         `
           INSERT INTO shared_album_assets (album_key, asset_id, asset_name, thumb_url, full_url, year, race, assigned_at)
@@ -651,7 +676,12 @@ async function storeSharedAlbumAsset({ db, albumKey, assetId, name, thumbUrl, fu
         `,
         [albumKey, assetId, name, thumbUrl, fullUrl, year, race, assignedAt]
       );
-    });
+    };
+    if (pgClient) {
+      await run(pgClient);
+    } else {
+      await withPgClient(run);
+    }
     return;
   }
   assignSharedAlbumAsset(db, {
@@ -746,6 +776,7 @@ export async function POST(request) {
   const db = getDb();
   const nowIso = new Date().toISOString();
   const projector = getProjectorForTrack(TRACK_ID);
+  let pgClient = null;
   let imported = 0;
   let assigned = 0;
   let pinned = 0;
@@ -758,6 +789,15 @@ export async function POST(request) {
   const missingRenditionSamples = [];
 
   try {
+    if (hasPostgresConfig()) {
+      await ensurePostgresSchema();
+      pgClient = new Client({
+        connectionString: getPostgresConnectionString(),
+        ssl: { rejectUnauthorized: false },
+      });
+      await pgClient.connect();
+    }
+
     for (const { row, asset } of assets) {
       let assetDetail = asset;
       let gpsSource = "feed";
@@ -804,6 +844,7 @@ export async function POST(request) {
 
       await storePhotoAsset({
         db,
+        pgClient,
         assetId: sharedAssetId,
         captureTime,
         altText: `${albumTitle} via Lightroom shared album`,
@@ -816,6 +857,7 @@ export async function POST(request) {
 
       await storeSharedAlbumAsset({
         db,
+        pgClient,
         albumKey,
         assetId: sharedAssetId,
         name: photoName,
@@ -831,6 +873,7 @@ export async function POST(request) {
         const pinId = `gps:${sharedAssetId}`;
         await storeGpsPin({
           db,
+          pgClient,
           pinId,
           anchorX: pos.x,
           anchorY: pos.y,
@@ -840,6 +883,7 @@ export async function POST(request) {
         });
         await storePinAsset({
           db,
+          pgClient,
           pinId,
           assetId: sharedAssetId,
           sortOrder: Date.parse(captureTime) || Date.now(),
@@ -851,6 +895,7 @@ export async function POST(request) {
       if (areaId) {
         await storeAreaAssignment({
           db,
+          pgClient,
           areaId,
           assetId: sharedAssetId,
           name: photoName,
@@ -868,6 +913,7 @@ export async function POST(request) {
 
     await storeSharedAlbum({
       db,
+      pgClient,
       albumKey,
       series,
       slug,
@@ -881,6 +927,14 @@ export async function POST(request) {
   } catch (error) {
     console.error("[share-album:POST] import error", error);
     return NextResponse.json({ error: String(error?.message || error) || "Album import failed" }, { status: 503 });
+  } finally {
+    if (pgClient) {
+      try {
+        await pgClient.end();
+      } catch {
+        // ignore connection close errors
+      }
+    }
   }
 
   return NextResponse.json({

@@ -2766,7 +2766,7 @@ export default function SebringLeaflet() {
           aria-modal="true"
           aria-label="Share album"
           onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setShareAlbumOpen(false);
+            if (!shareAlbumSubmitting && e.target === e.currentTarget) setShareAlbumOpen(false);
           }}
           style={{
             position: "fixed",
