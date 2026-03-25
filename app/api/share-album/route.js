@@ -400,6 +400,58 @@ function normalizeSharedAlbumFeedRow(row) {
   return null;
 }
 
+function collectRenditionHrefs(assetLike, assetsBase) {
+  const hrefs = [];
+  const links = assetLike?.links;
+  if (!links || typeof links !== "object") return hrefs;
+
+  for (const [rel, value] of Object.entries(links)) {
+    const values = Array.isArray(value) ? value : [value];
+    for (const item of values) {
+      const href = String(item?.href || "").trim();
+      if (!href) continue;
+      hrefs.push({
+        rel: String(rel || "").toLowerCase(),
+        url: toAbsoluteUrl(assetsBase, href),
+      });
+    }
+  }
+
+  return hrefs;
+}
+
+function pickRenditionUrl(assetDetail, asset, assetsBase, kind) {
+  const candidates = [
+    ...collectRenditionHrefs(assetDetail, assetsBase),
+    ...collectRenditionHrefs(asset, assetsBase),
+  ];
+
+  const unique = [];
+  const seen = new Set();
+  for (const candidate of candidates) {
+    if (!candidate.url || seen.has(candidate.url)) continue;
+    seen.add(candidate.url);
+    unique.push(candidate);
+  }
+
+  const thumbPatterns = ["thumbnail2x", "thumbnail", "thumb", "preview", "web"];
+  const fullPatterns = ["2048", "2560", "fullsize", "full", "original", "master"];
+  const patterns = kind === "thumb" ? thumbPatterns : fullPatterns;
+
+  for (const pattern of patterns) {
+    const match = unique.find((candidate) => candidate.rel.includes(pattern) || candidate.url.toLowerCase().includes(pattern));
+    if (match?.url) return normalizeLightroomImageUrl(match.url);
+  }
+
+  if (kind === "full") {
+    const nonThumb = unique.find((candidate) => !thumbPatterns.some((pattern) => candidate.rel.includes(pattern)));
+    if (nonThumb?.url) return normalizeLightroomImageUrl(nonThumb.url);
+  }
+
+  const first = unique[0]?.url || "";
+  return first ? normalizeLightroomImageUrl(first) : "";
+}
+
 async function fetchSharedAssetDetail(resource, assetsBase) {
   const hrefs = collectAssetDetailHrefs(resource, assetsBase);
   for (const href of hrefs) {
@@ -701,7 +753,9 @@ export async function POST(request) {
   let gpsFoundInFeed = 0;
   let gpsFoundInDetail = 0;
   let gpsMissing = 0;
+  let missingRenditions = 0;
   const gpsMissingSamples = [];
+  const missingRenditionSamples = [];
 
   try {
     for (const { row, asset } of assets) {
@@ -720,24 +774,8 @@ export async function POST(request) {
       const sharedAssetId = `shared-album:${series}:${slug}:${asset.id}`;
       const captureTime = pickCaptureTime(assetDetail);
       const fileName = String(assetDetail?.payload?.importSource?.fileName || asset?.id).trim() || asset.id;
-      const thumbUrl = normalizeLightroomImageUrl(
-        toAbsoluteUrl(
-          assetsBase,
-          assetDetail?.links?.["/rels/rendition_type/thumbnail2x"]?.href ||
-            asset?.links?.["/rels/rendition_type/thumbnail2x"]?.href
-        )
-      );
-      const fullUrl = normalizeLightroomImageUrl(
-        toAbsoluteUrl(
-          assetsBase,
-          assetDetail?.links?.["/rels/rendition_type/2048"]?.href || asset?.links?.["/rels/rendition_type/2048"]?.href
-        ) ||
-          toAbsoluteUrl(
-            assetsBase,
-            assetDetail?.links?.["/rels/rendition_type/fullsize"]?.href ||
-              asset?.links?.["/rels/rendition_type/fullsize"]?.href
-          )
-      );
+      const thumbUrl = pickRenditionUrl(assetDetail, asset, assetsBase, "thumb");
+      const fullUrl = pickRenditionUrl(assetDetail, asset, assetsBase, "full") || thumbUrl;
       const photoName = fileName;
       if (gps) {
         if (gpsSource === "detail") gpsFoundInDetail += 1;
@@ -752,7 +790,16 @@ export async function POST(request) {
         }
       }
 
-      if (!thumbUrl || !fullUrl) continue;
+      if (!thumbUrl || !fullUrl) {
+        missingRenditions += 1;
+        if (missingRenditionSamples.length < 12) {
+          missingRenditionSamples.push({
+            asset_id: asset.id,
+            file_name: photoName,
+          });
+        }
+        continue;
+      }
       if (!coverThumbUrl) coverThumbUrl = thumbUrl;
 
       await storePhotoAsset({
@@ -847,6 +894,8 @@ export async function POST(request) {
     gps_found_in_detail_count: gpsFoundInDetail,
     gps_missing_count: gpsMissing,
     gps_missing_samples: gpsMissingSamples,
+    missing_renditions_count: missingRenditions,
+    missing_rendition_samples: missingRenditionSamples,
     album_title: albumTitle,
     album_slug: slug,
     album_href: `/${series}/albums/${slug}`,
