@@ -342,15 +342,20 @@ function toAbsoluteUrl(base, href) {
 }
 
 function pickCaptureTime(asset) {
-  return (
-    asset?.payload?.captureDate ||
-    asset?.payload?.capture_date ||
-    asset?.payload?.xmp?.xmp?.CreateDate ||
-    asset?.payload?.xmp?.photoshop?.DateCreated ||
-    asset?.created ||
-    asset?.updated ||
-    new Date().toISOString()
-  );
+  const candidates = [
+    asset?.payload?.captureDate,
+    asset?.payload?.capture_date,
+    asset?.payload?.xmp?.xmp?.CreateDate,
+    asset?.payload?.xmp?.photoshop?.DateCreated,
+    asset?.created,
+    asset?.updated,
+  ];
+  for (const candidate of candidates) {
+    const raw = String(candidate || "").trim();
+    if (!raw || raw.startsWith("0000-00-00")) continue;
+    return raw;
+  }
+  return new Date().toISOString();
 }
 
 async function fetchAlbumFeed(initialUrl) {
@@ -548,7 +553,22 @@ async function fetchSharedAssetDetail(resource, assetsBase) {
     try {
       const payload = await fetchJson(href);
       const normalized = normalizeSharedAssetDetailPayload(payload);
-      if (normalized) return normalized;
+      if (!normalized) continue;
+      const underlyingHref = String(
+        normalized?.asset?.links?.self?.href ||
+          normalized?.resource?.asset?.links?.self?.href ||
+          ""
+      ).trim();
+      if (underlyingHref) {
+        try {
+          const underlyingPayload = await fetchJson(toAbsoluteUrl(assetsBase, underlyingHref));
+          const underlyingNormalized = normalizeSharedAssetDetailPayload(underlyingPayload);
+          if (underlyingNormalized) return underlyingNormalized;
+        } catch {
+          // Ignore underlying asset fetch failures and fall back to the wrapper payload.
+        }
+      }
+      return normalized;
     } catch {
       // Ignore detail fetch failures and continue with feed metadata.
     }
@@ -1186,20 +1206,32 @@ export async function POST(request) {
       }
 
       const captureTime = pickCaptureTime(assetDetail);
-      const fileName = String(assetDetail?.payload?.importSource?.fileName || asset?.id).trim() || asset.id;
+      const canonicalAssetId = String(
+        assetDetail?.id ||
+          assetDetail?.asset?.id ||
+          asset?.asset?.id ||
+          asset?.id ||
+          ""
+      ).trim();
+      const fileName = String(
+        assetDetail?.payload?.importSource?.fileName ||
+          assetDetail?.payload?.name ||
+          canonicalAssetId ||
+          asset?.id
+      ).trim() || asset.id;
       const thumbUrl = pickRenditionUrl(assetDetail, asset, assetsBase, "thumb");
       const fullUrl = pickRenditionUrl(assetDetail, asset, assetsBase, "full") || thumbUrl;
       const photoName = fileName;
-      const duplicateCount = assetIdCounts.get(asset.id) || 0;
+      const duplicateCount = assetIdCounts.get(canonicalAssetId || asset.id) || 0;
       const uniqueDiscriminator =
         duplicateCount > 1 ? shortHash([photoName, thumbUrl, fullUrl, captureTime].filter(Boolean).join("|")) : "";
       const sharedAssetId =
         duplicateCount > 1
-          ? `shared-album:${series}:${slug}:${asset.id}:${uniqueDiscriminator}`
-          : `shared-album:${series}:${slug}:${asset.id}`;
+          ? `shared-album:${series}:${slug}:${canonicalAssetId || asset.id}:${uniqueDiscriminator}`
+          : `shared-album:${series}:${slug}:${canonicalAssetId || asset.id}`;
       if (duplicateCount > 1 && duplicateAssetSamples.length < 12) {
         duplicateAssetSamples.push({
-          asset_id: asset.id,
+          asset_id: canonicalAssetId || asset.id,
           file_name: photoName,
           shared_asset_id: sharedAssetId,
           duplicate_count: duplicateCount,
