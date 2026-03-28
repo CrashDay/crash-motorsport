@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Client } from "pg";
+import crypto from "crypto";
 import { getDb, getSharedAlbumAssetsByAlbumKey, getSharedAlbumBySlug } from "@/lib/db";
 import { isValidSharedAlbumSeries } from "@/lib/shared-albums";
 import lightroomImageUrl from "@/lib/lightroom-image-url";
@@ -29,13 +30,42 @@ function getPostgresConnectionString() {
   return getPostgresConfig().value;
 }
 
-function getPostgresHost() {
-  const connectionString = getPostgresConnectionString();
-  if (!connectionString) return "";
+function getPostgresIdentity() {
+  const { source, value } = getPostgresConfig();
+  if (!value) {
+    return {
+      source: source || null,
+      host: null,
+      dbName: null,
+      user: null,
+      fingerprint: null,
+    };
+  }
   try {
-    return new URL(connectionString).hostname;
+    const parsed = new URL(value);
+    const dbName = parsed.pathname ? parsed.pathname.replace(/^\/+/, "") || null : null;
+    const user = parsed.username ? decodeURIComponent(parsed.username) : null;
+    const host = parsed.hostname || null;
+    const fingerprint = crypto
+      .createHash("sha1")
+      .update(`${source}|${user || ""}|${host || ""}|${dbName || ""}`)
+      .digest("hex")
+      .slice(0, 12);
+    return {
+      source: source || null,
+      host,
+      dbName,
+      user,
+      fingerprint,
+    };
   } catch {
-    return "";
+    return {
+      source: source || null,
+      host: null,
+      dbName: null,
+      user: null,
+      fingerprint: null,
+    };
   }
 }
 
@@ -121,10 +151,14 @@ export async function GET(_request, { params }) {
     if (hasPostgresConfig()) {
       const album = await loadPgAlbum(series, slug);
       if (!album) return NextResponse.json({ error: "Album not found" }, { status: 404 });
+      const dbIdentity = getPostgresIdentity();
       return NextResponse.json({
         storage: "postgres",
-        dbSource: getPostgresConfig().source || null,
-        dbHost: getPostgresHost() || null,
+        dbSource: dbIdentity.source,
+        dbHost: dbIdentity.host,
+        dbName: dbIdentity.dbName,
+        dbUser: dbIdentity.user,
+        dbFingerprint: dbIdentity.fingerprint,
         assetCount: album.assets.length,
         album,
       });
@@ -138,6 +172,9 @@ export async function GET(_request, { params }) {
       storage: "sqlite",
       dbSource: null,
       dbHost: null,
+      dbName: null,
+      dbUser: null,
+      dbFingerprint: null,
       assetCount: assets.length,
       album: {
         ...album,

@@ -47,13 +47,42 @@ function getPostgresConnectionString() {
   return getPostgresConfig().value;
 }
 
-function getPostgresHost() {
-  const connectionString = getPostgresConnectionString();
-  if (!connectionString) return "";
+function getPostgresIdentity() {
+  const { source, value } = getPostgresConfig();
+  if (!value) {
+    return {
+      source: source || null,
+      host: null,
+      dbName: null,
+      user: null,
+      fingerprint: null,
+    };
+  }
   try {
-    return new URL(connectionString).hostname;
+    const parsed = new URL(value);
+    const dbName = parsed.pathname ? parsed.pathname.replace(/^\/+/, "") || null : null;
+    const user = parsed.username ? decodeURIComponent(parsed.username) : null;
+    const host = parsed.hostname || null;
+    const fingerprint = crypto
+      .createHash("sha1")
+      .update(`${source}|${user || ""}|${host || ""}|${dbName || ""}`)
+      .digest("hex")
+      .slice(0, 12);
+    return {
+      source: source || null,
+      host,
+      dbName,
+      user,
+      fingerprint,
+    };
   } catch {
-    return "";
+    return {
+      source: source || null,
+      host: null,
+      dbName: null,
+      user: null,
+      fingerprint: null,
+    };
   }
 }
 
@@ -1061,6 +1090,8 @@ export async function POST(request) {
     }
   }
 
+  const dbIdentity = getPostgresIdentity();
+
   return NextResponse.json({
     ok: true,
     feed_resource_count: feedRows.length,
@@ -1071,8 +1102,11 @@ export async function POST(request) {
     imported_count: imported,
     attempted_stored_asset_count: attemptedStoredAssetCount,
     stored_asset_count: actualStoredAssetCount,
-    db_source: getPostgresConfig().source || null,
-    db_host: getPostgresHost() || null,
+    db_source: dbIdentity.source,
+    db_host: dbIdentity.host,
+    db_name: dbIdentity.dbName,
+    db_user: dbIdentity.user,
+    db_fingerprint: dbIdentity.fingerprint,
     assigned_count: assigned,
     pinned_count: pinned,
     gps_found_in_feed_count: gpsFoundInFeed,
