@@ -647,9 +647,6 @@ export default function SebringLeaflet() {
   const [areaViewer, setAreaViewer] = useState({ open: false, areaId: "", title: "", photos: [], index: 0 });
   const [gpsViewer, setGpsViewer] = useState({ open: false, title: "", photos: [], index: 0, loading: false, error: "" });
   const [areaViewerMsg, setAreaViewerMsg] = useState("");
-  const [isViewerFullscreen, setIsViewerFullscreen] = useState(false);
-  const areaViewerRef = useRef(null);
-  const gpsViewerRef = useRef(null);
   const [removingAreaPhoto, setRemovingAreaPhoto] = useState(false);
   const [photoAreaName, setPhotoAreaName] = useState("New photo area");
   const [editingAreaId, setEditingAreaId] = useState("");
@@ -843,39 +840,11 @@ export default function SebringLeaflet() {
     [visibleGpsPins]
   );
 
-  const exitViewerFullscreen = async () => {
-    if (typeof document === "undefined") return;
-    const active = document.fullscreenElement;
-    const areaContains = areaViewerRef.current && active && areaViewerRef.current.contains(active);
-    const gpsContains = gpsViewerRef.current && active && gpsViewerRef.current.contains(active);
-    if (!areaContains && !gpsContains && active !== areaViewerRef.current && active !== gpsViewerRef.current) return;
-    try {
-      await document.exitFullscreen();
-    } catch {
-      // ignore fullscreen exit failures
-    }
-  };
-  const toggleViewerFullscreen = async (viewerType) => {
-    if (typeof document === "undefined") return;
-    const target = viewerType === "area" ? areaViewerRef.current : gpsViewerRef.current;
-    if (!target?.requestFullscreen) return;
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-        return;
-      }
-      await target.requestFullscreen();
-    } catch {
-      // ignore fullscreen errors
-    }
-  };
   const closeAreaViewer = () => {
-    exitViewerFullscreen();
     setAreaViewer({ open: false, areaId: "", title: "", photos: [], index: 0 });
     setAreaViewerMsg("");
   };
   const closeGpsViewer = () => {
-    exitViewerFullscreen();
     setGpsViewer({ open: false, title: "", photos: [], index: 0, loading: false, error: "" });
   };
   const openAreaViewer = (area) => {
@@ -1378,25 +1347,9 @@ export default function SebringLeaflet() {
   }, [areaVisualMode]);
 
   useEffect(() => {
-    if (typeof document === "undefined") return undefined;
-    const syncFullscreenState = () => {
-      const active = document.fullscreenElement;
-      const inAreaViewer = areaViewerRef.current && active && (active === areaViewerRef.current || areaViewerRef.current.contains(active));
-      const inGpsViewer = gpsViewerRef.current && active && (active === gpsViewerRef.current || gpsViewerRef.current.contains(active));
-      setIsViewerFullscreen(Boolean(inAreaViewer || inGpsViewer));
-    };
-    syncFullscreenState();
-    document.addEventListener("fullscreenchange", syncFullscreenState);
-    return () => document.removeEventListener("fullscreenchange", syncFullscreenState);
-  }, []);
-
-  useEffect(() => {
     if (!areaViewer.open) return;
     const onKey = (e) => {
-      if (e.key === "Escape") {
-        if (document.fullscreenElement) return;
-        closeAreaViewer();
-      }
+      if (e.key === "Escape") closeAreaViewer();
       if (e.key === "ArrowLeft") prevAreaPhoto();
       if (e.key === "ArrowRight") nextAreaPhoto();
     };
@@ -3294,7 +3247,6 @@ export default function SebringLeaflet() {
 
       {areaViewer.open && areaViewer.photos.length ? (
         <div
-          ref={areaViewerRef}
           role="dialog"
           aria-modal="true"
           aria-label="Area photo viewer"
@@ -3309,7 +3261,7 @@ export default function SebringLeaflet() {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 20000,
-            padding: 16,
+            padding: 0,
           }}
         >
           <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
@@ -3317,13 +3269,6 @@ export default function SebringLeaflet() {
               {areaViewer.title} - {areaViewer.index + 1} / {areaViewer.photos.length}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button
-                type="button"
-                onClick={() => toggleViewerFullscreen("area")}
-                style={{ background: "#111", border: "1px solid #222", color: "#fff", padding: "10px 12px", borderRadius: 12, cursor: "pointer" }}
-              >
-                {isViewerFullscreen ? "Exit fullscreen" : "Fullscreen"}
-              </button>
               {!String(areaViewer.photos[areaViewer.index]?.id || "").startsWith("builtin-") ? (
                 <button
                   type="button"
@@ -3373,7 +3318,7 @@ export default function SebringLeaflet() {
           <img
             src={getRenderablePhotoUrl(currentAreaViewerPhoto)}
             alt={currentAreaViewerPhoto?.alt || currentAreaViewerPhoto?.name}
-            style={{ maxWidth: "calc(100vw - 120px)", maxHeight: "calc(100vh - 120px)", width: "auto", height: "auto", borderRadius: 18, border: "1px solid #222", boxShadow: "0 10px 40px rgba(0,0,0,0.6)", background: "#111" }}
+            style={{ maxWidth: "100vw", maxHeight: "100vh", width: "auto", height: "auto", background: "#111" }}
             draggable={false}
           />
         </div>
@@ -3381,7 +3326,6 @@ export default function SebringLeaflet() {
 
       {gpsViewer.open ? (
         <div
-          ref={gpsViewerRef}
           role="dialog"
           aria-modal="true"
           aria-label="GPS photo viewer"
@@ -3396,7 +3340,7 @@ export default function SebringLeaflet() {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 20000,
-            padding: 16,
+            padding: 0,
           }}
         >
           <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
@@ -3405,13 +3349,6 @@ export default function SebringLeaflet() {
               {gpsViewer.photos.length ? ` - ${gpsViewer.index + 1} / ${gpsViewer.photos.length}` : ""}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button
-                type="button"
-                onClick={() => toggleViewerFullscreen("gps")}
-                style={{ background: "#111", border: "1px solid #222", color: "#fff", padding: "10px 12px", borderRadius: 12, cursor: "pointer" }}
-              >
-                {isViewerFullscreen ? "Exit fullscreen" : "Fullscreen"}
-              </button>
               <button
                 type="button"
                 onClick={closeGpsViewer}
@@ -3452,7 +3389,7 @@ export default function SebringLeaflet() {
               <img
                 src={normalizeLightroomImageUrl(gpsViewer.photos[gpsViewer.index]?.fullUrl)}
                 alt={gpsViewer.photos[gpsViewer.index]?.alt || gpsViewer.photos[gpsViewer.index]?.name}
-                style={{ maxWidth: "calc(100vw - 120px)", maxHeight: "calc(100vh - 120px)", width: "auto", height: "auto", borderRadius: 18, border: "1px solid #222", boxShadow: "0 10px 40px rgba(0,0,0,0.6)", background: "#111" }}
+                style={{ maxWidth: "100vw", maxHeight: "100vh", width: "auto", height: "auto", background: "#111" }}
                 draggable={false}
               />
             </>
