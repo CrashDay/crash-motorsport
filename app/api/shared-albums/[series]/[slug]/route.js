@@ -48,7 +48,7 @@ function getPostgresIdentity() {
     const host = parsed.hostname || null;
     const fingerprint = crypto
       .createHash("sha1")
-      .update(`${source}|${user || ""}|${host || ""}|${dbName || ""}`)
+      .update(value)
       .digest("hex")
       .slice(0, 12);
     return {
