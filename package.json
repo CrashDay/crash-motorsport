@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test",
-    "import:shared-album-local-gps": "node scripts/import-shared-album-local-gps.cjs"
+    "import:shared-album-local-gps": "node scripts/import-shared-album-local-gps.cjs",
+    "import:shared-album-with-local-gps": "node scripts/import-shared-album-with-local-gps.cjs"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
