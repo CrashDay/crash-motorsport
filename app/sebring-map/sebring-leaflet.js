@@ -664,6 +664,7 @@ export default function SebringLeaflet() {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareAlbumShortLink, setShareAlbumShortLink] = useState("");
   const [shareAlbumSeries, setShareAlbumSeries] = useState("imsa");
+  const [shareAlbumExistingSlug, setShareAlbumExistingSlug] = useState("");
   const [shareAlbumSlug, setShareAlbumSlug] = useState("");
   const [shareAlbumYear, setShareAlbumYear] = useState("2023");
   const [shareAlbumRace, setShareAlbumRace] = useState("12 Hours of Sebring");
@@ -672,6 +673,8 @@ export default function SebringLeaflet() {
   const [shareAlbumMsg, setShareAlbumMsg] = useState("");
   const [shareAlbumDiagnostics, setShareAlbumDiagnostics] = useState(null);
   const [shareAlbumOpen, setShareAlbumOpen] = useState(false);
+  const [shareAlbumChoices, setShareAlbumChoices] = useState([]);
+  const [shareAlbumChoicesLoading, setShareAlbumChoicesLoading] = useState(false);
   const [yearFilter, setYearFilter] = useState("all");
   const [raceFilter, setRaceFilter] = useState("all");
   const [isMobileToolsHidden, setIsMobileToolsHidden] = useState(false);
@@ -1487,6 +1490,31 @@ export default function SebringLeaflet() {
     loadAuthStatus();
   }, []);
 
+  useEffect(() => {
+    if (!shareAlbumOpen || !shareAlbumSeries) return;
+    let cancelled = false;
+    setShareAlbumChoicesLoading(true);
+    fetch(`/api/shared-albums/${encodeURIComponent(shareAlbumSeries)}?t=${Date.now()}`, { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((payload) => {
+        if (cancelled) return;
+        setShareAlbumChoices(Array.isArray(payload?.albums) ? payload.albums : []);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setShareAlbumChoices([]);
+      })
+      .finally(() => {
+        if (!cancelled) setShareAlbumChoicesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [shareAlbumOpen, shareAlbumSeries]);
+
   const submitSharePhoto = async () => {
     const trimmedShortLink = (shareShortLink || "").trim();
     const trimmedAreaId = (shareAreaId || "").trim();
@@ -1632,6 +1660,7 @@ export default function SebringLeaflet() {
         gpsMissingDiagnostics: missingDiagnostics,
       });
       setShareAlbumShortLink("");
+      setShareAlbumExistingSlug("");
       setShareAlbumSlug("");
       setShareAlbumYear("2023");
       setShareAlbumRace("12 Hours of Sebring");
@@ -2849,7 +2878,10 @@ export default function SebringLeaflet() {
               <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Series</div>
               <select
                 value={shareAlbumSeries}
-                onChange={(e) => setShareAlbumSeries(e.target.value)}
+                onChange={(e) => {
+                  setShareAlbumSeries(e.target.value);
+                  setShareAlbumExistingSlug("");
+                }}
                 style={{
                   width: "100%",
                   background: "#101827",
@@ -2868,11 +2900,43 @@ export default function SebringLeaflet() {
               </select>
             </div>
             <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Existing album (optional)</div>
+              <select
+                value={shareAlbumExistingSlug}
+                onChange={(e) => {
+                  const nextSlug = e.target.value;
+                  setShareAlbumExistingSlug(nextSlug);
+                  setShareAlbumSlug(nextSlug);
+                }}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              >
+                <option value="">{shareAlbumChoicesLoading ? "Loading albums..." : "Create or choose by slug below"}</option>
+                {shareAlbumChoices.map((album) => (
+                  <option key={`share-album-existing-${album.albumKey}`} value={album.slug}>
+                    {album.title} [{album.slug}] ({album.photoCount || 0})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginTop: 8 }}>
               <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Album slug override (optional)</div>
               <input
                 type="text"
                 value={shareAlbumSlug}
-                onChange={(e) => setShareAlbumSlug(e.target.value)}
+                onChange={(e) => {
+                  setShareAlbumSlug(e.target.value);
+                  if ((e.target.value || "").trim() !== shareAlbumExistingSlug) {
+                    setShareAlbumExistingSlug("");
+                  }
+                }}
                 placeholder="2026-weathertech-practice-am"
                 style={{
                   width: "100%",
