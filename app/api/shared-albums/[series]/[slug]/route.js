@@ -95,6 +95,7 @@ async function loadPgAlbum(series, slug) {
         SELECT album_key, series, slug, title, year, race, cover_thumb_url, created_at, updated_at
         FROM shared_albums
         WHERE series = $1 AND slug = $2
+        ORDER BY updated_at DESC, created_at DESC, album_key DESC
         LIMIT 1
       `,
       [series, slug]

@@ -1611,6 +1611,7 @@ export default function SebringLeaflet() {
         duplicateAssetSamples: Array.isArray(payload?.duplicate_asset_samples) ? payload.duplicate_asset_samples : [],
         storedAssetCount: Number(payload?.stored_asset_count || 0),
         attemptedStoredAssetCount: Number(payload?.attempted_stored_asset_count || 0),
+        staleAlbumRowCountRemoved: Number(payload?.stale_album_row_count_removed || 0),
         dbSource: payload?.db_source || null,
         dbHost: payload?.db_host || null,
         dbName: payload?.db_name || null,

@@ -790,6 +790,48 @@ async function clearSharedAlbumAssets({ db, pgClient = null, albumKey }) {
   db.prepare(`DELETE FROM shared_album_assets WHERE album_key = ?`).run(albumKey);
 }
 
+async function removeStaleSharedAlbums({ db, pgClient = null, albumKey, series, slug }) {
+  if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
+    const run = async (client) => {
+      const staleRows = await client.query(
+        `
+          SELECT album_key
+          FROM shared_albums
+          WHERE series = $1 AND slug = $2 AND album_key <> $3
+        `,
+        [series, slug, albumKey]
+      );
+      const staleAlbumKeys = staleRows.rows.map((row) => row.album_key).filter(Boolean);
+      if (!staleAlbumKeys.length) return 0;
+      await client.query(`DELETE FROM shared_album_assets WHERE album_key = ANY($1::text[])`, [staleAlbumKeys]);
+      await client.query(`DELETE FROM shared_albums WHERE album_key = ANY($1::text[])`, [staleAlbumKeys]);
+      return staleAlbumKeys.length;
+    };
+    if (pgClient) {
+      return run(pgClient);
+    }
+    return withPgClient(run);
+  }
+
+  const staleAlbumKeys = db
+    .prepare(
+      `
+        SELECT album_key
+        FROM shared_albums
+        WHERE series = ? AND slug = ? AND album_key <> ?
+      `
+    )
+    .all(series, slug, albumKey)
+    .map((row) => row.album_key)
+    .filter(Boolean);
+  if (!staleAlbumKeys.length) return 0;
+  const placeholders = staleAlbumKeys.map(() => "?").join(",");
+  db.prepare(`DELETE FROM shared_album_assets WHERE album_key IN (${placeholders})`).run(...staleAlbumKeys);
+  db.prepare(`DELETE FROM shared_albums WHERE album_key IN (${placeholders})`).run(...staleAlbumKeys);
+  return staleAlbumKeys.length;
+}
+
 async function countSharedAlbumAssets({ db, pgClient = null, albumKey }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
@@ -907,6 +949,7 @@ export async function POST(request) {
   let missingRenditions = 0;
   let attemptedStoredAssetCount = 0;
   let actualStoredAssetCount = 0;
+  let staleAlbumRowCountRemoved = 0;
   const gpsMissingSamples = [];
   const gpsMissingDiagnostics = [];
   const missingRenditionSamples = [];
@@ -923,6 +966,7 @@ export async function POST(request) {
     }
 
     await clearSharedAlbumAssets({ db, pgClient, albumKey });
+    staleAlbumRowCountRemoved = await removeStaleSharedAlbums({ db, pgClient, albumKey, series, slug });
 
     for (const { row, asset } of assets) {
       let assetDetail = asset;
@@ -1102,6 +1146,7 @@ export async function POST(request) {
     imported_count: imported,
     attempted_stored_asset_count: attemptedStoredAssetCount,
     stored_asset_count: actualStoredAssetCount,
+    stale_album_row_count_removed: staleAlbumRowCountRemoved,
     db_source: dbIdentity.source,
     db_host: dbIdentity.host,
     db_name: dbIdentity.dbName,
