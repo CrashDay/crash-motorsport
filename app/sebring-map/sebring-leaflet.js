@@ -664,6 +664,7 @@ export default function SebringLeaflet() {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareAlbumShortLink, setShareAlbumShortLink] = useState("");
   const [shareAlbumSeries, setShareAlbumSeries] = useState("imsa");
+  const [shareAlbumSlug, setShareAlbumSlug] = useState("");
   const [shareAlbumYear, setShareAlbumYear] = useState("2023");
   const [shareAlbumRace, setShareAlbumRace] = useState("12 Hours of Sebring");
   const [shareAlbumAreaId, setShareAlbumAreaId] = useState("");
@@ -1546,6 +1547,7 @@ export default function SebringLeaflet() {
     const trimmedShortLink = (shareAlbumShortLink || "").trim();
     const trimmedAreaId = (shareAlbumAreaId || "").trim();
     const trimmedSeries = (shareAlbumSeries || "").trim();
+    const trimmedSlug = (shareAlbumSlug || "").trim();
     const trimmedRace = (shareAlbumRace || "").trim();
     const trimmedYear = (shareAlbumYear || "").trim();
 
@@ -1576,6 +1578,7 @@ export default function SebringLeaflet() {
         body: JSON.stringify({
           shortLink: trimmedShortLink,
           series: trimmedSeries,
+          slug: trimmedSlug || undefined,
           year: Number(trimmedYear),
           race: trimmedRace,
           areaId: trimmedAreaId,
@@ -1615,6 +1618,9 @@ export default function SebringLeaflet() {
         committedAlbumCreatedAt: payload?.committed_album_created_at || null,
         committedAlbumUpdatedAt: payload?.committed_album_updated_at || null,
         committedAlbumRows: Array.isArray(payload?.committed_album_rows) ? payload.committed_album_rows : [],
+        albumSlug: payload?.album_slug || null,
+        matchedExistingAlbumKey: payload?.matched_existing_album_key || null,
+        sourceAlbumId: payload?.source_album_id || null,
         staleAlbumRowCountRemoved: Number(payload?.stale_album_row_count_removed || 0),
         dbSource: payload?.db_source || null,
         dbHost: payload?.db_host || null,
@@ -1626,6 +1632,7 @@ export default function SebringLeaflet() {
         gpsMissingDiagnostics: missingDiagnostics,
       });
       setShareAlbumShortLink("");
+      setShareAlbumSlug("");
       setShareAlbumYear("2023");
       setShareAlbumRace("12 Hours of Sebring");
       setShareAlbumAreaId("");
@@ -2859,6 +2866,24 @@ export default function SebringLeaflet() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Album slug override (optional)</div>
+              <input
+                type="text"
+                value={shareAlbumSlug}
+                onChange={(e) => setShareAlbumSlug(e.target.value)}
+                placeholder="2026-weathertech-practice-am"
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              />
             </div>
             <div style={{ marginTop: 8 }}>
               <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Year</div>

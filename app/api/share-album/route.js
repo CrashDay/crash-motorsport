@@ -1044,6 +1044,7 @@ export async function POST(request) {
   const shortLink = normalizeUrl(body?.shortLink);
   const areaId = String(body?.areaId || "").trim();
   const series = String(body?.series || "").trim().toLowerCase();
+  const requestedSlug = slugifyAlbumTitle(body?.slug || "");
   const year = normalizeYear(body?.year);
   const race = normalizeRace(body?.race);
 
@@ -1145,7 +1146,7 @@ export async function POST(request) {
     sharesConfig?.albumAttributes?.links?.self?.href,
     sharesConfig?.spaceAttributes?.links?.self?.href
   );
-  let slug = slugifyAlbumTitle(albumTitle);
+  let slug = requestedSlug || slugifyAlbumTitle(albumTitle);
   let albumKey = `${series}:${slug}`;
   let albumTitleToStore = albumTitle;
   let matchedExistingAlbumKey = null;
@@ -1161,7 +1162,7 @@ export async function POST(request) {
     }
 
     const existingAlbum = await findExistingSharedAlbumMatch({ db, pgClient, series, sourceAlbumId });
-    if (existingAlbum?.albumKey && existingAlbum?.slug) {
+    if (!requestedSlug && existingAlbum?.albumKey && existingAlbum?.slug) {
       matchedExistingAlbumKey = existingAlbum.albumKey;
       slug = existingAlbum.slug;
       albumKey = existingAlbum.albumKey;
