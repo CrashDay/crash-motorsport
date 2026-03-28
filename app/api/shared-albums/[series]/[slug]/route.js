@@ -136,10 +136,43 @@ async function loadPgAlbum(series, slug) {
   });
 }
 
-export async function GET(_request, { params }) {
+async function loadPgAlbumRows(series, slug) {
+  return withPgClient(async (client) => {
+    const rows = await client.query(
+      `
+        SELECT
+          a.album_key,
+          a.series,
+          a.slug,
+          a.title,
+          a.created_at,
+          a.updated_at,
+          COUNT(saa.asset_id) AS asset_count
+        FROM shared_albums a
+        LEFT JOIN shared_album_assets saa ON saa.album_key = a.album_key
+        WHERE a.series = $1 AND a.slug = $2
+        GROUP BY a.album_key, a.series, a.slug, a.title, a.created_at, a.updated_at
+        ORDER BY a.updated_at DESC, a.created_at DESC, a.album_key DESC
+      `,
+      [series, slug]
+    );
+    return rows.rows.map((row) => ({
+      albumKey: row.album_key,
+      series: row.series,
+      slug: row.slug,
+      title: row.title,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      assetCount: Number(row.asset_count || 0),
+    }));
+  });
+}
+
+export async function GET(request, { params }) {
   const awaitedParams = await params;
   const series = String(awaitedParams?.series || "").trim().toLowerCase();
   const slug = String(awaitedParams?.slug || "").trim();
+  const debugMode = String(request?.nextUrl?.searchParams?.get("debug") || "").trim().toLowerCase();
 
   if (!series || !isValidSharedAlbumSeries(series)) {
     return NextResponse.json({ error: "Invalid series" }, { status: 400 });
@@ -150,9 +183,22 @@ export async function GET(_request, { params }) {
 
   try {
     if (hasPostgresConfig()) {
+      const dbIdentity = getPostgresIdentity();
+      if (debugMode === "rows") {
+        const albumRows = await loadPgAlbumRows(series, slug);
+        return NextResponse.json({
+          storage: "postgres",
+          dbSource: dbIdentity.source,
+          dbHost: dbIdentity.host,
+          dbName: dbIdentity.dbName,
+          dbUser: dbIdentity.user,
+          dbFingerprint: dbIdentity.fingerprint,
+          rowCount: albumRows.length,
+          rows: albumRows,
+        });
+      }
       const album = await loadPgAlbum(series, slug);
       if (!album) return NextResponse.json({ error: "Album not found" }, { status: 404 });
-      const dbIdentity = getPostgresIdentity();
       return NextResponse.json({
         storage: "postgres",
         dbSource: dbIdentity.source,
