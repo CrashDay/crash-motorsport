@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Client } from "pg";
+import crypto from "crypto";
 import vm from "vm";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import {
@@ -725,6 +726,26 @@ async function storeSharedAlbumAsset({ db, pgClient = null, albumKey, assetId, n
   });
 }
 
+async function clearSharedAlbumAssets({ db, pgClient = null, albumKey }) {
+  if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
+    const run = async (client) => {
+      await client.query(`DELETE FROM shared_album_assets WHERE album_key = $1`, [albumKey]);
+    };
+    if (pgClient) {
+      await run(pgClient);
+    } else {
+      await withPgClient(run);
+    }
+    return;
+  }
+  db.prepare(`DELETE FROM shared_album_assets WHERE album_key = ?`).run(albumKey);
+}
+
+function shortHash(value) {
+  return crypto.createHash("sha1").update(String(value || "")).digest("hex").slice(0, 12);
+}
+
 export async function POST(request) {
   let body;
   try {
@@ -795,6 +816,13 @@ export async function POST(request) {
   const assets = feedRows
     .map((row) => ({ row, asset: normalizeSharedAlbumFeedRow(row) }))
     .filter(({ asset }) => asset?.id && String(asset?.subtype || asset?.payload?.subtype || "").toLowerCase() !== "video");
+  const assetIdCounts = new Map();
+  for (const { asset } of assets) {
+    const key = String(asset?.id || "").trim();
+    if (!key) continue;
+    assetIdCounts.set(key, (assetIdCounts.get(key) || 0) + 1);
+  }
+  const duplicateAssetIds = [...assetIdCounts.entries()].filter(([, count]) => count > 1);
 
   if (!assets.length) {
     return NextResponse.json({ error: "No shared album images were found" }, { status: 400 });
@@ -814,9 +842,11 @@ export async function POST(request) {
   let gpsFoundInDetail = 0;
   let gpsMissing = 0;
   let missingRenditions = 0;
+  let storedAssetCount = 0;
   const gpsMissingSamples = [];
   const gpsMissingDiagnostics = [];
   const missingRenditionSamples = [];
+  const duplicateAssetSamples = [];
 
   try {
     if (hasPostgresConfig()) {
@@ -827,6 +857,8 @@ export async function POST(request) {
       });
       await pgClient.connect();
     }
+
+    await clearSharedAlbumAssets({ db, pgClient, albumKey });
 
     for (const { row, asset } of assets) {
       let assetDetail = asset;
@@ -841,12 +873,26 @@ export async function POST(request) {
         }
       }
 
-      const sharedAssetId = `shared-album:${series}:${slug}:${asset.id}`;
       const captureTime = pickCaptureTime(assetDetail);
       const fileName = String(assetDetail?.payload?.importSource?.fileName || asset?.id).trim() || asset.id;
       const thumbUrl = pickRenditionUrl(assetDetail, asset, assetsBase, "thumb");
       const fullUrl = pickRenditionUrl(assetDetail, asset, assetsBase, "full") || thumbUrl;
       const photoName = fileName;
+      const duplicateCount = assetIdCounts.get(asset.id) || 0;
+      const uniqueDiscriminator =
+        duplicateCount > 1 ? shortHash([photoName, thumbUrl, fullUrl, captureTime].filter(Boolean).join("|")) : "";
+      const sharedAssetId =
+        duplicateCount > 1
+          ? `shared-album:${series}:${slug}:${asset.id}:${uniqueDiscriminator}`
+          : `shared-album:${series}:${slug}:${asset.id}`;
+      if (duplicateCount > 1 && duplicateAssetSamples.length < 12) {
+        duplicateAssetSamples.push({
+          asset_id: asset.id,
+          file_name: photoName,
+          shared_asset_id: sharedAssetId,
+          duplicate_count: duplicateCount,
+        });
+      }
       if (gps) {
         if (gpsSource === "detail") gpsFoundInDetail += 1;
         else gpsFoundInFeed += 1;
@@ -908,6 +954,7 @@ export async function POST(request) {
         race,
         assignedAt: nowIso,
       });
+      storedAssetCount += 1;
 
       if (gps && projector) {
         const pos = projector(gps.lng, gps.lat);
@@ -982,7 +1029,11 @@ export async function POST(request) {
     ok: true,
     feed_resource_count: feedRows.length,
     normalized_asset_count: assets.length,
+    unique_asset_id_count: assetIdCounts.size,
+    duplicate_asset_id_count: duplicateAssetIds.length,
+    duplicate_asset_samples: duplicateAssetSamples,
     imported_count: imported,
+    stored_asset_count: storedAssetCount,
     assigned_count: assigned,
     pinned_count: pinned,
     gps_found_in_feed_count: gpsFoundInFeed,
