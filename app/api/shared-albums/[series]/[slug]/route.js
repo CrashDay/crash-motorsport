@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { isValidSharedAlbumSeries, loadSharedAlbum } from "@/lib/shared-albums";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(_request, { params }) {
   const awaitedParams = await params;
   const series = String(awaitedParams?.series || "").trim().toLowerCase();

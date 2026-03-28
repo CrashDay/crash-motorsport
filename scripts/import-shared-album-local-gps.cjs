@@ -141,12 +141,13 @@ async function withPgClient(fn) {
 async function loadAlbumAssets(series, slug) {
   const albumApiBase = normalizeAlbumApiBase(process.env.SHARED_ALBUM_API_BASE || global.__sharedAlbumApiBase || "");
   if (albumApiBase) {
-    const url = `${albumApiBase}/api/shared-albums/${encodeURIComponent(series)}/${encodeURIComponent(slug)}`;
+    const url = `${albumApiBase}/api/shared-albums/${encodeURIComponent(series)}/${encodeURIComponent(slug)}?t=${Date.now()}`;
     const response = await fetch(url, {
       headers: {
         Accept: "application/json",
         "User-Agent": "CrashDayPicsLocalGps/1.0",
       },
+      cache: "no-store",
     });
     if (!response.ok) {
       throw new Error(`Album API request failed: HTTP ${response.status} for ${url}`);
