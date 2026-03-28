@@ -11,19 +11,24 @@ const TRACK_ID = "sebring";
 const IMAGE_EXT_RE = /\.(jpe?g|png|webp|heic|heif|tif|tiff)$/i;
 const VALID_SERIES = new Set(["imsa", "wec", "f1"]);
 
-function getPostgresConnectionString() {
-  return (
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.PRISMA_DATABASE_URL ||
-    process.env.DATABASE_URL ||
-    ""
-  );
+function getPostgresConfig() {
+  const candidates = [
+    ["POSTGRES_URL", process.env.POSTGRES_URL],
+    ["POSTGRES_URL_NON_POOLING", process.env.POSTGRES_URL_NON_POOLING],
+    ["POSTGRES_PRISMA_URL", process.env.POSTGRES_PRISMA_URL],
+    ["PRISMA_DATABASE_URL", process.env.PRISMA_DATABASE_URL],
+    ["DATABASE_URL", process.env.DATABASE_URL],
+  ];
+  for (const [source, value] of candidates) {
+    const raw = String(value || "").trim();
+    if (!raw) continue;
+    return { source, value: raw };
+  }
+  return { source: "", value: "" };
 }
 
 function hasPostgresConfig() {
-  return Boolean(getPostgresConnectionString());
+  return Boolean(getPostgresConfig().value);
 }
 
 function usage() {
@@ -96,13 +101,23 @@ function findUniqueUnmatched(candidates, matchedAssetIds) {
 }
 
 async function withPgClient(fn) {
-  const connectionString = getPostgresConnectionString();
+  const { value: connectionString, source } = getPostgresConfig();
   if (!connectionString) throw new Error("Missing Postgres connection string");
+  let hostname = "";
+  try {
+    hostname = new URL(connectionString).hostname;
+  } catch {
+    throw new Error(`Invalid Postgres connection string in ${source}`);
+  }
   const client = new Client({
     connectionString,
     ssl: { rejectUnauthorized: false },
   });
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    throw new Error(`Failed to connect using ${source} (${hostname}): ${String(error?.message || error)}`);
+  }
   try {
     return await fn(client);
   } finally {
@@ -335,6 +350,7 @@ async function main() {
   const summary = {
     mode: args.dryRun ? "dry-run" : "write",
     database: hasPostgresConfig() ? "postgres" : "sqlite",
+    databaseSource: getPostgresConfig().source || null,
     album: `${args.series}/${args.slug}`,
     folder,
     albumAssetCount: album.assets.length,
