@@ -105,9 +105,10 @@ async function loadPgAlbum(series, slug) {
 
     const assetRows = await client.query(
       `
-        SELECT album_key, asset_id, asset_name, thumb_url, full_url, year, race, assigned_at
-        FROM shared_album_assets
-        WHERE album_key = $1
+        SELECT saa.album_key, saa.asset_id, saa.asset_name, saa.thumb_url, saa.full_url, saa.year, saa.race, saa.assigned_at, pa.capture_time
+        FROM shared_album_assets saa
+        LEFT JOIN photo_assets pa ON pa.asset_id = saa.asset_id
+        WHERE saa.album_key = $1
         ORDER BY assigned_at DESC
       `,
       [album.album_key]
@@ -131,6 +132,7 @@ async function loadPgAlbum(series, slug) {
         year: Number.isFinite(Number(asset.year)) ? Number(asset.year) : null,
         race: asset.race || null,
         assignedAt: asset.assigned_at,
+        captureTime: asset.capture_time || null,
       })),
     };
   });
