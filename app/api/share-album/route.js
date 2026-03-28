@@ -847,6 +847,45 @@ async function countSharedAlbumAssets({ db, pgClient = null, albumKey }) {
   return Number(db.prepare(`SELECT COUNT(*) AS c FROM shared_album_assets WHERE album_key = ?`).get(albumKey)?.c || 0);
 }
 
+async function loadCommittedSharedAlbumSummary({ db, albumKey }) {
+  if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
+    return withPgClient(async (client) => {
+      const albumResult = await client.query(
+        `
+          SELECT album_key, created_at, updated_at
+          FROM shared_albums
+          WHERE album_key = $1
+          LIMIT 1
+        `,
+        [albumKey]
+      );
+      const assetResult = await client.query(`SELECT COUNT(*) AS c FROM shared_album_assets WHERE album_key = $1`, [albumKey]);
+      return {
+        storedAssetCount: Number(assetResult.rows[0]?.c || 0),
+        createdAt: albumResult.rows[0]?.created_at || null,
+        updatedAt: albumResult.rows[0]?.updated_at || null,
+      };
+    });
+  }
+
+  const row = db
+    .prepare(
+      `
+        SELECT album_key, created_at, updated_at
+        FROM shared_albums
+        WHERE album_key = ?
+        LIMIT 1
+      `
+    )
+    .get(albumKey);
+  return {
+    storedAssetCount: Number(db.prepare(`SELECT COUNT(*) AS c FROM shared_album_assets WHERE album_key = ?`).get(albumKey)?.c || 0),
+    createdAt: row?.created_at || null,
+    updatedAt: row?.updated_at || null,
+  };
+}
+
 function shortHash(value) {
   return crypto.createHash("sha1").update(String(value || "")).digest("hex").slice(0, 12);
 }
@@ -949,6 +988,9 @@ export async function POST(request) {
   let missingRenditions = 0;
   let attemptedStoredAssetCount = 0;
   let actualStoredAssetCount = 0;
+  let committedStoredAssetCount = 0;
+  let committedAlbumCreatedAt = null;
+  let committedAlbumUpdatedAt = null;
   let staleAlbumRowCountRemoved = 0;
   const gpsMissingSamples = [];
   const gpsMissingDiagnostics = [];
@@ -1134,6 +1176,11 @@ export async function POST(request) {
     }
   }
 
+  const committedSummary = await loadCommittedSharedAlbumSummary({ db, albumKey });
+  committedStoredAssetCount = committedSummary.storedAssetCount;
+  committedAlbumCreatedAt = committedSummary.createdAt;
+  committedAlbumUpdatedAt = committedSummary.updatedAt;
+
   const dbIdentity = getPostgresIdentity();
 
   return NextResponse.json({
@@ -1146,6 +1193,9 @@ export async function POST(request) {
     imported_count: imported,
     attempted_stored_asset_count: attemptedStoredAssetCount,
     stored_asset_count: actualStoredAssetCount,
+    committed_stored_asset_count: committedStoredAssetCount,
+    committed_album_created_at: committedAlbumCreatedAt,
+    committed_album_updated_at: committedAlbumUpdatedAt,
     stale_album_row_count_removed: staleAlbumRowCountRemoved,
     db_source: dbIdentity.source,
     db_host: dbIdentity.host,
