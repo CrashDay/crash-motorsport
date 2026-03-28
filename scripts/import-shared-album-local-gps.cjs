@@ -35,27 +35,40 @@ function usage() {
   console.error(
     [
       "Usage:",
-      "  node scripts/import-shared-album-local-gps.cjs --series <imsa|wec|f1> --slug <album-slug> --folder <path>",
+      "  node scripts/import-shared-album-local-gps.cjs --series <imsa|wec|f1> --slug <album-slug> --folder <path> [--album-api-base <url>]",
       "",
       "Examples:",
-      "  POSTGRES_URL=... node scripts/import-shared-album-local-gps.cjs --series imsa --slug sebring-thursday --folder ~/Pictures/sebring-thursday",
+      "  POSTGRES_URL=... node scripts/import-shared-album-local-gps.cjs --series imsa --slug sebring-thursday --folder ~/Pictures/sebring-thursday --album-api-base https://crashdaypics.com",
       "  DATABASE_PATH=data/app.db node scripts/import-shared-album-local-gps.cjs --series imsa --slug sebring-thursday --folder ./exports/sebring-thursday",
     ].join("\n")
   );
 }
 
 function parseArgs(argv) {
-  const args = { series: "", slug: "", folder: "", dryRun: false };
+  const args = { series: "", slug: "", folder: "", dryRun: false, albumApiBase: "" };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--series") args.series = String(argv[i + 1] || "").trim().toLowerCase();
     else if (arg === "--slug") args.slug = String(argv[i + 1] || "").trim();
     else if (arg === "--folder") args.folder = String(argv[i + 1] || "").trim();
+    else if (arg === "--album-api-base") args.albumApiBase = String(argv[i + 1] || "").trim();
     else if (arg === "--dry-run") args.dryRun = true;
     else continue;
     if (arg !== "--dry-run") i += 1;
   }
   return args;
+}
+
+function normalizeAlbumApiBase(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+    return parsed.toString().replace(/\/+$/, "");
+  } catch {
+    return "";
+  }
 }
 
 function listImagesRecursive(dir) {
@@ -126,6 +139,34 @@ async function withPgClient(fn) {
 }
 
 async function loadAlbumAssets(series, slug) {
+  const albumApiBase = normalizeAlbumApiBase(process.env.SHARED_ALBUM_API_BASE || global.__sharedAlbumApiBase || "");
+  if (albumApiBase) {
+    const url = `${albumApiBase}/api/shared-albums/${encodeURIComponent(series)}/${encodeURIComponent(slug)}`;
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "CrashDayPicsLocalGps/1.0",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Album API request failed: HTTP ${response.status} for ${url}`);
+    }
+    const payload = await response.json();
+    const album = payload?.album;
+    if (!album) return null;
+    return {
+      albumKey: album.albumKey,
+      title: album.title,
+      assets: Array.isArray(album.assets)
+        ? album.assets.map((asset) => ({
+            assetId: asset.id,
+            assetName: asset.name || asset.id,
+            captureTime: asset.captureTime || asset.capture_time || null,
+          }))
+        : [],
+    };
+  }
+
   if (hasPostgresConfig()) {
     return withPgClient(async (client) => {
       const albumRows = await client.query(
@@ -236,6 +277,7 @@ async function main() {
   }
 
   const folder = path.resolve(args.folder);
+  global.__sharedAlbumApiBase = normalizeAlbumApiBase(args.albumApiBase);
   if (!fs.existsSync(folder) || !fs.statSync(folder).isDirectory()) {
     throw new Error(`Folder not found: ${folder}`);
   }
@@ -351,6 +393,7 @@ async function main() {
     mode: args.dryRun ? "dry-run" : "write",
     database: hasPostgresConfig() ? "postgres" : "sqlite",
     databaseSource: getPostgresConfig().source || null,
+    albumSource: global.__sharedAlbumApiBase ? "album-api" : hasPostgresConfig() ? "database" : "sqlite",
     album: `${args.series}/${args.slug}`,
     folder,
     albumAssetCount: album.assets.length,
