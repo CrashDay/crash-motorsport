@@ -675,6 +675,10 @@ export default function SebringLeaflet() {
   const [shareAlbumOpen, setShareAlbumOpen] = useState(false);
   const [shareAlbumChoices, setShareAlbumChoices] = useState([]);
   const [shareAlbumChoicesLoading, setShareAlbumChoicesLoading] = useState(false);
+  const [staleAreaPhotosLoading, setStaleAreaPhotosLoading] = useState(false);
+  const [staleAreaPhotosRemoving, setStaleAreaPhotosRemoving] = useState(false);
+  const [staleAreaPhotosMsg, setStaleAreaPhotosMsg] = useState("");
+  const [staleAreaPhotosReport, setStaleAreaPhotosReport] = useState(null);
   const [yearFilter, setYearFilter] = useState("all");
   const [raceFilter, setRaceFilter] = useState("all");
   const [isMobileToolsHidden, setIsMobileToolsHidden] = useState(false);
@@ -1202,6 +1206,56 @@ export default function SebringLeaflet() {
       setAssignedAreaPhotos(byArea);
     } catch {
       setAssignedAreaPhotos({});
+    }
+  };
+
+  const checkStaleAreaPhotos = async () => {
+    setStaleAreaPhotosLoading(true);
+    setStaleAreaPhotosMsg("");
+    try {
+      const res = await fetch("/api/photo-areas/stale?trackId=sebring", { cache: "no-store" });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+      const staleRows = Array.isArray(payload?.staleRows) ? payload.staleRows : [];
+      setStaleAreaPhotosReport({
+        staleCount: Number(payload?.staleCount || staleRows.length || 0),
+        staleRows,
+      });
+      setStaleAreaPhotosMsg(
+        staleRows.length
+          ? `Found ${staleRows.length} stale area photo${staleRows.length === 1 ? "" : "s"}.`
+          : "No stale area photos found."
+      );
+    } catch (e) {
+      setStaleAreaPhotosMsg(`Stale check failed: ${String(e?.message || e)}`);
+      setStaleAreaPhotosReport(null);
+    } finally {
+      setStaleAreaPhotosLoading(false);
+    }
+  };
+
+  const removeStaleAreaPhotos = async () => {
+    setStaleAreaPhotosRemoving(true);
+    setStaleAreaPhotosMsg("");
+    try {
+      const res = await fetch("/api/photo-areas/stale", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackId: "sebring" }),
+      });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+      await loadAssignedAreaPhotos();
+      const removedCount = Number(payload?.removedCount || 0);
+      setStaleAreaPhotosReport({
+        staleCount: 0,
+        staleRows: [],
+      });
+      setStaleAreaPhotosMsg(`Removed ${removedCount} stale area photo${removedCount === 1 ? "" : "s"}.`);
+    } catch (e) {
+      setStaleAreaPhotosMsg(`Stale cleanup failed: ${String(e?.message || e)}`);
+    } finally {
+      setStaleAreaPhotosRemoving(false);
     }
   };
 
@@ -2343,7 +2397,80 @@ export default function SebringLeaflet() {
             ) : null}
           </>
         ) : null}
-        {toolPanels.areas ? <div style={{ marginTop: 8, color: "#b8c4d8" }}>Photo areas: {allAreaRows.length}</div> : null}
+        {toolPanels.areas ? (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ color: "#b8c4d8" }}>Photo areas: {allAreaRows.length}</div>
+            <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+              <button
+                type="button"
+                onClick={checkStaleAreaPhotos}
+                disabled={staleAreaPhotosLoading || staleAreaPhotosRemoving}
+                style={{
+                  flex: 1,
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: staleAreaPhotosLoading || staleAreaPhotosRemoving ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: staleAreaPhotosLoading || staleAreaPhotosRemoving ? 0.65 : 1,
+                }}
+              >
+                {staleAreaPhotosLoading ? "Checking..." : "Check stale area photos"}
+              </button>
+              <button
+                type="button"
+                onClick={removeStaleAreaPhotos}
+                disabled={staleAreaPhotosRemoving || !Number(staleAreaPhotosReport?.staleCount || 0)}
+                style={{
+                  flex: 1,
+                  background: "#15233a",
+                  border: "1px solid #325080",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: staleAreaPhotosRemoving || !Number(staleAreaPhotosReport?.staleCount || 0) ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: staleAreaPhotosRemoving || !Number(staleAreaPhotosReport?.staleCount || 0) ? 0.65 : 1,
+                }}
+              >
+                {staleAreaPhotosRemoving ? "Removing..." : "Remove stale"}
+              </button>
+            </div>
+            {staleAreaPhotosMsg ? (
+              <div style={{ marginTop: 6, color: staleAreaPhotosMsg.startsWith("Stale") ? "#ff9a9a" : "#9dd8a3", fontSize: 11 }}>
+                {staleAreaPhotosMsg}
+              </div>
+            ) : null}
+            {Array.isArray(staleAreaPhotosReport?.staleRows) && staleAreaPhotosReport.staleRows.length ? (
+              <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                {staleAreaPhotosReport.staleRows.slice(0, 8).map((row) => (
+                  <div
+                    key={`${row.areaId}:${row.assetId}`}
+                    style={{
+                      background: "rgba(9, 17, 30, 0.88)",
+                      border: "1px solid rgba(120, 170, 255, 0.18)",
+                      borderRadius: 8,
+                      padding: "6px 8px",
+                      fontSize: 11,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    <div style={{ color: "#eef6ff", fontWeight: 600 }}>{row.assetName || row.assetId}</div>
+                    <div style={{ color: "#9fb2d6" }}>{row.areaTitle}</div>
+                    <div style={{ color: "#91a6cb" }}>{row.reason}</div>
+                  </div>
+                ))}
+                {staleAreaPhotosReport.staleRows.length > 8 ? (
+                  <div style={{ color: "#91a6cb", fontSize: 11 }}>
+                    Showing 8 of {staleAreaPhotosReport.staleRows.length} stale assignments.
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         {toolPanels.areaStyle ? (
           <div style={{ marginTop: 8 }}>
             <div style={{ fontWeight: 600, marginBottom: 4 }}>Area style</div>
