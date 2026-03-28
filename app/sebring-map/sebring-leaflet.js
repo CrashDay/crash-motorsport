@@ -1614,6 +1614,7 @@ export default function SebringLeaflet() {
         committedStoredAssetCount: Number(payload?.committed_stored_asset_count || 0),
         committedAlbumCreatedAt: payload?.committed_album_created_at || null,
         committedAlbumUpdatedAt: payload?.committed_album_updated_at || null,
+        committedAlbumRows: Array.isArray(payload?.committed_album_rows) ? payload.committed_album_rows : [],
         staleAlbumRowCountRemoved: Number(payload?.stale_album_row_count_removed || 0),
         dbSource: payload?.db_source || null,
         dbHost: payload?.db_host || null,

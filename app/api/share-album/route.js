@@ -847,7 +847,7 @@ async function countSharedAlbumAssets({ db, pgClient = null, albumKey }) {
   return Number(db.prepare(`SELECT COUNT(*) AS c FROM shared_album_assets WHERE album_key = ?`).get(albumKey)?.c || 0);
 }
 
-async function loadCommittedSharedAlbumSummary({ db, albumKey }) {
+async function loadCommittedSharedAlbumSummary({ db, albumKey, series, slug }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
     return withPgClient(async (client) => {
@@ -861,10 +861,31 @@ async function loadCommittedSharedAlbumSummary({ db, albumKey }) {
         [albumKey]
       );
       const assetResult = await client.query(`SELECT COUNT(*) AS c FROM shared_album_assets WHERE album_key = $1`, [albumKey]);
+      const rowResult = await client.query(
+        `
+          SELECT
+            a.album_key,
+            a.created_at,
+            a.updated_at,
+            COUNT(saa.asset_id) AS asset_count
+          FROM shared_albums a
+          LEFT JOIN shared_album_assets saa ON saa.album_key = a.album_key
+          WHERE a.series = $1 AND a.slug = $2
+          GROUP BY a.album_key, a.created_at, a.updated_at
+          ORDER BY a.updated_at DESC, a.created_at DESC, a.album_key DESC
+        `,
+        [series, slug]
+      );
       return {
         storedAssetCount: Number(assetResult.rows[0]?.c || 0),
         createdAt: albumResult.rows[0]?.created_at || null,
         updatedAt: albumResult.rows[0]?.updated_at || null,
+        rows: rowResult.rows.map((row) => ({
+          albumKey: row.album_key,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          assetCount: Number(row.asset_count || 0),
+        })),
       };
     });
   }
@@ -883,6 +904,28 @@ async function loadCommittedSharedAlbumSummary({ db, albumKey }) {
     storedAssetCount: Number(db.prepare(`SELECT COUNT(*) AS c FROM shared_album_assets WHERE album_key = ?`).get(albumKey)?.c || 0),
     createdAt: row?.created_at || null,
     updatedAt: row?.updated_at || null,
+    rows: db
+      .prepare(
+        `
+          SELECT
+            a.album_key,
+            a.created_at,
+            a.updated_at,
+            COUNT(saa.asset_id) AS asset_count
+          FROM shared_albums a
+          LEFT JOIN shared_album_assets saa ON saa.album_key = a.album_key
+          WHERE a.series = ? AND a.slug = ?
+          GROUP BY a.album_key, a.created_at, a.updated_at
+          ORDER BY a.updated_at DESC, a.created_at DESC, a.album_key DESC
+        `
+      )
+      .all(series, slug)
+      .map((summaryRow) => ({
+        albumKey: summaryRow.album_key,
+        createdAt: summaryRow.created_at,
+        updatedAt: summaryRow.updated_at,
+        assetCount: Number(summaryRow.asset_count || 0),
+      })),
   };
 }
 
@@ -991,6 +1034,7 @@ export async function POST(request) {
   let committedStoredAssetCount = 0;
   let committedAlbumCreatedAt = null;
   let committedAlbumUpdatedAt = null;
+  let committedAlbumRows = [];
   let staleAlbumRowCountRemoved = 0;
   const gpsMissingSamples = [];
   const gpsMissingDiagnostics = [];
@@ -1176,10 +1220,11 @@ export async function POST(request) {
     }
   }
 
-  const committedSummary = await loadCommittedSharedAlbumSummary({ db, albumKey });
+  const committedSummary = await loadCommittedSharedAlbumSummary({ db, albumKey, series, slug });
   committedStoredAssetCount = committedSummary.storedAssetCount;
   committedAlbumCreatedAt = committedSummary.createdAt;
   committedAlbumUpdatedAt = committedSummary.updatedAt;
+  committedAlbumRows = Array.isArray(committedSummary.rows) ? committedSummary.rows : [];
 
   const dbIdentity = getPostgresIdentity();
 
@@ -1196,6 +1241,7 @@ export async function POST(request) {
     committed_stored_asset_count: committedStoredAssetCount,
     committed_album_created_at: committedAlbumCreatedAt,
     committed_album_updated_at: committedAlbumUpdatedAt,
+    committed_album_rows: committedAlbumRows,
     stale_album_row_count_removed: staleAlbumRowCountRemoved,
     db_source: dbIdentity.source,
     db_host: dbIdentity.host,
