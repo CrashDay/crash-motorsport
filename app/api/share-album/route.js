@@ -27,15 +27,34 @@ const USER_AGENT = "Mozilla/5.0 (compatible; CrashDayPics/1.0; +https://crashday
 
 let postgresReady = false;
 
+function getPostgresConfig() {
+  const candidates = [
+    ["POSTGRES_URL", process.env.POSTGRES_URL],
+    ["POSTGRES_URL_NON_POOLING", process.env.POSTGRES_URL_NON_POOLING],
+    ["POSTGRES_PRISMA_URL", process.env.POSTGRES_PRISMA_URL],
+    ["PRISMA_DATABASE_URL", process.env.PRISMA_DATABASE_URL],
+    ["DATABASE_URL", process.env.DATABASE_URL],
+  ];
+  for (const [source, value] of candidates) {
+    const raw = String(value || "").trim();
+    if (!raw) continue;
+    return { source, value: raw };
+  }
+  return { source: "", value: "" };
+}
+
 function getPostgresConnectionString() {
-  return (
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.PRISMA_DATABASE_URL ||
-    process.env.DATABASE_URL ||
-    ""
-  );
+  return getPostgresConfig().value;
+}
+
+function getPostgresHost() {
+  const connectionString = getPostgresConnectionString();
+  if (!connectionString) return "";
+  try {
+    return new URL(connectionString).hostname;
+  } catch {
+    return "";
+  }
 }
 
 function hasPostgresConfig() {
@@ -1052,6 +1071,8 @@ export async function POST(request) {
     imported_count: imported,
     attempted_stored_asset_count: attemptedStoredAssetCount,
     stored_asset_count: actualStoredAssetCount,
+    db_source: getPostgresConfig().source || null,
+    db_host: getPostgresHost() || null,
     assigned_count: assigned,
     pinned_count: pinned,
     gps_found_in_feed_count: gpsFoundInFeed,

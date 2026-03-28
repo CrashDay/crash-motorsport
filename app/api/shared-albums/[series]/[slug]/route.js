@@ -9,15 +9,34 @@ const { normalizeLightroomImageUrl } = lightroomImageUrl;
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+function getPostgresConfig() {
+  const candidates = [
+    ["POSTGRES_URL", process.env.POSTGRES_URL],
+    ["POSTGRES_URL_NON_POOLING", process.env.POSTGRES_URL_NON_POOLING],
+    ["POSTGRES_PRISMA_URL", process.env.POSTGRES_PRISMA_URL],
+    ["PRISMA_DATABASE_URL", process.env.PRISMA_DATABASE_URL],
+    ["DATABASE_URL", process.env.DATABASE_URL],
+  ];
+  for (const [source, value] of candidates) {
+    const raw = String(value || "").trim();
+    if (!raw) continue;
+    return { source, value: raw };
+  }
+  return { source: "", value: "" };
+}
+
 function getPostgresConnectionString() {
-  return (
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.PRISMA_DATABASE_URL ||
-    process.env.DATABASE_URL ||
-    ""
-  );
+  return getPostgresConfig().value;
+}
+
+function getPostgresHost() {
+  const connectionString = getPostgresConnectionString();
+  if (!connectionString) return "";
+  try {
+    return new URL(connectionString).hostname;
+  } catch {
+    return "";
+  }
 }
 
 function hasPostgresConfig() {
@@ -104,6 +123,8 @@ export async function GET(_request, { params }) {
       if (!album) return NextResponse.json({ error: "Album not found" }, { status: 404 });
       return NextResponse.json({
         storage: "postgres",
+        dbSource: getPostgresConfig().source || null,
+        dbHost: getPostgresHost() || null,
         assetCount: album.assets.length,
         album,
       });
@@ -115,6 +136,8 @@ export async function GET(_request, { params }) {
     const assets = getSharedAlbumAssetsByAlbumKey(db, album.albumKey);
     return NextResponse.json({
       storage: "sqlite",
+      dbSource: null,
+      dbHost: null,
       assetCount: assets.length,
       album: {
         ...album,
