@@ -1610,6 +1610,7 @@ export default function SebringLeaflet() {
         duplicateAssetIdCount: Number(payload?.duplicate_asset_id_count || 0),
         duplicateAssetSamples: Array.isArray(payload?.duplicate_asset_samples) ? payload.duplicate_asset_samples : [],
         storedAssetCount: Number(payload?.stored_asset_count || 0),
+        attemptedStoredAssetCount: Number(payload?.attempted_stored_asset_count || 0),
         missingRenditionsCount: Number(payload?.missing_renditions_count || 0),
         missingRenditionSamples: Array.isArray(payload?.missing_rendition_samples) ? payload.missing_rendition_samples : [],
         gpsMissingDiagnostics: missingDiagnostics,

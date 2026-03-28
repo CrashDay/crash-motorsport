@@ -742,6 +742,21 @@ async function clearSharedAlbumAssets({ db, pgClient = null, albumKey }) {
   db.prepare(`DELETE FROM shared_album_assets WHERE album_key = ?`).run(albumKey);
 }
 
+async function countSharedAlbumAssets({ db, pgClient = null, albumKey }) {
+  if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
+    const run = async (client) => {
+      const result = await client.query(`SELECT COUNT(*) AS c FROM shared_album_assets WHERE album_key = $1`, [albumKey]);
+      return Number(result.rows[0]?.c || 0);
+    };
+    if (pgClient) {
+      return run(pgClient);
+    }
+    return withPgClient(run);
+  }
+  return Number(db.prepare(`SELECT COUNT(*) AS c FROM shared_album_assets WHERE album_key = ?`).get(albumKey)?.c || 0);
+}
+
 function shortHash(value) {
   return crypto.createHash("sha1").update(String(value || "")).digest("hex").slice(0, 12);
 }
@@ -842,7 +857,8 @@ export async function POST(request) {
   let gpsFoundInDetail = 0;
   let gpsMissing = 0;
   let missingRenditions = 0;
-  let storedAssetCount = 0;
+  let attemptedStoredAssetCount = 0;
+  let actualStoredAssetCount = 0;
   const gpsMissingSamples = [];
   const gpsMissingDiagnostics = [];
   const missingRenditionSamples = [];
@@ -954,7 +970,7 @@ export async function POST(request) {
         race,
         assignedAt: nowIso,
       });
-      storedAssetCount += 1;
+      attemptedStoredAssetCount += 1;
 
       if (gps && projector) {
         const pos = projector(gps.lng, gps.lat);
@@ -1012,6 +1028,7 @@ export async function POST(request) {
       createdAt: nowIso,
       updatedAt: nowIso,
     });
+    actualStoredAssetCount = await countSharedAlbumAssets({ db, pgClient, albumKey });
   } catch (error) {
     console.error("[share-album:POST] import error", error);
     return NextResponse.json({ error: String(error?.message || error) || "Album import failed" }, { status: 503 });
@@ -1033,7 +1050,8 @@ export async function POST(request) {
     duplicate_asset_id_count: duplicateAssetIds.length,
     duplicate_asset_samples: duplicateAssetSamples,
     imported_count: imported,
-    stored_asset_count: storedAssetCount,
+    attempted_stored_asset_count: attemptedStoredAssetCount,
+    stored_asset_count: actualStoredAssetCount,
     assigned_count: assigned,
     pinned_count: pinned,
     gps_found_in_feed_count: gpsFoundInFeed,
