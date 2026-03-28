@@ -185,6 +185,7 @@ async function ensurePostgresSchema() {
         title TEXT NOT NULL,
         year INTEGER,
         race TEXT,
+        source_album_id TEXT,
         cover_thumb_url TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
@@ -205,6 +206,7 @@ async function ensurePostgresSchema() {
     `);
     await client.query(`ALTER TABLE shared_albums ADD COLUMN IF NOT EXISTS year INTEGER`);
     await client.query(`ALTER TABLE shared_albums ADD COLUMN IF NOT EXISTS race TEXT`);
+    await client.query(`ALTER TABLE shared_albums ADD COLUMN IF NOT EXISTS source_album_id TEXT`);
     await client.query(`ALTER TABLE shared_albums ADD COLUMN IF NOT EXISTS cover_thumb_url TEXT`);
     await client.query(`ALTER TABLE shared_album_assets ADD COLUMN IF NOT EXISTS year INTEGER`);
     await client.query(`ALTER TABLE shared_album_assets ADD COLUMN IF NOT EXISTS race TEXT`);
@@ -235,6 +237,16 @@ function normalizeYear(value) {
 function normalizeRace(value) {
   const raw = String(value || "").trim();
   return raw;
+}
+
+function extractSharedAlbumSourceId(...values) {
+  for (const value of values) {
+    const raw = String(value || "").trim();
+    if (!raw) continue;
+    const match = raw.match(/\/spaces\/([^/]+)/i);
+    if (match?.[1]) return match[1];
+  }
+  return "";
 }
 
 function isValidAreaId(areaId) {
@@ -696,24 +708,111 @@ async function storePinAsset({ db, pgClient = null, pinId, assetId, sortOrder, a
   });
 }
 
-async function storeSharedAlbum({ db, pgClient = null, albumKey, series, slug, title, year, race, coverThumbUrl, createdAt, updatedAt }) {
+async function findExistingSharedAlbumMatch({ db, pgClient = null, series, sourceAlbumId }) {
+  if (!sourceAlbumId) return null;
+  if (hasPostgresConfig()) {
+    await ensurePostgresSchema();
+    const run = async (client) => {
+      const exactResult = await client.query(
+        `
+          SELECT album_key, slug, title, created_at, updated_at
+          FROM shared_albums
+          WHERE series = $1 AND source_album_id = $2
+          ORDER BY updated_at DESC, created_at DESC, album_key DESC
+          LIMIT 1
+        `,
+        [series, sourceAlbumId]
+      );
+      if (exactResult.rows[0]) return exactResult.rows[0];
+      const fallbackResult = await client.query(
+        `
+          SELECT album_key, slug, title, created_at, updated_at
+          FROM shared_albums
+          WHERE series = $1 AND cover_thumb_url LIKE $2
+          ORDER BY updated_at DESC, created_at DESC, album_key DESC
+          LIMIT 1
+        `,
+        [series, `%/spaces/${sourceAlbumId}/%`]
+      );
+      return fallbackResult.rows[0] || null;
+    };
+    const row = pgClient ? await run(pgClient) : await withPgClient(run);
+    if (!row) return null;
+    return {
+      albumKey: row.album_key,
+      slug: row.slug,
+      title: row.title,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  const exactRow = db
+    .prepare(
+      `
+        SELECT album_key, slug, title, created_at, updated_at
+        FROM shared_albums
+        WHERE series = ? AND source_album_id = ?
+        ORDER BY updated_at DESC, created_at DESC, album_key DESC
+        LIMIT 1
+      `
+    )
+    .get(series, sourceAlbumId);
+  const fallbackRow =
+    exactRow ||
+    db
+      .prepare(
+        `
+          SELECT album_key, slug, title, created_at, updated_at
+          FROM shared_albums
+          WHERE series = ? AND cover_thumb_url LIKE ?
+          ORDER BY updated_at DESC, created_at DESC, album_key DESC
+          LIMIT 1
+        `
+      )
+      .get(series, `%/spaces/${sourceAlbumId}/%`);
+  if (!fallbackRow) return null;
+  return {
+    albumKey: fallbackRow.album_key,
+    slug: fallbackRow.slug,
+    title: fallbackRow.title,
+    createdAt: fallbackRow.created_at,
+    updatedAt: fallbackRow.updated_at,
+  };
+}
+
+async function storeSharedAlbum({
+  db,
+  pgClient = null,
+  albumKey,
+  series,
+  slug,
+  title,
+  year,
+  race,
+  sourceAlbumId,
+  coverThumbUrl,
+  createdAt,
+  updatedAt,
+}) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
     const run = async (client) => {
       await client.query(
         `
-          INSERT INTO shared_albums (album_key, series, slug, title, year, race, cover_thumb_url, created_at, updated_at)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          INSERT INTO shared_albums (album_key, series, slug, title, year, race, source_album_id, cover_thumb_url, created_at, updated_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           ON CONFLICT (album_key) DO UPDATE SET
             series = EXCLUDED.series,
             slug = EXCLUDED.slug,
             title = EXCLUDED.title,
             year = EXCLUDED.year,
             race = EXCLUDED.race,
+            source_album_id = EXCLUDED.source_album_id,
             cover_thumb_url = EXCLUDED.cover_thumb_url,
             updated_at = EXCLUDED.updated_at
         `,
-        [albumKey, series, slug, title, year, race, coverThumbUrl, createdAt, updatedAt]
+        [albumKey, series, slug, title, year, race, sourceAlbumId || null, coverThumbUrl, createdAt, updatedAt]
       );
     };
     if (pgClient) {
@@ -730,6 +829,7 @@ async function storeSharedAlbum({ db, pgClient = null, albumKey, series, slug, t
     title,
     year,
     race,
+    source_album_id: sourceAlbumId || null,
     cover_thumb_url: coverThumbUrl,
     created_at: createdAt,
     updated_at: updatedAt,
@@ -1015,8 +1115,6 @@ export async function POST(request) {
     return NextResponse.json({ error: "No shared album images were found" }, { status: 400 });
   }
 
-  const slug = slugifyAlbumTitle(albumTitle);
-  const albumKey = `${series}:${slug}`;
   const db = getDb();
   const nowIso = new Date().toISOString();
   const projector = getProjectorForTrack(TRACK_ID);
@@ -1040,6 +1138,17 @@ export async function POST(request) {
   const gpsMissingDiagnostics = [];
   const missingRenditionSamples = [];
   const duplicateAssetSamples = [];
+  const sourceAlbumId = extractSharedAlbumSourceId(
+    assetsBase,
+    albumFeedHref,
+    sharePage.finalUrl,
+    sharesConfig?.albumAttributes?.links?.self?.href,
+    sharesConfig?.spaceAttributes?.links?.self?.href
+  );
+  let slug = slugifyAlbumTitle(albumTitle);
+  let albumKey = `${series}:${slug}`;
+  let albumTitleToStore = albumTitle;
+  let matchedExistingAlbumKey = null;
 
   try {
     if (hasPostgresConfig()) {
@@ -1049,6 +1158,14 @@ export async function POST(request) {
         ssl: { rejectUnauthorized: false },
       });
       await pgClient.connect();
+    }
+
+    const existingAlbum = await findExistingSharedAlbumMatch({ db, pgClient, series, sourceAlbumId });
+    if (existingAlbum?.albumKey && existingAlbum?.slug) {
+      matchedExistingAlbumKey = existingAlbum.albumKey;
+      slug = existingAlbum.slug;
+      albumKey = existingAlbum.albumKey;
+      albumTitleToStore = existingAlbum.title || albumTitle;
     }
 
     await clearSharedAlbumAssets({ db, pgClient, albumKey });
@@ -1199,9 +1316,10 @@ export async function POST(request) {
       albumKey,
       series,
       slug,
-      title: albumTitle,
+      title: albumTitleToStore,
       year,
       race,
+      sourceAlbumId,
       coverThumbUrl,
       createdAt: nowIso,
       updatedAt: nowIso,
@@ -1259,6 +1377,8 @@ export async function POST(request) {
     missing_rendition_samples: missingRenditionSamples,
     album_title: albumTitle,
     album_slug: slug,
+    matched_existing_album_key: matchedExistingAlbumKey,
+    source_album_id: sourceAlbumId || null,
     album_href: `/${series}/albums/${slug}`,
     race,
     year,
