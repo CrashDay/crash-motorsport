@@ -675,6 +675,10 @@ export default function SebringLeaflet() {
   const [shareAlbumOpen, setShareAlbumOpen] = useState(false);
   const [shareAlbumChoices, setShareAlbumChoices] = useState([]);
   const [shareAlbumChoicesLoading, setShareAlbumChoicesLoading] = useState(false);
+  const [staleGpsPhotosLoading, setStaleGpsPhotosLoading] = useState(false);
+  const [staleGpsPhotosRemoving, setStaleGpsPhotosRemoving] = useState(false);
+  const [staleGpsPhotosMsg, setStaleGpsPhotosMsg] = useState("");
+  const [staleGpsPhotosReport, setStaleGpsPhotosReport] = useState(null);
   const [staleAreaPhotosLoading, setStaleAreaPhotosLoading] = useState(false);
   const [staleAreaPhotosRemoving, setStaleAreaPhotosRemoving] = useState(false);
   const [staleAreaPhotosMsg, setStaleAreaPhotosMsg] = useState("");
@@ -1231,6 +1235,57 @@ export default function SebringLeaflet() {
       setStaleAreaPhotosReport(null);
     } finally {
       setStaleAreaPhotosLoading(false);
+    }
+  };
+
+  const checkStaleGpsPhotos = async () => {
+    setStaleGpsPhotosLoading(true);
+    setStaleGpsPhotosMsg("");
+    try {
+      const res = await fetch("/api/tracks/sebring/pins/stale", { cache: "no-store" });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+      const staleRows = Array.isArray(payload?.staleRows) ? payload.staleRows : [];
+      setStaleGpsPhotosReport({
+        staleAssetCount: Number(payload?.staleAssetCount || staleRows.length || 0),
+        stalePinCount: Number(payload?.stalePinCount || 0),
+        staleRows,
+      });
+      setStaleGpsPhotosMsg(
+        staleRows.length
+          ? `Found ${staleRows.length} stale GPS photo${staleRows.length === 1 ? "" : "s"} across ${Number(payload?.stalePinCount || 0)} pin${Number(payload?.stalePinCount || 0) === 1 ? "" : "s"}.`
+          : "No stale GPS photos found."
+      );
+    } catch (e) {
+      setStaleGpsPhotosMsg(`GPS stale check failed: ${String(e?.message || e)}`);
+      setStaleGpsPhotosReport(null);
+    } finally {
+      setStaleGpsPhotosLoading(false);
+    }
+  };
+
+  const removeStaleGpsPhotos = async () => {
+    setStaleGpsPhotosRemoving(true);
+    setStaleGpsPhotosMsg("");
+    try {
+      const res = await fetch("/api/tracks/sebring/pins/stale", {
+        method: "DELETE",
+      });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+      await loadPins();
+      setStaleGpsPhotosReport({
+        staleAssetCount: 0,
+        stalePinCount: 0,
+        staleRows: [],
+      });
+      setStaleGpsPhotosMsg(
+        `Removed ${Number(payload?.removedAssetCount || 0)} stale GPS photo${Number(payload?.removedAssetCount || 0) === 1 ? "" : "s"} and ${Number(payload?.removedPinCount || 0)} empty pin${Number(payload?.removedPinCount || 0) === 1 ? "" : "s"}.`
+      );
+    } catch (e) {
+      setStaleGpsPhotosMsg(`GPS stale cleanup failed: ${String(e?.message || e)}`);
+    } finally {
+      setStaleGpsPhotosRemoving(false);
     }
   };
 
@@ -2200,6 +2255,75 @@ export default function SebringLeaflet() {
               ) : null}
             </div>
             <div style={{ marginTop: 6, color: "#b8c4d8" }}>Pins: {pinsCount}</div>
+            <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+              <button
+                type="button"
+                onClick={checkStaleGpsPhotos}
+                disabled={staleGpsPhotosLoading || staleGpsPhotosRemoving}
+                style={{
+                  flex: 1,
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: staleGpsPhotosLoading || staleGpsPhotosRemoving ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: staleGpsPhotosLoading || staleGpsPhotosRemoving ? 0.65 : 1,
+                }}
+              >
+                {staleGpsPhotosLoading ? "Checking..." : "Check stale GPS photos"}
+              </button>
+              <button
+                type="button"
+                onClick={removeStaleGpsPhotos}
+                disabled={staleGpsPhotosRemoving || !Number(staleGpsPhotosReport?.staleAssetCount || 0)}
+                style={{
+                  flex: 1,
+                  background: "#15233a",
+                  border: "1px solid #325080",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: staleGpsPhotosRemoving || !Number(staleGpsPhotosReport?.staleAssetCount || 0) ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: staleGpsPhotosRemoving || !Number(staleGpsPhotosReport?.staleAssetCount || 0) ? 0.65 : 1,
+                }}
+              >
+                {staleGpsPhotosRemoving ? "Removing..." : "Remove stale GPS"}
+              </button>
+            </div>
+            {staleGpsPhotosMsg ? (
+              <div style={{ marginTop: 6, color: staleGpsPhotosMsg.startsWith("GPS stale") ? "#ff9a9a" : "#9dd8a3", fontSize: 11 }}>
+                {staleGpsPhotosMsg}
+              </div>
+            ) : null}
+            {Array.isArray(staleGpsPhotosReport?.staleRows) && staleGpsPhotosReport.staleRows.length ? (
+              <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                {staleGpsPhotosReport.staleRows.slice(0, 8).map((row) => (
+                  <div
+                    key={`${row.pinId}:${row.assetId}`}
+                    style={{
+                      background: "rgba(9, 17, 30, 0.88)",
+                      border: "1px solid rgba(120, 170, 255, 0.18)",
+                      borderRadius: 8,
+                      padding: "6px 8px",
+                      fontSize: 11,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    <div style={{ color: "#eef6ff", fontWeight: 600 }}>{row.assetName || row.assetId}</div>
+                    <div style={{ color: "#9fb2d6" }}>{row.pinTitle}</div>
+                    <div style={{ color: "#91a6cb" }}>{row.reason}</div>
+                  </div>
+                ))}
+                {staleGpsPhotosReport.staleRows.length > 8 ? (
+                  <div style={{ color: "#91a6cb", fontSize: 11 }}>
+                    Showing 8 of {staleGpsPhotosReport.staleRows.length} stale GPS assets.
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             {syncMsg ? (
               <div style={{ marginTop: 6, color: syncMsg.startsWith("Sync failed") ? "#ff9a9a" : "#9dd8a3" }}>
                 {syncMsg}
