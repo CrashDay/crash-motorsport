@@ -6,6 +6,7 @@ import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, CircleMa
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import lightroomImageUrl from "@/lib/lightroom-image-url";
+import { readBrowserPhotoMetadata } from "@/lib/browser-exif-gps";
 import { SHARED_ALBUM_SERIES } from "@/lib/shared-album-constants";
 
 const { normalizeLightroomImageUrl } = lightroomImageUrl;
@@ -669,6 +670,8 @@ export default function SebringLeaflet() {
   const [shareAlbumYear, setShareAlbumYear] = useState("2023");
   const [shareAlbumRace, setShareAlbumRace] = useState("12 Hours of Sebring");
   const [shareAlbumAreaId, setShareAlbumAreaId] = useState("");
+  const [shareAlbumLocalFiles, setShareAlbumLocalFiles] = useState([]);
+  const [shareAlbumLocalImportEnabled, setShareAlbumLocalImportEnabled] = useState(false);
   const [shareAlbumSubmitting, setShareAlbumSubmitting] = useState(false);
   const [shareAlbumMsg, setShareAlbumMsg] = useState("");
   const [shareAlbumDiagnostics, setShareAlbumDiagnostics] = useState(null);
@@ -1689,6 +1692,7 @@ export default function SebringLeaflet() {
     const trimmedSlug = (shareAlbumSlug || "").trim();
     const trimmedRace = (shareAlbumRace || "").trim();
     const trimmedYear = (shareAlbumYear || "").trim();
+    const selectedLocalFiles = Array.isArray(shareAlbumLocalFiles) ? shareAlbumLocalFiles : [];
 
     if (!trimmedShortLink) {
       setShareAlbumMsg("Lightroom shared album short link is required.");
@@ -1726,6 +1730,31 @@ export default function SebringLeaflet() {
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
 
+      let localGpsSummary = null;
+      if (shareAlbumLocalImportEnabled && selectedLocalFiles.length) {
+        const localMetadata = [];
+        for (const file of selectedLocalFiles) {
+          const metadata = await readBrowserPhotoMetadata(file);
+          if (!metadata?.unsupported) localMetadata.push(metadata);
+        }
+        if (!localMetadata.length) {
+          throw new Error("No supported JPG files were found in the selected export folder.");
+        }
+
+        const gpsRes = await fetch("/api/share-album/local-gps", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            series: trimmedSeries,
+            slug: payload?.album_slug || trimmedSlug,
+            localFiles: localMetadata,
+            dryRun: false,
+          }),
+        });
+        localGpsSummary = await gpsRes.json();
+        if (!gpsRes.ok) throw new Error(localGpsSummary?.error || `Local GPS import failed: HTTP ${gpsRes.status}`);
+      }
+
       await Promise.all([loadPins(), loadAssignedAreaPhotos()]);
       const importedCount = Number(payload?.imported_count || 0);
       const pinnedCount = Number(payload?.pinned_count || 0);
@@ -1742,8 +1771,11 @@ export default function SebringLeaflet() {
             .join(", ")}.`
         : "";
       const diagnosticText = missingDiagnostics.length ? " GPS diagnostics captured for sample assets." : "";
+      const localGpsText = localGpsSummary
+        ? ` Local GPS import pinned ${Number(localGpsSummary?.pinnedCount || 0)} of ${Number(localGpsSummary?.localGpsFileCount || 0)} GPS-tagged local JPGs.`
+        : "";
       setShareAlbumMsg(
-        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}`
+        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}${localGpsText}`
       );
       setShareAlbumDiagnostics({
         feedResourceCount: Number(payload?.feed_resource_count || 0),
@@ -1769,6 +1801,7 @@ export default function SebringLeaflet() {
         missingRenditionsCount: Number(payload?.missing_renditions_count || 0),
         missingRenditionSamples: Array.isArray(payload?.missing_rendition_samples) ? payload.missing_rendition_samples : [],
         gpsMissingDiagnostics: missingDiagnostics,
+        localGpsImport: localGpsSummary,
       });
       setShareAlbumShortLink("");
       setShareAlbumExistingSlug("");
@@ -1776,6 +1809,8 @@ export default function SebringLeaflet() {
       setShareAlbumYear("2023");
       setShareAlbumRace("12 Hours of Sebring");
       setShareAlbumAreaId("");
+      setShareAlbumLocalFiles([]);
+      setShareAlbumLocalImportEnabled(false);
     } catch (e) {
       setShareAlbumMsg(`Share failed: ${String(e?.message || e)}`);
       setShareAlbumDiagnostics(null);
@@ -3267,6 +3302,56 @@ export default function SebringLeaflet() {
                 ))}
               </select>
             </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Local JPG export folder (optional)</div>
+              <input
+                type="file"
+                multiple
+                accept=".jpg,.jpeg"
+                webkitdirectory=""
+                directory=""
+                onChange={(e) => {
+                  const nextFiles = Array.from(e.target.files || []);
+                  setShareAlbumLocalFiles(nextFiles);
+                  setShareAlbumLocalImportEnabled(nextFiles.length > 0);
+                }}
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 13,
+                }}
+              />
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginTop: 6 }}>
+                Select the exported JPG folder if you want the site to import local EXIF GPS after the album import. JPG/JPEG only.
+              </div>
+              {shareAlbumLocalFiles.length ? (
+                <div style={{ color: "#d8e4ff", fontSize: 11, marginTop: 6 }}>
+                  Selected {shareAlbumLocalFiles.length} file{shareAlbumLocalFiles.length === 1 ? "" : "s"} for optional local GPS import.
+                </div>
+              ) : null}
+            </div>
+            <label
+              style={{
+                marginTop: 8,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                color: "#d8e4ff",
+                fontSize: 12,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={shareAlbumLocalImportEnabled}
+                disabled={!shareAlbumLocalFiles.length}
+                onChange={(e) => setShareAlbumLocalImportEnabled(e.target.checked)}
+              />
+              Run local GPS import from the selected JPGs after the album import finishes
+            </label>
             <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button
                 type="button"
