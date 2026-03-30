@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { runLocalGpsImport } from "@/lib/local-gps-import";
 import { readServerPhotoMetadata } from "@/lib/server-image-metadata";
 
 const VALID_SERIES = new Set(["imsa", "wec", "f1"]);
@@ -16,7 +15,7 @@ export async function POST(request) {
 
   const series = String(form.get("series") || "").trim().toLowerCase();
   const slug = String(form.get("slug") || "").trim();
-  const dryRun = String(form.get("dryRun") || "").trim() === "true";
+  const mode = String(form.get("mode") || "extract").trim().toLowerCase();
   const files = form.getAll("files");
 
   if (!VALID_SERIES.has(series) || !slug) {
@@ -39,14 +38,15 @@ export async function POST(request) {
       return NextResponse.json({ error: "No supported files were uploaded" }, { status: 400 });
     }
 
-    const summary = await runLocalGpsImport({
-      series,
-      slug,
-      localFiles,
-      dryRun,
+    if (mode !== "extract") {
+      return NextResponse.json({ error: "Unsupported mode" }, { status: 400 });
+    }
+
+    return NextResponse.json({
       metadataSource: "server-upload",
+      localFiles,
+      supportedFileCount: localFiles.length,
     });
-    return NextResponse.json(summary);
   } catch (error) {
     return NextResponse.json({ error: String(error?.message || error) }, { status: 500 });
   }

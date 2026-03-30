@@ -386,6 +386,23 @@ function gpsClusterHeatColor(ratio) {
   return `rgb(${Math.round(214 + clamped * 41)}, ${Math.round(170 + clamped * 46)}, ${Math.round(36 + clamped * 41)})`;
 }
 
+async function readJsonOrThrow(response) {
+  const raw = await response.text();
+  let payload = null;
+  try {
+    payload = raw ? JSON.parse(raw) : null;
+  } catch {
+    if (!response.ok) {
+      throw new Error(raw || `HTTP ${response.status}`);
+    }
+    throw new Error(raw || "Invalid JSON response");
+  }
+  if (!response.ok) {
+    throw new Error(payload?.error || raw || `HTTP ${response.status}`);
+  }
+  return payload;
+}
+
 function cornerIcon(short) {
   return icon({
     iconUrl: `/markers/corners/${short}.svg`,
@@ -957,8 +974,7 @@ export default function SebringLeaflet() {
           assetId: current.id,
         }),
       });
-      const payload = await res.json();
-      if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
+      const payload = await readJsonOrThrow(res);
 
       setAssignedAreaPhotos((prev) => {
         const next = { ...prev };
@@ -1776,22 +1792,44 @@ export default function SebringLeaflet() {
               dryRun: false,
             }),
           });
-          localGpsSummary = await gpsRes.json();
-          if (!gpsRes.ok) throw new Error(localGpsSummary?.error || `Local GPS import failed: HTTP ${gpsRes.status}`);
+          localGpsSummary = await readJsonOrThrow(gpsRes);
         } else {
-          const uploadBody = new FormData();
-          uploadBody.set("series", trimmedSeries);
-          uploadBody.set("slug", payload?.album_slug || trimmedSlug);
-          uploadBody.set("dryRun", "false");
-          for (const file of selectedLocalFiles) {
-            uploadBody.append("files", file, file.name);
+          const extractedMetadata = [];
+          const uploadBatchSize = 5;
+          for (let i = 0; i < selectedLocalFiles.length; i += uploadBatchSize) {
+            const batch = selectedLocalFiles.slice(i, i + uploadBatchSize);
+            const uploadBody = new FormData();
+            uploadBody.set("series", trimmedSeries);
+            uploadBody.set("slug", payload?.album_slug || trimmedSlug);
+            uploadBody.set("mode", "extract");
+            for (const file of batch) {
+              uploadBody.append("files", file, file.name);
+            }
+            const batchRes = await fetch("/api/share-album/local-gps-upload", {
+              method: "POST",
+              body: uploadBody,
+            });
+            const batchPayload = await readJsonOrThrow(batchRes);
+            if (Array.isArray(batchPayload?.localFiles)) {
+              extractedMetadata.push(...batchPayload.localFiles);
+            }
           }
-          const gpsRes = await fetch("/api/share-album/local-gps-upload", {
+
+          const gpsRes = await fetch("/api/share-album/local-gps", {
             method: "POST",
-            body: uploadBody,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              series: trimmedSeries,
+              slug: payload?.album_slug || trimmedSlug,
+              localFiles: extractedMetadata,
+              dryRun: false,
+            }),
           });
-          localGpsSummary = await gpsRes.json();
-          if (!gpsRes.ok) throw new Error(localGpsSummary?.error || `Local GPS upload import failed: HTTP ${gpsRes.status}`);
+          localGpsSummary = await readJsonOrThrow(gpsRes);
+          localGpsSummary = {
+            ...localGpsSummary,
+            metadataSource: "server-upload",
+          };
         }
       }
 
