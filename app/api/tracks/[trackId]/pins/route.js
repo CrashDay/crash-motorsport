@@ -85,6 +85,24 @@ async function getPgPinsByTrack(trackId) {
             ORDER BY a.capture_time DESC
             LIMIT 1
           ) AS cover_thumb_url
+          ,
+          (
+            SELECT saa.album_key
+            FROM pin_assets pa2
+            JOIN shared_album_assets saa ON saa.asset_id = pa2.asset_id
+            WHERE pa2.pin_id = p.pin_id
+            ORDER BY pa2.sort_order DESC NULLS LAST, pa2.added_at DESC NULLS LAST, pa2.asset_id DESC
+            LIMIT 1
+          ) AS source_album_key,
+          (
+            SELECT sa.slug
+            FROM pin_assets pa2
+            JOIN shared_album_assets saa ON saa.asset_id = pa2.asset_id
+            JOIN shared_albums sa ON sa.album_key = saa.album_key
+            WHERE pa2.pin_id = p.pin_id
+            ORDER BY pa2.sort_order DESC NULLS LAST, pa2.added_at DESC NULLS LAST, pa2.asset_id DESC
+            LIMIT 1
+          ) AS source_album_slug
         FROM photo_pins p
         LEFT JOIN pin_assets pa ON pa.pin_id = p.pin_id
         WHERE p.track_id = $1
@@ -108,6 +126,8 @@ async function getPgPinsByTrack(trackId) {
       year: Number.isFinite(Number(r.year)) ? Number(r.year) : null,
       race: r.race || null,
       cover_thumb_url: normalizeLightroomImageUrl(r.cover_thumb_url) || null,
+      source_album_key: r.source_album_key || null,
+      source_album_slug: r.source_album_slug || null,
     }));
   });
 }

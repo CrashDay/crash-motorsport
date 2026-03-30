@@ -695,6 +695,7 @@ export default function SebringLeaflet() {
   const [shareAlbumOpen, setShareAlbumOpen] = useState(false);
   const [shareAlbumChoices, setShareAlbumChoices] = useState([]);
   const [shareAlbumChoicesLoading, setShareAlbumChoicesLoading] = useState(false);
+  const [gpsDebugSlug, setGpsDebugSlug] = useState("");
   const [staleGpsPhotosLoading, setStaleGpsPhotosLoading] = useState(false);
   const [staleGpsPhotosRemoving, setStaleGpsPhotosRemoving] = useState(false);
   const [staleGpsPhotosMsg, setStaleGpsPhotosMsg] = useState("");
@@ -869,10 +870,13 @@ export default function SebringLeaflet() {
         if (!Number.isFinite(pin?.lat) || !Number.isFinite(pin?.lng)) return false;
         const yearOk = yearFilter === "all" ? true : Number(pin?.year) === Number(yearFilter);
         const raceOk = raceFilter === "all" ? true : String(pin?.race || "") === raceFilter;
-        return yearOk && raceOk;
+        const slugOk = !String(gpsDebugSlug || "").trim()
+          ? true
+          : String(pin?.source_album_slug || "").trim() === String(gpsDebugSlug || "").trim();
+        return yearOk && raceOk && slugOk;
       })
       .sort((a, b) => Number(b?.photo_count || 0) - Number(a?.photo_count || 0));
-  }, [pins, yearFilter, raceFilter]);
+  }, [pins, yearFilter, raceFilter, gpsDebugSlug]);
   const maxGpsClusterPhotoCount = useMemo(
     () => Math.max(1, ...visibleGpsPins.map((pin) => Number(pin?.photo_count || 0))),
     [visibleGpsPins]
@@ -2412,6 +2416,24 @@ export default function SebringLeaflet() {
             <div style={{ marginTop: 4, color: "#b8c4d8", fontSize: 11 }}>
               Raw GPS pins for current filters: {filteredRawGpsPins.length} | Visible clusters: {visibleGpsPins.length}
             </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>GPS debug album slug filter</div>
+              <input
+                type="text"
+                value={gpsDebugSlug}
+                onChange={(e) => setGpsDebugSlug(e.target.value)}
+                placeholder="2026-weathertech-paddock"
+                style={{
+                  width: "100%",
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  borderRadius: 8,
+                  padding: "6px 8px",
+                  fontSize: 12,
+                }}
+              />
+            </div>
             <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
               <button
                 type="button"
@@ -2454,6 +2476,9 @@ export default function SebringLeaflet() {
                     </div>
                     <div style={{ color: "#91a6cb" }}>
                       {pin.year || "No year"} | {pin.race || "No race"}
+                    </div>
+                    <div style={{ color: "#91a6cb" }}>
+                      {pin.source_album_slug || "No album slug"}
                     </div>
                   </div>
                 ))}
