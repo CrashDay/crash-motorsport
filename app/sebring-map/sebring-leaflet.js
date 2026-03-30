@@ -1706,6 +1706,10 @@ export default function SebringLeaflet() {
       setShareAlbumMsg("Album slug is required. Pick an existing album or enter a slug for a new one.");
       return;
     }
+    if (trimmedSlug === "shared-album") {
+      setShareAlbumMsg("Album slug cannot be shared-album. Enter a real slug for the album.");
+      return;
+    }
     if (!trimmedYear || !/^\d{4}$/.test(trimmedYear)) {
       setShareAlbumMsg("Year must be a 4-digit number.");
       return;
