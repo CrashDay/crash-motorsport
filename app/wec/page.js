@@ -89,9 +89,9 @@ export default async function WECIndexPage() {
           {sharedAlbums.map((album) => (
             <Link key={album.albumKey} href={`/wec/albums/${album.slug}`} style={{ textDecoration: "none", color: "#fff" }}>
               <div style={{ background: "#111", border: "1px solid #222", borderRadius: 18, overflow: "hidden", width: 320 }}>
-                {album.coverThumbUrl ? (
+                {album.coverFullUrl || album.coverThumbUrl ? (
                   <img
-                    src={toCardImage(album.coverThumbUrl)}
+                    src={toCardImage(album.coverFullUrl || album.coverThumbUrl)}
                     alt={`${album.title} cover`}
                     style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
                   />
