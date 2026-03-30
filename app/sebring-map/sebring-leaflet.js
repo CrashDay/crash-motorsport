@@ -1765,19 +1765,34 @@ export default function SebringLeaflet() {
         if (!localMetadata.length) {
           throw new Error("No supported JPG files were found in the selected export folder.");
         }
-
-        const gpsRes = await fetch("/api/share-album/local-gps", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            series: trimmedSeries,
-            slug: payload?.album_slug || trimmedSlug,
-            localFiles: localMetadata,
-            dryRun: false,
-          }),
-        });
-        localGpsSummary = await gpsRes.json();
-        if (!gpsRes.ok) throw new Error(localGpsSummary?.error || `Local GPS import failed: HTTP ${gpsRes.status}`);
+        if (Number(localGpsPrep.gpsReadableFileCount || 0) > 0) {
+          const gpsRes = await fetch("/api/share-album/local-gps", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              series: trimmedSeries,
+              slug: payload?.album_slug || trimmedSlug,
+              localFiles: localMetadata,
+              dryRun: false,
+            }),
+          });
+          localGpsSummary = await gpsRes.json();
+          if (!gpsRes.ok) throw new Error(localGpsSummary?.error || `Local GPS import failed: HTTP ${gpsRes.status}`);
+        } else {
+          const uploadBody = new FormData();
+          uploadBody.set("series", trimmedSeries);
+          uploadBody.set("slug", payload?.album_slug || trimmedSlug);
+          uploadBody.set("dryRun", "false");
+          for (const file of selectedLocalFiles) {
+            uploadBody.append("files", file, file.name);
+          }
+          const gpsRes = await fetch("/api/share-album/local-gps-upload", {
+            method: "POST",
+            body: uploadBody,
+          });
+          localGpsSummary = await gpsRes.json();
+          if (!gpsRes.ok) throw new Error(localGpsSummary?.error || `Local GPS upload import failed: HTTP ${gpsRes.status}`);
+        }
       }
 
       await Promise.all([loadPins(), loadAssignedAreaPhotos()]);
@@ -1800,7 +1815,7 @@ export default function SebringLeaflet() {
         ? ` Browser scan found GPS in ${Number(localGpsPrep?.gpsReadableFileCount || 0)} of ${Number(localGpsPrep?.selectedFileCount || 0)} selected files; skipped ${Number(localGpsPrep?.unsupportedFileCount || 0)} unsupported and ${Number(localGpsPrep?.missingGpsFileCount || 0)} without readable GPS.`
         : "";
       const localGpsText = localGpsSummary
-        ? ` Local GPS import pinned ${Number(localGpsSummary?.pinnedCount || 0)} of ${Number(localGpsSummary?.localGpsFileCount || 0)} GPS-tagged local JPGs.`
+        ? ` Local GPS import pinned ${Number(localGpsSummary?.pinnedCount || 0)} of ${Number(localGpsSummary?.localGpsFileCount || 0)} GPS-tagged local JPGs via ${localGpsSummary?.metadataSource || "browser"}.`
         : "";
       setShareAlbumMsg(
         `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}${localGpsPrepText}${localGpsText}`
