@@ -27,11 +27,22 @@ export async function POST(request) {
 
   try {
     const localFiles = [];
+    const debugSamples = [];
     for (const file of files) {
       if (!file || typeof file.arrayBuffer !== "function") continue;
       const buffer = Buffer.from(await file.arrayBuffer());
       const metadata = await readServerPhotoMetadata(buffer, file.name);
-      if (!metadata?.unsupported) localFiles.push(metadata);
+      if (!metadata?.unsupported) {
+        localFiles.push(metadata);
+        if (debugSamples.length < 5) {
+          debugSamples.push({
+            fileName: metadata.fileName,
+            captureTime: metadata.captureTime || null,
+            gps: metadata.gps || null,
+            debug: metadata.debug || null,
+          });
+        }
+      }
     }
 
     if (!localFiles.length) {
@@ -46,6 +57,7 @@ export async function POST(request) {
       metadataSource: "server-upload",
       localFiles,
       supportedFileCount: localFiles.length,
+      debugSamples,
     });
   } catch (error) {
     return NextResponse.json({ error: String(error?.message || error) }, { status: 500 });

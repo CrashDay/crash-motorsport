@@ -1756,6 +1756,7 @@ export default function SebringLeaflet() {
 
       let localGpsSummary = null;
       let localGpsPrep = null;
+      let localGpsServerDebug = [];
       if (shareAlbumLocalImportEnabled && selectedLocalFiles.length) {
         const localMetadata = [];
         let unsupportedCount = 0;
@@ -1812,6 +1813,12 @@ export default function SebringLeaflet() {
             const batchPayload = await readJsonOrThrow(batchRes);
             if (Array.isArray(batchPayload?.localFiles)) {
               extractedMetadata.push(...batchPayload.localFiles);
+            }
+            if (Array.isArray(batchPayload?.debugSamples)) {
+              for (const sample of batchPayload.debugSamples) {
+                if (localGpsServerDebug.length >= 5) break;
+                localGpsServerDebug.push(sample);
+              }
             }
           }
 
@@ -1884,6 +1891,7 @@ export default function SebringLeaflet() {
         gpsMissingDiagnostics: missingDiagnostics,
         localGpsPrep,
         localGpsImport: localGpsSummary,
+        localGpsServerDebug,
       });
       setShareAlbumShortLink("");
       setShareAlbumExistingSlug("");
