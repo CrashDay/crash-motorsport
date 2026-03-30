@@ -1189,6 +1189,10 @@ export async function POST(request) {
       albumTitleToStore = existingAlbum.title || albumTitle;
     }
 
+    if (!requestedSlug && !matchedExistingAlbumKey && slug === "shared-album") {
+      throw new Error("Album slug is required for new shared albums. Enter a stable slug before importing.");
+    }
+
     await clearSharedAlbumAssets({ db, pgClient, albumKey });
     staleAlbumRowCountRemoved = await removeStaleSharedAlbums({ db, pgClient, albumKey, series, slug });
 

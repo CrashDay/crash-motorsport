@@ -1702,6 +1702,10 @@ export default function SebringLeaflet() {
       setShareAlbumMsg("Series is required.");
       return;
     }
+    if (!trimmedSlug) {
+      setShareAlbumMsg("Album slug is required. Pick an existing album or enter a slug for a new one.");
+      return;
+    }
     if (!trimmedYear || !/^\d{4}$/.test(trimmedYear)) {
       setShareAlbumMsg("Year must be a 4-digit number.");
       return;
@@ -3236,7 +3240,7 @@ export default function SebringLeaflet() {
               </select>
             </div>
             <div style={{ marginTop: 8 }}>
-              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Album slug override (optional)</div>
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Album slug</div>
               <input
                 type="text"
                 value={shareAlbumSlug}
@@ -3257,6 +3261,9 @@ export default function SebringLeaflet() {
                   fontSize: 13,
                 }}
               />
+              <div style={{ color: "#9fb2d6", fontSize: 11, marginTop: 6 }}>
+                Required for new albums. Re-imports can fill this from the existing album picker.
+              </div>
             </div>
             <div style={{ marginTop: 8 }}>
               <div style={{ color: "#9fb2d6", fontSize: 11, marginBottom: 4 }}>Year</div>
