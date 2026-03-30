@@ -1731,12 +1731,29 @@ export default function SebringLeaflet() {
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
 
       let localGpsSummary = null;
+      let localGpsPrep = null;
       if (shareAlbumLocalImportEnabled && selectedLocalFiles.length) {
         const localMetadata = [];
+        let unsupportedCount = 0;
+        let missingGpsCount = 0;
         for (const file of selectedLocalFiles) {
           const metadata = await readBrowserPhotoMetadata(file);
-          if (!metadata?.unsupported) localMetadata.push(metadata);
+          if (metadata?.unsupported) {
+            unsupportedCount += 1;
+            continue;
+          }
+          if (!metadata?.gps) {
+            missingGpsCount += 1;
+          }
+          localMetadata.push(metadata);
         }
+        localGpsPrep = {
+          selectedFileCount: selectedLocalFiles.length,
+          supportedFileCount: localMetadata.length,
+          unsupportedFileCount: unsupportedCount,
+          gpsReadableFileCount: localMetadata.filter((item) => item?.gps).length,
+          missingGpsFileCount: missingGpsCount,
+        };
         if (!localMetadata.length) {
           throw new Error("No supported JPG files were found in the selected export folder.");
         }
@@ -1771,11 +1788,14 @@ export default function SebringLeaflet() {
             .join(", ")}.`
         : "";
       const diagnosticText = missingDiagnostics.length ? " GPS diagnostics captured for sample assets." : "";
+      const localGpsPrepText = localGpsPrep
+        ? ` Browser scan found GPS in ${Number(localGpsPrep?.gpsReadableFileCount || 0)} of ${Number(localGpsPrep?.selectedFileCount || 0)} selected files; skipped ${Number(localGpsPrep?.unsupportedFileCount || 0)} unsupported and ${Number(localGpsPrep?.missingGpsFileCount || 0)} without readable GPS.`
+        : "";
       const localGpsText = localGpsSummary
         ? ` Local GPS import pinned ${Number(localGpsSummary?.pinnedCount || 0)} of ${Number(localGpsSummary?.localGpsFileCount || 0)} GPS-tagged local JPGs.`
         : "";
       setShareAlbumMsg(
-        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}${localGpsText}`
+        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}${localGpsPrepText}${localGpsText}`
       );
       setShareAlbumDiagnostics({
         feedResourceCount: Number(payload?.feed_resource_count || 0),
@@ -1801,6 +1821,7 @@ export default function SebringLeaflet() {
         missingRenditionsCount: Number(payload?.missing_renditions_count || 0),
         missingRenditionSamples: Array.isArray(payload?.missing_rendition_samples) ? payload.missing_rendition_samples : [],
         gpsMissingDiagnostics: missingDiagnostics,
+        localGpsPrep,
         localGpsImport: localGpsSummary,
       });
       setShareAlbumShortLink("");
