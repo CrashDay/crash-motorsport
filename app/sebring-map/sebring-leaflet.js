@@ -863,10 +863,39 @@ export default function SebringLeaflet() {
     }
     return Array.from(grouped.values());
   }, [pins, yearFilter, raceFilter]);
+  const filteredRawGpsPins = useMemo(() => {
+    return pins
+      .filter((pin) => {
+        if (!Number.isFinite(pin?.lat) || !Number.isFinite(pin?.lng)) return false;
+        const yearOk = yearFilter === "all" ? true : Number(pin?.year) === Number(yearFilter);
+        const raceOk = raceFilter === "all" ? true : String(pin?.race || "") === raceFilter;
+        return yearOk && raceOk;
+      })
+      .sort((a, b) => Number(b?.photo_count || 0) - Number(a?.photo_count || 0));
+  }, [pins, yearFilter, raceFilter]);
   const maxGpsClusterPhotoCount = useMemo(
     () => Math.max(1, ...visibleGpsPins.map((pin) => Number(pin?.photo_count || 0))),
     [visibleGpsPins]
   );
+
+  const focusVisibleGpsPins = () => {
+    if (!filteredRawGpsPins.length) return;
+    const lats = filteredRawGpsPins.map((pin) => Number(pin.lat));
+    const lngs = filteredRawGpsPins.map((pin) => Number(pin.lng));
+    const north = Math.max(...lats);
+    const south = Math.min(...lats);
+    const east = Math.max(...lngs);
+    const west = Math.min(...lngs);
+    const latPad = Math.max(0.0004, (north - south) * 0.2);
+    const lngPad = Math.max(0.0004, (east - west) * 0.2);
+    setViewBounds({
+      north: north + latPad,
+      south: south - latPad,
+      east: east + lngPad,
+      west: west - lngPad,
+    });
+    setViewBoundsVersion((value) => value + 1);
+  };
 
   const closeAreaViewer = () => {
     setAreaViewer({ open: false, areaId: "", title: "", photos: [], index: 0 });
@@ -2380,6 +2409,61 @@ export default function SebringLeaflet() {
               ) : null}
             </div>
             <div style={{ marginTop: 6, color: "#b8c4d8" }}>Pins: {pinsCount}</div>
+            <div style={{ marginTop: 4, color: "#b8c4d8", fontSize: 11 }}>
+              Raw GPS pins for current filters: {filteredRawGpsPins.length} | Visible clusters: {visibleGpsPins.length}
+            </div>
+            <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+              <button
+                type="button"
+                onClick={focusVisibleGpsPins}
+                disabled={!filteredRawGpsPins.length}
+                style={{
+                  flex: 1,
+                  background: "#15233a",
+                  border: "1px solid #325080",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: !filteredRawGpsPins.length ? "default" : "pointer",
+                  fontSize: 12,
+                  opacity: !filteredRawGpsPins.length ? 0.65 : 1,
+                }}
+              >
+                Focus GPS pins
+              </button>
+            </div>
+            {filteredRawGpsPins.length ? (
+              <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                {filteredRawGpsPins.slice(0, 8).map((pin) => (
+                  <div
+                    key={`raw-gps-pin-${pin.pin_id}`}
+                    style={{
+                      background: "rgba(9, 17, 30, 0.88)",
+                      border: "1px solid rgba(120, 170, 255, 0.18)",
+                      borderRadius: 8,
+                      padding: "6px 8px",
+                      fontSize: 11,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    <div style={{ color: "#eef6ff", fontWeight: 600 }}>
+                      {pin.title || "GPS"} ({Number(pin.photo_count || 0)})
+                    </div>
+                    <div style={{ color: "#9fb2d6" }}>
+                      {Number(pin.lat).toFixed(6)}, {Number(pin.lng).toFixed(6)}
+                    </div>
+                    <div style={{ color: "#91a6cb" }}>
+                      {pin.year || "No year"} | {pin.race || "No race"}
+                    </div>
+                  </div>
+                ))}
+                {filteredRawGpsPins.length > 8 ? (
+                  <div style={{ color: "#91a6cb", fontSize: 11 }}>
+                    Showing 8 of {filteredRawGpsPins.length} raw GPS pins.
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
               <button
                 type="button"
