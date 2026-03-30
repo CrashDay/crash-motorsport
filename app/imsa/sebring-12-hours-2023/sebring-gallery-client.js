@@ -142,7 +142,7 @@ export default function SebringGalleryClient({
                 aria-label={`Open ${item.name}`}
               >
                 <img
-                  src={getDisplayImageUrl(item.thumbUrl)}
+                  src={getDisplayImageUrl(item.fullUrl)}
                   alt={item.name}
                   style={{
                     width: "100%",
