@@ -4,7 +4,7 @@ import path from "path";
 import lightroomImageUrl from "@/lib/lightroom-image-url";
 import { loadSharedAlbums } from "@/lib/shared-albums";
 
-const { normalizeLightroomImageUrl, toRemoteImageProxyUrl } = lightroomImageUrl;
+const { normalizeLightroomImageUrl } = lightroomImageUrl;
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,7 @@ function pickRandomImage(images) {
 }
 
 function toCardImage(url) {
-  return toRemoteImageProxyUrl(normalizeLightroomImageUrl(url));
+  return normalizeLightroomImageUrl(url);
 }
 
 export default async function WECIndexPage() {
@@ -91,7 +91,7 @@ export default async function WECIndexPage() {
               <div style={{ background: "#111", border: "1px solid #222", borderRadius: 18, overflow: "hidden", width: 320 }}>
                 {album.coverFullUrl || album.coverThumbUrl ? (
                   <img
-                    src={toCardImage(album.coverFullUrl || album.coverThumbUrl)}
+                    src={toCardImage(album.coverThumbUrl || album.coverFullUrl)}
                     alt={`${album.title} cover`}
                     style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
                   />
