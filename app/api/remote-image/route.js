@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const ALLOWED_HOSTS = ["photos.adobe.io"];
+const ALLOWED_HOSTS = ["photos.adobe.io", "lightroom.adobe.com"];
 const USER_AGENT = "Mozilla/5.0 (compatible; CrashDayPics/1.0; +https://crashdaypics.com)";
 
 function isAllowedUrl(rawUrl) {

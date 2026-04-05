@@ -4,7 +4,7 @@ import Link from "next/link";
 import lightroomImageUrl from "@/lib/lightroom-image-url";
 import { loadSharedAlbums } from "@/lib/shared-albums";
 
-const { normalizeLightroomImageUrl } = lightroomImageUrl;
+const { normalizeLightroomImageUrl, toRemoteImageProxyUrl } = lightroomImageUrl;
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ function pickRandomImage(prefix = "") {
 }
 
 function toCardImage(url) {
-  return normalizeLightroomImageUrl(url);
+  return toRemoteImageProxyUrl(normalizeLightroomImageUrl(url));
 }
 
 export default async function IMSAIndex() {
