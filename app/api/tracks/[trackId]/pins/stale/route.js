@@ -36,21 +36,49 @@ async function withPgClient(fn) {
 }
 
 function buildStaleGpsRows({ rows, liveSharedAssetIds }) {
+  const canonicalSharedAssetRemainders = new Set();
+  for (const entry of liveSharedAssetIds) {
+    const parsed = parseSharedAlbumAssetId(entry);
+    if (!parsed || parsed.slug === "shared-album") continue;
+    canonicalSharedAssetRemainders.add(`${parsed.series}:${parsed.remainder}`);
+  }
+
   const staleRows = [];
   for (const row of rows) {
     const assetId = String(row.asset_id || "").trim();
     if (!assetId.startsWith("shared-album:")) continue;
-    if (liveSharedAssetIds.has(assetId)) continue;
+    const parsed = parseSharedAlbumAssetId(assetId);
+    const supersededByCanonical =
+      parsed &&
+      parsed.slug === "shared-album" &&
+      canonicalSharedAssetRemainders.has(`${parsed.series}:${parsed.remainder}`);
+
+    if (liveSharedAssetIds.has(assetId) && !supersededByCanonical) continue;
     staleRows.push({
       pinId: String(row.pin_id || "").trim(),
       pinTitle: String(row.pin_title || row.pin_id || "").trim(),
       assetId,
       assetName: String(row.asset_name || assetId).trim(),
-      reason: "missing_from_current_shared_album",
+      reason: supersededByCanonical ? "superseded_placeholder_asset" : "missing_from_current_shared_album",
     });
   }
   staleRows.sort((a, b) => a.pinTitle.localeCompare(b.pinTitle) || a.assetName.localeCompare(b.assetName));
   return staleRows;
+}
+
+function parseSharedAlbumAssetId(assetId) {
+  const raw = String(assetId || "").trim();
+  if (!raw.startsWith("shared-album:")) return null;
+  const parts = raw.split(":");
+  if (parts.length < 4) return null;
+  const [, series, slug, ...rest] = parts;
+  const remainder = rest.join(":").trim();
+  if (!series || !slug || !remainder) return null;
+  return {
+    series: String(series).trim().toLowerCase(),
+    slug: String(slug).trim(),
+    remainder,
+  };
 }
 
 async function loadPgStaleGpsRows(trackId) {
