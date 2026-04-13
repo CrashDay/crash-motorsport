@@ -692,6 +692,8 @@ export default function SebringLeaflet() {
   const [shareAlbumSubmitting, setShareAlbumSubmitting] = useState(false);
   const [shareAlbumMsg, setShareAlbumMsg] = useState("");
   const [shareAlbumDiagnostics, setShareAlbumDiagnostics] = useState(null);
+  const [shareAlbumGpsPreview, setShareAlbumGpsPreview] = useState(null);
+  const [shareAlbumPendingGpsImport, setShareAlbumPendingGpsImport] = useState(null);
   const [shareAlbumOpen, setShareAlbumOpen] = useState(false);
   const [shareAlbumChoices, setShareAlbumChoices] = useState([]);
   const [shareAlbumChoicesLoading, setShareAlbumChoicesLoading] = useState(false);
@@ -1734,6 +1736,144 @@ export default function SebringLeaflet() {
     }
   };
 
+  const prepareShareAlbumLocalGpsMetadata = async ({ selectedLocalFiles, series, slug }) => {
+    const localMetadata = [];
+    const localGpsServerDebug = [];
+    let unsupportedCount = 0;
+    let missingGpsCount = 0;
+
+    for (const file of selectedLocalFiles) {
+      const metadata = await readBrowserPhotoMetadata(file);
+      if (metadata?.unsupported) {
+        unsupportedCount += 1;
+        continue;
+      }
+      if (!metadata?.gps) {
+        missingGpsCount += 1;
+      }
+      localMetadata.push(metadata);
+    }
+
+    const browserPrep = {
+      selectedFileCount: selectedLocalFiles.length,
+      supportedFileCount: localMetadata.length,
+      unsupportedFileCount: unsupportedCount,
+      gpsReadableFileCount: localMetadata.filter((item) => item?.gps).length,
+      missingGpsFileCount: missingGpsCount,
+    };
+
+    if (!localMetadata.length) {
+      throw new Error("No supported JPG files were found in the selected export folder.");
+    }
+
+    if (Number(browserPrep.gpsReadableFileCount || 0) > 0) {
+      return {
+        localFiles: localMetadata,
+        metadataSource: "browser",
+        localGpsPrep: browserPrep,
+        localGpsServerDebug,
+      };
+    }
+
+    const extractedMetadata = [];
+    const uploadBatchSize = 5;
+    for (let i = 0; i < selectedLocalFiles.length; i += uploadBatchSize) {
+      const batch = selectedLocalFiles.slice(i, i + uploadBatchSize);
+      const uploadBody = new FormData();
+      uploadBody.set("series", series);
+      uploadBody.set("slug", slug);
+      uploadBody.set("mode", "extract");
+      for (const file of batch) {
+        uploadBody.append("files", file, file.name);
+      }
+      const batchRes = await fetch("/api/share-album/local-gps-upload", {
+        method: "POST",
+        body: uploadBody,
+      });
+      const batchPayload = await readJsonOrThrow(batchRes);
+      if (Array.isArray(batchPayload?.localFiles)) {
+        extractedMetadata.push(...batchPayload.localFiles);
+      }
+      if (Array.isArray(batchPayload?.debugSamples)) {
+        for (const sample of batchPayload.debugSamples) {
+          if (localGpsServerDebug.length >= 5) break;
+          localGpsServerDebug.push(sample);
+        }
+      }
+    }
+
+    if (!extractedMetadata.length) {
+      throw new Error("No readable local JPG metadata was found after server extraction.");
+    }
+
+    return {
+      localFiles: extractedMetadata,
+      metadataSource: "server-upload",
+      localGpsPrep: {
+        ...browserPrep,
+        serverSupportedFileCount: extractedMetadata.length,
+        serverGpsReadableFileCount: extractedMetadata.filter((item) => item?.gps).length,
+      },
+      localGpsServerDebug,
+    };
+  };
+
+  const runShareAlbumLocalGpsImport = async ({ series, slug, localFiles, dryRun, metadataSource }) => {
+    const gpsRes = await fetch("/api/share-album/local-gps", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        series,
+        slug,
+        localFiles,
+        dryRun,
+      }),
+    });
+    const summary = await readJsonOrThrow(gpsRes);
+    return {
+      ...summary,
+      metadataSource: metadataSource || summary?.metadataSource || "browser",
+    };
+  };
+
+  const commitShareAlbumPreviewedGps = async () => {
+    const pending = shareAlbumPendingGpsImport;
+    if (!pending?.series || !pending?.slug || !Array.isArray(pending?.localFiles) || !pending.localFiles.length) {
+      setShareAlbumMsg("No local GPS preview is ready to import.");
+      return;
+    }
+
+    setShareAlbumSubmitting(true);
+    setShareAlbumMsg("Importing previewed local GPS pins...");
+    try {
+      const localGpsSummary = await runShareAlbumLocalGpsImport({
+        series: pending.series,
+        slug: pending.slug,
+        localFiles: pending.localFiles,
+        dryRun: false,
+        metadataSource: pending.metadataSource,
+      });
+      await Promise.all([loadPins(), loadAssignedAreaPhotos()]);
+      setShareAlbumMsg(
+        `Local GPS import pinned ${Number(localGpsSummary?.pinnedCount || 0)} of ${Number(localGpsSummary?.localGpsFileCount || 0)} GPS-tagged local JPGs via ${localGpsSummary?.metadataSource || "browser"}.`
+      );
+      setShareAlbumDiagnostics((current) => ({
+        ...(current || {}),
+        localGpsImport: localGpsSummary,
+        localGpsPrep: pending.localGpsPrep || null,
+        localGpsServerDebug: pending.localGpsServerDebug || [],
+      }));
+      setShareAlbumGpsPreview(null);
+      setShareAlbumPendingGpsImport(null);
+      setShareAlbumLocalFiles([]);
+      setShareAlbumLocalImportEnabled(false);
+    } catch (e) {
+      setShareAlbumMsg(`Share failed: ${String(e?.message || e)}`);
+    } finally {
+      setShareAlbumSubmitting(false);
+    }
+  };
+
   const submitShareAlbum = async () => {
     const trimmedShortLink = (shareAlbumShortLink || "").trim();
     const trimmedAreaId = (shareAlbumAreaId || "").trim();
@@ -1771,6 +1911,8 @@ export default function SebringLeaflet() {
     setShareAlbumSubmitting(true);
     setShareAlbumMsg("");
     setShareAlbumDiagnostics(null);
+    setShareAlbumGpsPreview(null);
+    setShareAlbumPendingGpsImport(null);
     try {
       const res = await fetch("/api/share-album", {
         method: "POST",
@@ -1787,90 +1929,34 @@ export default function SebringLeaflet() {
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
 
-      let localGpsSummary = null;
+      const finalAlbumSlug = payload?.album_slug || trimmedSlug;
       let localGpsPrep = null;
       let localGpsServerDebug = [];
+      let localGpsPreview = null;
       if (shareAlbumLocalImportEnabled && selectedLocalFiles.length) {
-        const localMetadata = [];
-        let unsupportedCount = 0;
-        let missingGpsCount = 0;
-        for (const file of selectedLocalFiles) {
-          const metadata = await readBrowserPhotoMetadata(file);
-          if (metadata?.unsupported) {
-            unsupportedCount += 1;
-            continue;
-          }
-          if (!metadata?.gps) {
-            missingGpsCount += 1;
-          }
-          localMetadata.push(metadata);
-        }
-        localGpsPrep = {
-          selectedFileCount: selectedLocalFiles.length,
-          supportedFileCount: localMetadata.length,
-          unsupportedFileCount: unsupportedCount,
-          gpsReadableFileCount: localMetadata.filter((item) => item?.gps).length,
-          missingGpsFileCount: missingGpsCount,
-        };
-        if (!localMetadata.length) {
-          throw new Error("No supported JPG files were found in the selected export folder.");
-        }
-        if (Number(localGpsPrep.gpsReadableFileCount || 0) > 0) {
-          const gpsRes = await fetch("/api/share-album/local-gps", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              series: trimmedSeries,
-              slug: payload?.album_slug || trimmedSlug,
-              localFiles: localMetadata,
-              dryRun: false,
-            }),
-          });
-          localGpsSummary = await readJsonOrThrow(gpsRes);
-        } else {
-          const extractedMetadata = [];
-          const uploadBatchSize = 5;
-          for (let i = 0; i < selectedLocalFiles.length; i += uploadBatchSize) {
-            const batch = selectedLocalFiles.slice(i, i + uploadBatchSize);
-            const uploadBody = new FormData();
-            uploadBody.set("series", trimmedSeries);
-            uploadBody.set("slug", payload?.album_slug || trimmedSlug);
-            uploadBody.set("mode", "extract");
-            for (const file of batch) {
-              uploadBody.append("files", file, file.name);
-            }
-            const batchRes = await fetch("/api/share-album/local-gps-upload", {
-              method: "POST",
-              body: uploadBody,
-            });
-            const batchPayload = await readJsonOrThrow(batchRes);
-            if (Array.isArray(batchPayload?.localFiles)) {
-              extractedMetadata.push(...batchPayload.localFiles);
-            }
-            if (Array.isArray(batchPayload?.debugSamples)) {
-              for (const sample of batchPayload.debugSamples) {
-                if (localGpsServerDebug.length >= 5) break;
-                localGpsServerDebug.push(sample);
-              }
-            }
-          }
-
-          const gpsRes = await fetch("/api/share-album/local-gps", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              series: trimmedSeries,
-              slug: payload?.album_slug || trimmedSlug,
-              localFiles: extractedMetadata,
-              dryRun: false,
-            }),
-          });
-          localGpsSummary = await readJsonOrThrow(gpsRes);
-          localGpsSummary = {
-            ...localGpsSummary,
-            metadataSource: "server-upload",
-          };
-        }
+        const prepared = await prepareShareAlbumLocalGpsMetadata({
+          selectedLocalFiles,
+          series: trimmedSeries,
+          slug: finalAlbumSlug,
+        });
+        localGpsPrep = prepared.localGpsPrep;
+        localGpsServerDebug = prepared.localGpsServerDebug;
+        localGpsPreview = await runShareAlbumLocalGpsImport({
+          series: trimmedSeries,
+          slug: finalAlbumSlug,
+          localFiles: prepared.localFiles,
+          dryRun: true,
+          metadataSource: prepared.metadataSource,
+        });
+        setShareAlbumGpsPreview(localGpsPreview);
+        setShareAlbumPendingGpsImport({
+          series: trimmedSeries,
+          slug: finalAlbumSlug,
+          localFiles: prepared.localFiles,
+          metadataSource: prepared.metadataSource,
+          localGpsPrep,
+          localGpsServerDebug,
+        });
       }
 
       await Promise.all([loadPins(), loadAssignedAreaPhotos()]);
@@ -1892,11 +1978,11 @@ export default function SebringLeaflet() {
       const localGpsPrepText = localGpsPrep
         ? ` Browser scan found GPS in ${Number(localGpsPrep?.gpsReadableFileCount || 0)} of ${Number(localGpsPrep?.selectedFileCount || 0)} selected files; skipped ${Number(localGpsPrep?.unsupportedFileCount || 0)} unsupported and ${Number(localGpsPrep?.missingGpsFileCount || 0)} without readable GPS.`
         : "";
-      const localGpsText = localGpsSummary
-        ? ` Local GPS import pinned ${Number(localGpsSummary?.pinnedCount || 0)} of ${Number(localGpsSummary?.localGpsFileCount || 0)} GPS-tagged local JPGs via ${localGpsSummary?.metadataSource || "browser"}.`
+      const localGpsPreviewText = localGpsPreview
+        ? ` Local GPS preview matched ${Number(localGpsPreview?.pinnedCount || 0)} of ${Number(localGpsPreview?.localGpsFileCount || 0)} GPS-tagged local JPGs via ${localGpsPreview?.metadataSource || "browser"}. Review the preview, then import previewed GPS pins.`
         : "";
       setShareAlbumMsg(
-        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}${localGpsPrepText}${localGpsText}`
+        `Imported ${importedCount} album photos. Pinned ${pinnedCount}. GPS in feed ${gpsFeedCount}, GPS in detail ${gpsDetailCount}, missing GPS ${gpsMissingCount}.${sampleText}${diagnosticText}${localGpsPrepText}${localGpsPreviewText}`
       );
       setShareAlbumDiagnostics({
         feedResourceCount: Number(payload?.feed_resource_count || 0),
@@ -1923,17 +2009,20 @@ export default function SebringLeaflet() {
         missingRenditionSamples: Array.isArray(payload?.missing_rendition_samples) ? payload.missing_rendition_samples : [],
         gpsMissingDiagnostics: missingDiagnostics,
         localGpsPrep,
-        localGpsImport: localGpsSummary,
+        localGpsImport: null,
+        localGpsPreview,
         localGpsServerDebug,
       });
-      setShareAlbumShortLink("");
-      setShareAlbumExistingSlug("");
-      setShareAlbumSlug("");
-      setShareAlbumYear("2023");
-      setShareAlbumRace("12 Hours of Sebring");
-      setShareAlbumAreaId("");
-      setShareAlbumLocalFiles([]);
-      setShareAlbumLocalImportEnabled(false);
+      if (!localGpsPreview) {
+        setShareAlbumShortLink("");
+        setShareAlbumExistingSlug("");
+        setShareAlbumSlug("");
+        setShareAlbumYear("2023");
+        setShareAlbumRace("12 Hours of Sebring");
+        setShareAlbumAreaId("");
+        setShareAlbumLocalFiles([]);
+        setShareAlbumLocalImportEnabled(false);
+      }
     } catch (e) {
       setShareAlbumMsg(`Share failed: ${String(e?.message || e)}`);
       setShareAlbumDiagnostics(null);
@@ -3368,6 +3457,8 @@ export default function SebringLeaflet() {
                 onChange={(e) => {
                   setShareAlbumSeries(e.target.value);
                   setShareAlbumExistingSlug("");
+                  setShareAlbumGpsPreview(null);
+                  setShareAlbumPendingGpsImport(null);
                 }}
                 style={{
                   width: "100%",
@@ -3394,6 +3485,8 @@ export default function SebringLeaflet() {
                   const nextSlug = e.target.value;
                   setShareAlbumExistingSlug(nextSlug);
                   setShareAlbumSlug(nextSlug);
+                  setShareAlbumGpsPreview(null);
+                  setShareAlbumPendingGpsImport(null);
                 }}
                 style={{
                   width: "100%",
@@ -3423,6 +3516,8 @@ export default function SebringLeaflet() {
                   if ((e.target.value || "").trim() !== shareAlbumExistingSlug) {
                     setShareAlbumExistingSlug("");
                   }
+                  setShareAlbumGpsPreview(null);
+                  setShareAlbumPendingGpsImport(null);
                 }}
                 placeholder="2026-weathertech-practice-am"
                 style={{
@@ -3516,6 +3611,8 @@ export default function SebringLeaflet() {
                   const nextFiles = Array.from(e.target.files || []);
                   setShareAlbumLocalFiles(nextFiles);
                   setShareAlbumLocalImportEnabled(nextFiles.length > 0);
+                  setShareAlbumGpsPreview(null);
+                  setShareAlbumPendingGpsImport(null);
                 }}
                 style={{
                   width: "100%",
@@ -3550,10 +3647,43 @@ export default function SebringLeaflet() {
                 type="checkbox"
                 checked={shareAlbumLocalImportEnabled}
                 disabled={!shareAlbumLocalFiles.length}
-                onChange={(e) => setShareAlbumLocalImportEnabled(e.target.checked)}
+                onChange={(e) => {
+                  setShareAlbumLocalImportEnabled(e.target.checked);
+                  if (!e.target.checked) {
+                    setShareAlbumGpsPreview(null);
+                    setShareAlbumPendingGpsImport(null);
+                  }
+                }}
               />
-              Run local GPS import from the selected JPGs after the album import finishes
+              Preview local GPS matches from the selected JPGs after the album import finishes
             </label>
+            {shareAlbumGpsPreview ? (
+              <div
+                style={{
+                  marginTop: 10,
+                  background: "#0b1422",
+                  border: "1px solid #2d456b",
+                  color: "#dfe8ff",
+                  borderRadius: 8,
+                  padding: 10,
+                  fontSize: 12,
+                  lineHeight: 1.45,
+                }}
+              >
+                <div style={{ fontWeight: 800, color: "#f5f8ff", marginBottom: 4 }}>Local GPS Preview</div>
+                <div>
+                  Matched {Number(shareAlbumGpsPreview?.pinnedCount || 0)} of {Number(shareAlbumGpsPreview?.localGpsFileCount || 0)} GPS-tagged JPGs with {Number(shareAlbumGpsPreview?.ambiguousCount || 0)} ambiguous and {Number(shareAlbumGpsPreview?.unmatchedLocalGpsCount || 0)} unmatched.
+                </div>
+                <div style={{ color: "#b8c4d8", marginTop: 4 }}>
+                  Source: {shareAlbumGpsPreview?.metadataSource || "browser"}. Filename matches: {Number(shareAlbumGpsPreview?.matchedByFilenameCount || 0)}. Capture-time matches: {Number(shareAlbumGpsPreview?.matchedByCaptureTimeCount || 0)}.
+                </div>
+                {Array.isArray(shareAlbumGpsPreview?.unmatchedSamples) && shareAlbumGpsPreview.unmatchedSamples.length ? (
+                  <div style={{ color: "#ffd1a6", marginTop: 6 }}>
+                    Unmatched sample: {shareAlbumGpsPreview.unmatchedSamples.slice(0, 3).map((item) => item?.fileName || "unknown").join(", ")}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button
                 type="button"
@@ -3570,22 +3700,41 @@ export default function SebringLeaflet() {
               >
                 Close
               </button>
+              {shareAlbumPendingGpsImport ? (
+                <button
+                  type="button"
+                  onClick={commitShareAlbumPreviewedGps}
+                  disabled={shareAlbumSubmitting}
+                  style={{
+                    background: "#183525",
+                    border: "1px solid #3c8058",
+                    color: "#fff",
+                    padding: "8px 10px",
+                    borderRadius: 8,
+                    cursor: shareAlbumSubmitting ? "default" : "pointer",
+                    fontSize: 12,
+                    opacity: shareAlbumSubmitting ? 0.7 : 1,
+                  }}
+                >
+                  Import Previewed GPS
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={submitShareAlbum}
-                disabled={shareAlbumSubmitting}
+                disabled={shareAlbumSubmitting || Boolean(shareAlbumPendingGpsImport)}
                 style={{
                   background: "#15233a",
                   border: "1px solid #325080",
                   color: "#fff",
                   padding: "8px 10px",
                   borderRadius: 8,
-                  cursor: shareAlbumSubmitting ? "default" : "pointer",
+                  cursor: shareAlbumSubmitting || shareAlbumPendingGpsImport ? "default" : "pointer",
                   fontSize: 12,
-                  opacity: shareAlbumSubmitting ? 0.7 : 1,
+                  opacity: shareAlbumSubmitting || shareAlbumPendingGpsImport ? 0.7 : 1,
                 }}
               >
-                {shareAlbumSubmitting ? "Sharing..." : "Share Album"}
+                {shareAlbumSubmitting ? "Working..." : shareAlbumPendingGpsImport ? "Preview Ready" : shareAlbumLocalImportEnabled && shareAlbumLocalFiles.length ? "Import Album & Preview GPS" : "Share Album"}
               </button>
             </div>
             {shareAlbumMsg ? (
