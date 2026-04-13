@@ -12,7 +12,9 @@
     "lint": "eslint",
     "test": "node --test",
     "import:shared-album-local-gps": "node scripts/import-shared-album-local-gps.cjs",
-    "import:shared-album-with-local-gps": "node scripts/import-shared-album-with-local-gps.cjs"
+    "import:shared-album-with-local-gps": "node scripts/import-shared-album-with-local-gps.cjs",
+    "delete:shared-albums": "node scripts/delete-shared-album-slugs.cjs",
+    "rename:shared-album-title": "node scripts/rename-shared-album-title.cjs"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
