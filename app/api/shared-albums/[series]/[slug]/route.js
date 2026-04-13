@@ -109,7 +109,7 @@ async function loadPgAlbum(series, slug) {
         FROM shared_album_assets saa
         LEFT JOIN photo_assets pa ON pa.asset_id = saa.asset_id
         WHERE saa.album_key = $1
-        ORDER BY assigned_at DESC
+        ORDER BY pa.capture_time IS NULL ASC, pa.capture_time ASC, saa.asset_name ASC, saa.assigned_at ASC
       `,
       [album.album_key]
     );
