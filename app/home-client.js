@@ -173,7 +173,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
             grid-template-columns: 1fr;
           }
           .heroImg {
-            height: 260px !important;
+            height: 320px !important;
           }
         }
 
@@ -192,13 +192,13 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
             grid-template-columns: repeat(2, 1fr);
           }
           .thumbImg {
-            height: 150px !important;
+            height: 190px !important;
           }
         }
 
         @media (max-width: 420px) {
           .thumbImg {
-            height: 135px !important;
+            height: 170px !important;
           }
         }
       `}</style>
@@ -270,7 +270,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
                 src={card.series === "imsa" ? `/photos/imsa/${card.file}` : `/photos/f1/${card.file}`}
                 alt={card.file}
                 className="heroImg"
-                style={{ width: "100%", height: 300, objectFit: "cover", display: "block" }}
+                style={{ width: "100%", height: 380, objectFit: "cover", display: "block" }}
               />
             </button>
           ))}
@@ -315,7 +315,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
                 src={`/photos/imsa/${name}`}
                 alt={name}
                 className="thumbImg"
-                style={{ width: "100%", height: 170, objectFit: "cover", display: "block" }}
+                style={{ width: "100%", height: 230, objectFit: "cover", display: "block" }}
                 loading="lazy"
               />
             </button>
@@ -356,7 +356,7 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
                 src={`/photos/f1/${name}`}
                 alt={name}
                 className="thumbImg"
-                style={{ width: "100%", height: 170, objectFit: "cover", display: "block" }}
+                style={{ width: "100%", height: 230, objectFit: "cover", display: "block" }}
                 loading="lazy"
               />
             </button>

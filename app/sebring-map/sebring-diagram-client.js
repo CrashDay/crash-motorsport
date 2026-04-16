@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const W = 1200; // SVG viewBox width
 const H = 800;  // SVG viewBox height
@@ -195,7 +195,7 @@ export default function SebringDiagramClient() {
     loadPins();
   }, []);
 
-  const loadAuthStatus = async () => {
+  const loadAuthStatus = useCallback(async () => {
     if (useMock) {
       setAuth({ loading: false, connected: false, error: "" });
       return;
@@ -208,11 +208,11 @@ export default function SebringDiagramClient() {
     } catch (e) {
       setAuth({ loading: false, connected: false, error: String(e?.message || e) });
     }
-  };
+  }, [useMock]);
 
   useEffect(() => {
     loadAuthStatus();
-  }, []);
+  }, [loadAuthStatus]);
 
   const syncMock = async () => {
     setSyncing(true);
