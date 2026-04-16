@@ -99,6 +99,9 @@ async function postAssignment(payload, retries = 2) {
 }
 
 export default function AssignPhotoToArea({ asset }) {
+  const assetId = asset?.id;
+  const assetFullUrl = asset?.fullUrl;
+  const assetThumbUrl = asset?.thumbUrl;
   const [open, setOpen] = useState(false);
   const [tracks, setTracks] = useState([]);
   const [trackId, setTrackId] = useState("sebring");
@@ -162,12 +165,12 @@ export default function AssignPhotoToArea({ asset }) {
   }, [open, trackId]);
 
   useEffect(() => {
-    if (!asset?.id) {
+    if (!assetId) {
       setAssignedByTrack({});
       return;
     }
     let cancelled = false;
-    const ids = getAssetIds(asset);
+    const ids = getAssetIds({ id: assetId, fullUrl: assetFullUrl, thumbUrl: assetThumbUrl });
     fetch("/api/photo-areas", { cache: "no-store" })
       .then((r) => r.json())
       .then(async (payload) => {
@@ -196,7 +199,7 @@ export default function AssignPhotoToArea({ asset }) {
     return () => {
       cancelled = true;
     };
-  }, [asset?.id, asset?.fullUrl, asset?.thumbUrl]);
+  }, [assetId, assetFullUrl, assetThumbUrl]);
 
   const assign = async () => {
     if (!asset?.id || !areaId || !trackId) return;

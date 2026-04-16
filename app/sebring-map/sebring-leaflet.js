@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -33,6 +33,7 @@ const CORNER_ORDER = [
 const CORNER_STORAGE_KEY = "sebring_corner_coords_v1";
 const PHOTO_AREA_STORAGE_KEY = "sebring_photo_areas_v1";
 const AREA_STYLE_STORAGE_KEY = "sebring_area_style_v1";
+const MAP_SKIN_STORAGE_KEY = "sebring_map_skin_v1";
 const DEFAULT_PHOTO_AREAS = [
   {
     id: "area-1772982986829-6a537i",
@@ -134,6 +135,106 @@ const AREA_VISUAL_MODES = [
 ];
 const AREA_OVERLAY_COLOR = "#5da2ff";
 const AREA_MARKER_COLOR = "rgb(210, 40, 40)";
+
+const MAP_SKINS = [
+  {
+    id: "night",
+    label: "Night",
+    tileUrl: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: "abcd",
+    pageBackground:
+      "radial-gradient(1200px 700px at 8% 8%, rgba(54,109,255,0.2), transparent 55%), radial-gradient(900px 600px at 88% 10%, rgba(0,200,210,0.14), transparent 55%), linear-gradient(160deg, #04070e 0%, #091322 45%, #05080f 100%)",
+    gridBackground:
+      "linear-gradient(to right, rgba(127,167,255,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(127,167,255,0.06) 1px, transparent 1px)",
+    gridOpacity: 0.18,
+    panelBg: "linear-gradient(145deg, rgba(9,18,32,0.92), rgba(8,14,26,0.78))",
+    panelSolidBg: "rgba(8,14,26,0.86)",
+    panelBorder: "rgba(137, 179, 255, 0.35)",
+    panelText: "#ecf3ff",
+    mutedText: "#c9d7ef",
+    controlBg: "#101827",
+    controlBorder: "#2a3a57",
+    buttonBg: "linear-gradient(150deg, #17335e, #123058)",
+    buttonBorder: "#75b7ff",
+    actionBg: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
+    actionBorder: "#ffb18f",
+    trackColor: "#f2f5ff",
+    areaOverlayColor: "#5da2ff",
+    areaMarkerColor: "rgb(210, 40, 40)",
+    gpsLow: [214, 170, 36],
+    gpsHigh: [255, 216, 77],
+    areaLow: [120, 10, 10],
+    areaHigh: [255, 50, 45],
+  },
+  {
+    id: "trackday",
+    label: "Track Day",
+    tileUrl: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: "abcd",
+    pageBackground:
+      "radial-gradient(1200px 700px at 10% 8%, rgba(255,106,46,0.18), transparent 55%), radial-gradient(900px 600px at 86% 12%, rgba(54,178,126,0.15), transparent 55%), linear-gradient(160deg, #0b1110 0%, #14231e 52%, #080b0a 100%)",
+    gridBackground:
+      "linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)",
+    gridOpacity: 0.16,
+    panelBg: "linear-gradient(145deg, rgba(24,31,27,0.94), rgba(11,17,15,0.84))",
+    panelSolidBg: "rgba(14,22,19,0.9)",
+    panelBorder: "rgba(116, 207, 152, 0.36)",
+    panelText: "#f2fff7",
+    mutedText: "#cce6d6",
+    controlBg: "#102019",
+    controlBorder: "#315543",
+    buttonBg: "linear-gradient(150deg, #1e5b3d, #153f2d)",
+    buttonBorder: "#85d9a8",
+    actionBg: "linear-gradient(150deg, #d94820, #9f2f1d)",
+    actionBorder: "#ffb08a",
+    trackColor: "#16261f",
+    areaOverlayColor: "#1d9f68",
+    areaMarkerColor: "#d9382f",
+    gpsLow: [234, 166, 38],
+    gpsHigh: [255, 219, 77],
+    areaLow: [58, 116, 74],
+    areaHigh: [220, 58, 47],
+  },
+  {
+    id: "paper",
+    label: "Paper",
+    tileUrl: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    subdomains: "abc",
+    pageBackground:
+      "radial-gradient(1000px 650px at 12% 10%, rgba(33,126,114,0.18), transparent 55%), radial-gradient(900px 600px at 88% 14%, rgba(214,68,45,0.14), transparent 55%), linear-gradient(160deg, #101413 0%, #eef2ec 48%, #dde6de 100%)",
+    gridBackground:
+      "linear-gradient(to right, rgba(20,36,32,0.09) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,36,32,0.08) 1px, transparent 1px)",
+    gridOpacity: 0.2,
+    panelBg: "linear-gradient(145deg, rgba(248,250,244,0.94), rgba(229,236,228,0.86))",
+    panelSolidBg: "rgba(241,246,239,0.92)",
+    panelBorder: "rgba(35, 84, 72, 0.34)",
+    panelText: "#17211e",
+    mutedText: "#344d45",
+    controlBg: "#f8faf4",
+    controlBorder: "#9bb1a6",
+    buttonBg: "linear-gradient(150deg, #1e6f5c, #164f43)",
+    buttonBorder: "#73ad9d",
+    actionBg: "linear-gradient(150deg, #d64b2d, #9c3021)",
+    actionBorder: "#f0a38b",
+    trackColor: "#123f37",
+    areaOverlayColor: "#16745f",
+    areaMarkerColor: "#c9372c",
+    gpsLow: [198, 132, 27],
+    gpsHigh: [231, 185, 54],
+    areaLow: [50, 110, 93],
+    areaHigh: [206, 55, 44],
+  },
+];
+const DEFAULT_MAP_SKIN_ID = "night";
+
+function getMapSkin(skinId) {
+  return MAP_SKINS.find((skin) => skin.id === skinId) || MAP_SKINS[0];
+}
 
 function isSharedLinkPhoto(photo) {
   const id = String(photo?.id || "").trim().toLowerCase();
@@ -286,12 +387,15 @@ function normalizePhotoArea(area) {
   };
 }
 
-function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 }) {
+function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1, skin }) {
   const center = [(bounds.north + bounds.south) / 2, (bounds.east + bounds.west) / 2];
   const rect = toLatLngBounds(bounds);
   const safeMax = Math.max(1, Number(maxPhotoCount) || 1);
   const ratio = Math.max(0, Math.min(1, (Number(photoCount) || 0) / safeMax));
-  const heatColor = `rgb(${Math.round(120 + ratio * 135)}, ${Math.round(10 + ratio * 40)}, ${Math.round(10 + ratio * 35)})`;
+  const overlayColor = skin?.areaOverlayColor || AREA_OVERLAY_COLOR;
+  const areaLow = skin?.areaLow || [120, 10, 10];
+  const areaHigh = skin?.areaHigh || [255, 50, 45];
+  const heatColor = interpolateRgb(areaLow, areaHigh, ratio);
   const photoHeatRadius = areaPhotoHeatRadiusMeters(bounds, ratio);
 
   return (
@@ -300,7 +404,7 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
         <Rectangle
           bounds={rect}
           interactive={false}
-          pathOptions={{ stroke: false, fillColor: AREA_OVERLAY_COLOR, fillOpacity: 0.16 }}
+          pathOptions={{ stroke: false, fillColor: overlayColor, fillOpacity: 0.16 }}
         />
       ) : null}
 
@@ -309,12 +413,12 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
           <Rectangle
             bounds={rect}
             interactive={false}
-            pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 6, opacity: 0.22, fillOpacity: 0 }}
+            pathOptions={{ color: overlayColor, weight: 6, opacity: 0.22, fillOpacity: 0 }}
           />
           <Rectangle
             bounds={rect}
             interactive={false}
-            pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
+            pathOptions={{ color: overlayColor, weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
           />
         </Fragment>
       ) : null}
@@ -322,7 +426,7 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
       {mode === "corner_brackets" ? (
         <Fragment>
           {bracketLines(bounds).map((line, i) => (
-            <Polyline key={`${title}-br-${i}`} positions={line} interactive={false} pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 3 }} />
+            <Polyline key={`${title}-br-${i}`} positions={line} interactive={false} pathOptions={{ color: overlayColor, weight: 3 }} />
           ))}
         </Fragment>
       ) : null}
@@ -333,13 +437,13 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
             center={center}
             radius={heatRadiusMeters(bounds)}
             interactive={false}
-            pathOptions={{ stroke: false, fillColor: AREA_OVERLAY_COLOR, fillOpacity: 0.13 }}
+            pathOptions={{ stroke: false, fillColor: overlayColor, fillOpacity: 0.13 }}
           />
           <Circle
             center={center}
             radius={heatRadiusMeters(bounds) * 0.55}
             interactive={false}
-            pathOptions={{ stroke: false, fillColor: AREA_OVERLAY_COLOR, fillOpacity: 0.2 }}
+            pathOptions={{ stroke: false, fillColor: overlayColor, fillOpacity: 0.2 }}
           />
         </Fragment>
       ) : null}
@@ -350,7 +454,7 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
             bounds={rect}
             interactive={false}
             pathOptions={{
-              color: AREA_OVERLAY_COLOR,
+              color: overlayColor,
               weight: 2,
               opacity: 0.9,
               fillOpacity: 0.12 + ratio * 0.2,
@@ -372,7 +476,7 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
         </Fragment>
       ) : null}
 
-      <Rectangle bounds={rect} interactive pathOptions={{ color: AREA_OVERLAY_COLOR, weight: 0, fillOpacity: 0, opacity: 0 }}>
+      <Rectangle bounds={rect} interactive pathOptions={{ color: overlayColor, weight: 0, fillOpacity: 0, opacity: 0 }}>
         <Tooltip sticky direction="top" opacity={0.95}>
           {mode === "photo_heatmap" ? `${title} - ${photoCount} photo${photoCount === 1 ? "" : "s"}` : title}
         </Tooltip>
@@ -381,9 +485,26 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1 })
   );
 }
 
-function gpsClusterHeatColor(ratio) {
+function interpolateRgb(low, high, ratio) {
   const clamped = Math.max(0, Math.min(1, Number(ratio) || 0));
-  return `rgb(${Math.round(214 + clamped * 41)}, ${Math.round(170 + clamped * 46)}, ${Math.round(36 + clamped * 41)})`;
+  return `rgb(${Math.round(low[0] + (high[0] - low[0]) * clamped)}, ${Math.round(low[1] + (high[1] - low[1]) * clamped)}, ${Math.round(low[2] + (high[2] - low[2]) * clamped)})`;
+}
+
+function colorWithAlpha(color, alpha) {
+  const value = String(color || "").trim();
+  const hex = value.match(/^#([0-9a-f]{6})$/i);
+  if (hex) {
+    const int = Number.parseInt(hex[1], 16);
+    const r = (int >> 16) & 255;
+    const g = (int >> 8) & 255;
+    const b = int & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return value.replace(/^rgb\(([^)]+)\)$/i, `rgba($1, ${alpha})`) || `rgba(255, 255, 255, ${alpha})`;
+}
+
+function gpsClusterHeatColor(ratio, skin) {
+  return interpolateRgb(skin?.gpsLow || [214, 170, 36], skin?.gpsHigh || [255, 216, 77], ratio);
 }
 
 async function readJsonOrThrow(response) {
@@ -611,6 +732,17 @@ export default function SebringLeaflet() {
     areas: false,
     corner: false,
   });
+  const [mapSkinId, setMapSkinId] = useState(() => {
+    if (typeof window === "undefined") return DEFAULT_MAP_SKIN_ID;
+    try {
+      const raw = window.localStorage.getItem(MAP_SKIN_STORAGE_KEY);
+      if (raw && MAP_SKINS.some((skin) => skin.id === raw)) return raw;
+    } catch {
+      // ignore localStorage read errors
+    }
+    return DEFAULT_MAP_SKIN_ID;
+  });
+  const mapSkin = useMemo(() => getMapSkin(mapSkinId), [mapSkinId]);
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [pickMode, setPickMode] = useState(false);
@@ -770,6 +902,11 @@ export default function SebringLeaflet() {
   useEffect(() => {
     setAreaStyleDraft(areaVisualMode);
   }, [areaVisualMode]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(MAP_SKIN_STORAGE_KEY, mapSkin.id);
+  }, [mapSkin.id]);
 
   const allAreaRowsBase = [
     {
@@ -1414,7 +1551,7 @@ export default function SebringLeaflet() {
       .filter(Boolean);
   };
 
-  const loadAuthStatus = async () => {
+  const loadAuthStatus = useCallback(async () => {
     if (useMock || useLocalExports) {
       setAuth({ loading: false, connected: false, error: "" });
       return;
@@ -1427,7 +1564,7 @@ export default function SebringLeaflet() {
     } catch (e) {
       setAuth({ loading: false, connected: false, error: String(e?.message || e) });
     }
-  };
+  }, [useLocalExports, useMock]);
 
   const syncMock = async () => {
     setSyncing(true);
@@ -1653,7 +1790,7 @@ export default function SebringLeaflet() {
   useEffect(() => {
     loadPins();
     loadAuthStatus();
-  }, []);
+  }, [loadAuthStatus]);
 
   useEffect(() => {
     if (!shareAlbumOpen || !shareAlbumSeries) return;
@@ -2039,19 +2176,19 @@ export default function SebringLeaflet() {
       if (t === "Polygon" || t === "MultiPolygon") {
         return {
           fillOpacity: 0,
-          color: "#f2f5ff",
+          color: mapSkin.trackColor,
           opacity: 0.95,
           weight: 3,
         };
       }
 
       return {
-        color: "#f2f5ff",
+        color: mapSkin.trackColor,
         opacity: 0.95,
         weight: 4,
       };
     };
-  }, []);
+  }, [mapSkin.trackColor]);
 
   const currentAreaViewerPhoto =
     areaViewer.open && areaViewer.photos.length ? areaViewer.photos[areaViewer.index] : null;
@@ -2062,8 +2199,7 @@ export default function SebringLeaflet() {
         height: "100vh",
         width: "100%",
         position: "relative",
-        background:
-          "radial-gradient(1200px 700px at 8% 8%, rgba(54,109,255,0.2), transparent 55%), radial-gradient(900px 600px at 88% 10%, rgba(0,200,210,0.14), transparent 55%), linear-gradient(160deg, #04070e 0%, #091322 45%, #05080f 100%)",
+        background: mapSkin.pageBackground,
         overflow: "hidden",
       }}
     >
@@ -2071,10 +2207,9 @@ export default function SebringLeaflet() {
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "linear-gradient(to right, rgba(127,167,255,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(127,167,255,0.06) 1px, transparent 1px)",
+          backgroundImage: mapSkin.gridBackground,
           backgroundSize: "40px 40px",
-          opacity: 0.18,
+          opacity: mapSkin.gridOpacity,
           pointerEvents: "none",
         }}
       />
@@ -2084,8 +2219,8 @@ export default function SebringLeaflet() {
           zIndex: 10000,
           top: 12,
           left: 64,
-          background: "linear-gradient(145deg, rgba(9,18,32,0.92), rgba(8,14,26,0.78))",
-          border: "1px solid rgba(137, 179, 255, 0.35)",
+          background: mapSkin.panelBg,
+          border: `1px solid ${mapSkin.panelBorder}`,
           borderRadius: 12,
           boxShadow: "0 14px 32px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.04)",
           backdropFilter: "blur(8px)",
@@ -2097,17 +2232,17 @@ export default function SebringLeaflet() {
           maxWidth: "calc(100vw - 24px)",
         }}
       >
-        <Link href="/" style={{ color: "#ecf3ff", textDecoration: "none", fontSize: 12, fontWeight: 700, letterSpacing: 0.4 }}>
+        <Link href="/" style={{ color: mapSkin.panelText, textDecoration: "none", fontSize: 12, fontWeight: 700, letterSpacing: 0.4 }}>
           Home
         </Link>
-        <a href="/imsa" style={{ color: "#c9d7ef", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
+        <a href="/imsa" style={{ color: mapSkin.mutedText, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
           IMSA
         </a>
-        <a href="/f1" style={{ color: "#c9d7ef", textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
+        <a href="/f1" style={{ color: mapSkin.mutedText, textDecoration: "none", fontSize: 12, fontWeight: 600 }}>
           F1
         </a>
         <details style={{ position: "relative" }}>
-          <summary style={{ cursor: "pointer", color: "#c9d7ef", listStyle: "none", fontSize: 12, fontWeight: 600 }}>
+          <summary style={{ cursor: "pointer", color: mapSkin.mutedText, listStyle: "none", fontSize: 12, fontWeight: 600 }}>
             Maps
           </summary>
           <div
@@ -2116,21 +2251,21 @@ export default function SebringLeaflet() {
               top: "calc(100% + 8px)",
               left: 0,
               minWidth: 240,
-              background: "#0f1724",
-              border: "1px solid #22304a",
+              background: mapSkin.controlBg,
+              border: `1px solid ${mapSkin.controlBorder}`,
               borderRadius: 10,
               padding: "8px 0",
               boxShadow: "0 12px 28px rgba(0,0,0,0.5)",
             }}
           >
             <a
-              style={{ display: "block", color: "#dfe8ff", textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
+              style={{ display: "block", color: mapSkin.panelText, textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
               href="/sebring-map"
             >
               Sebring International Raceway
             </a>
             <a
-              style={{ display: "block", color: "#dfe8ff", textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
+              style={{ display: "block", color: mapSkin.panelText, textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
               href="/daniels-park"
             >
               Daniels Park
@@ -2146,9 +2281,9 @@ export default function SebringLeaflet() {
           top: 12,
           left: "50%",
           transform: "translateX(-50%)",
-          background: "linear-gradient(145deg, rgba(9,18,32,0.92), rgba(8,14,26,0.78))",
-          color: "#ecf3ff",
-          border: "1px solid rgba(137, 179, 255, 0.35)",
+          background: mapSkin.panelBg,
+          color: mapSkin.panelText,
+          border: `1px solid ${mapSkin.panelBorder}`,
           borderRadius: 14,
           boxShadow: "0 14px 38px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.04)",
           backdropFilter: "blur(8px)",
@@ -2183,20 +2318,20 @@ export default function SebringLeaflet() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 6,
-            background: "rgba(8,14,26,0.86)",
-            border: "1px solid rgba(137, 179, 255, 0.32)",
+            background: mapSkin.panelSolidBg,
+            border: `1px solid ${mapSkin.panelBorder}`,
             borderRadius: 12,
             padding: "6px 10px",
           }}
         >
-          <span style={{ color: "#c7d6ef", fontSize: 11, fontWeight: 700, letterSpacing: 0.2, flexShrink: 0 }}>Year</span>
+          <span style={{ color: mapSkin.mutedText, fontSize: 11, fontWeight: 700, letterSpacing: 0.2, flexShrink: 0 }}>Year</span>
           <select
             value={yearFilter}
             onChange={(e) => setYearFilter(e.target.value)}
             style={{
-              background: "#101827",
-              border: "1px solid #2a3a57",
-              color: "#fff",
+              background: mapSkin.controlBg,
+              border: `1px solid ${mapSkin.controlBorder}`,
+              color: mapSkin.panelText,
               borderRadius: 999,
               padding: "4px 10px",
               fontSize: 12,
@@ -2219,20 +2354,20 @@ export default function SebringLeaflet() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 6,
-            background: "rgba(8,14,26,0.86)",
-            border: "1px solid rgba(137, 179, 255, 0.32)",
+            background: mapSkin.panelSolidBg,
+            border: `1px solid ${mapSkin.panelBorder}`,
             borderRadius: 12,
             padding: "6px 10px",
           }}
         >
-          <span style={{ color: "#c7d6ef", fontSize: 11, fontWeight: 700, letterSpacing: 0.2, flexShrink: 0 }}>Race</span>
+          <span style={{ color: mapSkin.mutedText, fontSize: 11, fontWeight: 700, letterSpacing: 0.2, flexShrink: 0 }}>Race</span>
           <select
             value={raceFilter}
             onChange={(e) => setRaceFilter(e.target.value)}
             style={{
-              background: "#101827",
-              border: "1px solid #2a3a57",
-              color: "#fff",
+              background: mapSkin.controlBg,
+              border: `1px solid ${mapSkin.controlBorder}`,
+              color: mapSkin.panelText,
               borderRadius: 999,
               padding: "4px 10px",
               fontSize: 12,
@@ -2261,39 +2396,61 @@ export default function SebringLeaflet() {
           gap: 12,
           flexWrap: "wrap",
           justifyContent: "flex-end",
-          background: "rgba(8,14,26,0.86)",
-          border: "1px solid rgba(137, 179, 255, 0.32)",
+          background: mapSkin.panelSolidBg,
+          border: `1px solid ${mapSkin.panelBorder}`,
           borderRadius: 999,
           padding: "6px 12px",
           maxWidth: "min(360px, calc(100vw - 24px))",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#dfe8ff", fontSize: 11, fontWeight: 700 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: mapSkin.panelText, fontSize: 11, fontWeight: 700 }}>
           <span
             style={{
               width: 12,
               height: 12,
               borderRadius: 999,
-              background: "rgb(210, 40, 40)",
-              boxShadow: "0 0 0 6px rgba(210, 40, 40, 0.18)",
+              background: mapSkin.areaMarkerColor,
+              boxShadow: `0 0 0 6px ${colorWithAlpha(mapSkin.areaMarkerColor, 0.18)}`,
               display: "inline-block",
             }}
           />
           Photo Areas
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#dfe8ff", fontSize: 11, fontWeight: 700 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: mapSkin.panelText, fontSize: 11, fontWeight: 700 }}>
           <span
             style={{
               width: 12,
               height: 12,
               borderRadius: 999,
-              background: "#ffd84d",
-              boxShadow: "0 0 0 6px rgba(255, 216, 77, 0.2)",
+              background: interpolateRgb(mapSkin.gpsHigh, mapSkin.gpsHigh, 1),
+              boxShadow: `0 0 0 6px rgba(${mapSkin.gpsHigh.join(", ")}, 0.2)`,
               display: "inline-block",
             }}
           />
           Geo Located
         </div>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, color: mapSkin.panelText, fontSize: 11, fontWeight: 700 }}>
+          Skin
+          <select
+            value={mapSkin.id}
+            onChange={(event) => setMapSkinId(event.target.value)}
+            style={{
+              background: mapSkin.controlBg,
+              border: `1px solid ${mapSkin.controlBorder}`,
+              color: mapSkin.panelText,
+              borderRadius: 999,
+              padding: "4px 8px",
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            {MAP_SKINS.map((skin) => (
+              <option key={skin.id} value={skin.id}>
+                {skin.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       <div
         style={{
@@ -2316,8 +2473,8 @@ export default function SebringLeaflet() {
             setShareMsg("");
           }}
           style={{
-            background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
-            border: "1px solid #ffb18f",
+            background: mapSkin.actionBg,
+            border: `1px solid ${mapSkin.actionBorder}`,
             color: "#fff",
             padding: "7px 10px",
             borderRadius: 999,
@@ -2339,8 +2496,8 @@ export default function SebringLeaflet() {
             setShareAlbumDiagnostics(null);
           }}
           style={{
-            background: "linear-gradient(150deg, #ff6a2e, #ff3d00)",
-            border: "1px solid #ffb18f",
+            background: mapSkin.actionBg,
+            border: `1px solid ${mapSkin.actionBorder}`,
             color: "#fff",
             padding: "7px 10px",
             borderRadius: 999,
@@ -2377,8 +2534,8 @@ export default function SebringLeaflet() {
               type="button"
               onClick={() => setToolsVisible((v) => !v)}
               style={{
-                background: "linear-gradient(150deg, #17335e, #123058)",
-                border: "1px solid #75b7ff",
+                background: mapSkin.buttonBg,
+                border: `1px solid ${mapSkin.buttonBorder}`,
                 color: "#fff",
                 padding: "8px 10px",
                 borderRadius: 10,
@@ -2398,12 +2555,12 @@ export default function SebringLeaflet() {
                 zIndex: 9999,
                 bottom: 78,
                 right: 12,
-                background: "linear-gradient(165deg, rgba(8,15,27,0.95), rgba(7,12,21,0.88))",
-                color: "#f4f8ff",
+                background: mapSkin.panelBg,
+                color: mapSkin.panelText,
                 padding: "12px 12px",
                 borderRadius: 14,
                 fontSize: 12,
-                border: "1px solid rgba(120, 170, 255, 0.36)",
+                border: `1px solid ${mapSkin.panelBorder}`,
                 boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
                 backdropFilter: "blur(10px)",
                 width: "min(340px, calc(100vw - 24px))",
@@ -3777,9 +3934,10 @@ export default function SebringLeaflet() {
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          subdomains="abcd"
+          key={mapSkin.id}
+          attribution={mapSkin.attribution}
+          url={mapSkin.tileUrl}
+          subdomains={mapSkin.subdomains}
           maxZoom={20}
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
@@ -3808,7 +3966,7 @@ export default function SebringLeaflet() {
         {visibleGpsPins.map((pin) => (
           (() => {
             const ratio = Math.max(0, Math.min(1, Number(pin.photo_count || 0) / maxGpsClusterPhotoCount));
-            const heatColor = gpsClusterHeatColor(ratio);
+            const heatColor = gpsClusterHeatColor(ratio, mapSkin);
             const outerRadius = 15 + ratio * 20;
             const innerRadius = 7 + ratio * 10;
             const coreRadius = Math.max(4, 8 - ratio * 3.2);
@@ -3880,12 +4038,13 @@ export default function SebringLeaflet() {
               mode={areaVisualMode}
               photoCount={Array.isArray(area.photos) ? area.photos.length : 0}
               maxPhotoCount={maxAreaPhotoCount}
+              skin={mapSkin}
             />
             {Array.isArray(area.photos) && area.photos.length > 0 ? (
               <CircleMarker
                 center={Array.isArray(area.center) ? area.center : [((area.bounds.north + area.bounds.south) / 2), ((area.bounds.east + area.bounds.west) / 2)]}
                 radius={3}
-                pathOptions={{ color: AREA_MARKER_COLOR, fillColor: AREA_MARKER_COLOR, fillOpacity: 0.9 }}
+                pathOptions={{ color: mapSkin.areaMarkerColor, fillColor: mapSkin.areaMarkerColor, fillOpacity: 0.9 }}
               >
                 <Popup maxWidth={720} minWidth={220}>
                   <div style={{ width: "min(600px, 90vw)", overflow: "hidden", borderRadius: 12 }}>

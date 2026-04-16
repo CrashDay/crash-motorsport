@@ -1,3 +1,4 @@
+import { randomInt } from "crypto";
 import HomeClient from "./home-client";
 import imsaImages from "@/data/imsa-images.json";
 import f1Images from "@/data/f1-images.json";
@@ -23,7 +24,7 @@ function selectByPrefix(images, prefix = "") {
 function sampleUnique(arr, n) {
   const copy = arr.slice();
   for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = randomInt(i + 1);
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy.slice(0, Math.min(n, copy.length));
@@ -31,7 +32,7 @@ function sampleUnique(arr, n) {
 
 function pickRandom(arr) {
   if (!arr.length) return null;
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[randomInt(arr.length)];
 }
 
 export default function Page() {
@@ -72,7 +73,8 @@ export default function Page() {
   while (heroCards.length < 3) {
     const pool = imsaAll.length ? "imsa" : f1All.length ? "f1" : null;
     if (!pool) break;
-    const file = pool === "imsa" ? imsaAll[Math.floor(Math.random() * imsaAll.length)] : f1All[Math.floor(Math.random() * f1All.length)];
+    const source = pool === "imsa" ? imsaAll : f1All;
+    const file = source[randomInt(source.length)];
     heroCards.push({ series: pool, file });
   }
 

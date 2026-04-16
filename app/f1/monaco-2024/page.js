@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
 
@@ -85,7 +86,7 @@ export default function F1Monaco2024() {
           borderBottom: "1px solid #222",
         }}
       >
-        <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", color: "#fff" }}>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
             <span style={{ fontSize: "clamp(22px, 3.4vw, 42px)", fontWeight: 900, letterSpacing: 0.2 }}>
               CrashDayPics
@@ -94,7 +95,7 @@ export default function F1Monaco2024() {
               Mapped by corner, light and speed.
             </span>
           </div>
-        </a>
+        </Link>
         <a href="/f1" style={{ color: "#bbb", textDecoration: "none" }}>
           {"<- Back to F1"}
         </a>

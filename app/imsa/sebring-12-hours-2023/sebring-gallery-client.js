@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AssignPhotoToArea from "@/app/components/assign-photo-to-area";
 import lightroomImageUrl from "@/lib/lightroom-image-url";
 
@@ -22,10 +22,6 @@ function buildImageCandidates(fullUrl, thumbUrl) {
 function ResilientImage({ alt, candidates, ...props }) {
   const [candidateIndex, setCandidateIndex] = useState(0);
   const activeSrc = candidates[candidateIndex] || "";
-
-  useEffect(() => {
-    setCandidateIndex(0);
-  }, [candidates]);
 
   if (!activeSrc) return null;
 
@@ -56,48 +52,52 @@ export default function SebringGalleryClient({
   assetYear = null,
   assetRace = "",
 }) {
-  const items = [
-    ...images.map((name) => {
-      const src = `${basePath}/${name}`;
-      return {
-        id: `${assetSeries}:${name}`,
-        name,
-        thumbUrl: src,
-        fullUrl: src,
-        year: assetYear,
-        race: assetRace,
-      };
-    }),
-    ...sharedAssets.map((asset) => ({
-      id: String(asset?.id || ""),
-      name: String(asset?.name || asset?.id || "Shared album photo"),
-      thumbUrl: String(asset?.thumbUrl || asset?.fullUrl || "").trim(),
-      fullUrl: String(asset?.fullUrl || asset?.thumbUrl || "").trim(),
-      imageCandidates: buildImageCandidates(asset?.fullUrl, asset?.thumbUrl),
-      year: asset?.year ?? assetYear,
-      race: asset?.race || assetRace,
-    })),
-  ].filter((item) => item.id && item.thumbUrl && item.fullUrl);
+  const items = useMemo(
+    () =>
+      [
+        ...images.map((name) => {
+          const src = `${basePath}/${name}`;
+          return {
+            id: `${assetSeries}:${name}`,
+            name,
+            thumbUrl: src,
+            fullUrl: src,
+            year: assetYear,
+            race: assetRace,
+          };
+        }),
+        ...sharedAssets.map((asset) => ({
+          id: String(asset?.id || ""),
+          name: String(asset?.name || asset?.id || "Shared album photo"),
+          thumbUrl: String(asset?.thumbUrl || asset?.fullUrl || "").trim(),
+          fullUrl: String(asset?.fullUrl || asset?.thumbUrl || "").trim(),
+          imageCandidates: buildImageCandidates(asset?.fullUrl, asset?.thumbUrl),
+          year: asset?.year ?? assetYear,
+          race: asset?.race || assetRace,
+        })),
+      ].filter((item) => item.id && item.thumbUrl && item.fullUrl),
+    [assetRace, assetSeries, assetYear, basePath, images, sharedAssets]
+  );
   const [openIndex, setOpenIndex] = useState(null);
   const isOpen = openIndex !== null;
 
-  function close() {
+  const close = useCallback(() => {
     setOpenIndex(null);
-  }
+  }, []);
 
-  function prev() {
+  const prev = useCallback(() => {
     setOpenIndex((i) => {
       if (i === null || !items.length) return i;
       return (i - 1 + items.length) % items.length;
     });
-  }
+  }, [items.length]);
 
-  function next() {
+  const next = useCallback(() => {
     setOpenIndex((i) => {
       if (i === null || !items.length) return i;
       return (i + 1) % items.length;
     });
-  }
+  }, [items.length]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -116,10 +116,13 @@ export default function SebringGalleryClient({
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prevOverflow;
     };
-  }, [isOpen]);
+  }, [close, isOpen, next, prev]);
 
   const activeItem = openIndex !== null ? items[openIndex] : null;
   const activeName = activeItem?.name || null;
+  const activeCandidates = activeItem
+    ? activeItem.imageCandidates || buildImageCandidates(activeItem.fullUrl, activeItem.thumbUrl)
+    : [];
   const activeAsset = activeItem
     ? {
         id: activeItem.id,
@@ -172,18 +175,24 @@ export default function SebringGalleryClient({
                 }}
                 aria-label={`Open ${item.name}`}
               >
-                <ResilientImage
-                  candidates={item.imageCandidates || buildImageCandidates(item.fullUrl, item.thumbUrl)}
-                  alt={item.name}
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    aspectRatio: "4 / 3",
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                  loading="lazy"
-                />
+                {(() => {
+                  const candidates = item.imageCandidates || buildImageCandidates(item.fullUrl, item.thumbUrl);
+                  return (
+                    <ResilientImage
+                      key={candidates.join("|")}
+                      candidates={candidates}
+                      alt={item.name}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        aspectRatio: "4 / 3",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                      loading="lazy"
+                    />
+                  );
+                })()}
               </button>
             ))}
           </div>
@@ -292,7 +301,8 @@ export default function SebringGalleryClient({
           </button>
 
           <ResilientImage
-            candidates={activeItem?.imageCandidates || buildImageCandidates(activeItem?.fullUrl, activeItem?.thumbUrl)}
+            key={activeCandidates.join("|")}
+            candidates={activeCandidates}
             alt={activeName || "Selected image"}
             style={{
               maxWidth: "calc(100vw - 120px)",
