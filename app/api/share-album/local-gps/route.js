@@ -13,6 +13,7 @@ export async function POST(request) {
 
   const series = String(body?.series || "").trim().toLowerCase();
   const slug = String(body?.slug || "").trim();
+  const trackId = String(body?.trackId || "sebring").trim().toLowerCase();
   const dryRun = Boolean(body?.dryRun);
   const localFiles = normalizeLocalGpsFiles(body?.localFiles);
 
@@ -27,6 +28,7 @@ export async function POST(request) {
     const summary = await runLocalGpsImport({
       series,
       slug,
+      trackId,
       localFiles,
       dryRun,
       metadataSource: "browser",

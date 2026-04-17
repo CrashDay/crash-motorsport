@@ -19,7 +19,7 @@ import { isValidSharedAlbumSeries, slugifyAlbumTitle } from "@/lib/shared-albums
 
 const { normalizeLightroomImageUrl } = lightroomImageUrl;
 
-const TRACK_ID = "sebring";
+const DEFAULT_TRACK_ID = "sebring";
 const STATIC_AREA_IDS = new Set(sebringAreas.map((a) => a.id));
 const SHARE_HOSTS = new Set(["adobe.ly", "lightroom.adobe.com"]);
 const MAX_ALBUM_ASSETS = 500;
@@ -576,7 +576,7 @@ async function fetchSharedAssetDetail(resource, assetsBase) {
   return null;
 }
 
-async function storeAreaAssignment({ db, pgClient = null, areaId, assetId, name, thumbUrl, fullUrl, year, race, assignedAt }) {
+async function storeAreaAssignment({ db, pgClient = null, trackId, areaId, assetId, name, thumbUrl, fullUrl, year, race, assignedAt }) {
   if (!areaId) return;
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
@@ -593,7 +593,7 @@ async function storeAreaAssignment({ db, pgClient = null, areaId, assetId, name,
             race = EXCLUDED.race,
             assigned_at = EXCLUDED.assigned_at
         `,
-        [TRACK_ID, areaId, assetId, name, thumbUrl, fullUrl, year, race, assignedAt]
+        [trackId, areaId, assetId, name, thumbUrl, fullUrl, year, race, assignedAt]
       );
     };
     if (pgClient) {
@@ -607,7 +607,7 @@ async function storeAreaAssignment({ db, pgClient = null, areaId, assetId, name,
     throw new Error("Durable storage is not configured. Set a Postgres connection in Vercel env vars.");
   }
   assignAreaAsset(db, {
-    track_id: TRACK_ID,
+    track_id: trackId,
     area_id: areaId,
     asset_id: assetId,
     asset_name: name,
@@ -619,7 +619,7 @@ async function storeAreaAssignment({ db, pgClient = null, areaId, assetId, name,
   });
 }
 
-async function storePhotoAsset({ db, pgClient = null, assetId, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt }) {
+async function storePhotoAsset({ db, pgClient = null, trackId, assetId, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
     const run = async (client) => {
@@ -638,7 +638,7 @@ async function storePhotoAsset({ db, pgClient = null, assetId, captureTime, altT
             last_synced_at = EXCLUDED.last_synced_at,
             catalog_id = EXCLUDED.catalog_id
         `,
-        [assetId, TRACK_ID, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt]
+        [assetId, trackId, captureTime, altText, thumbUrl, fullUrl, year, race, lastSyncedAt]
       );
     };
     if (pgClient) {
@@ -650,7 +650,7 @@ async function storePhotoAsset({ db, pgClient = null, assetId, captureTime, altT
   }
   upsertPhotoAsset(db, {
     asset_id: assetId,
-    track_id: TRACK_ID,
+    track_id: trackId,
     capture_time: captureTime,
     alt_text_snapshot: altText,
     thumb_url: thumbUrl,
@@ -662,7 +662,7 @@ async function storePhotoAsset({ db, pgClient = null, assetId, captureTime, altT
   });
 }
 
-async function storeGpsPin({ db, pgClient = null, pinId, anchorX, anchorY, lat, lng, title }) {
+async function storeGpsPin({ db, pgClient = null, trackId, pinId, anchorX, anchorY, lat, lng, title }) {
   if (hasPostgresConfig()) {
     await ensurePostgresSchema();
     const run = async (client) => {
@@ -677,7 +677,7 @@ async function storeGpsPin({ db, pgClient = null, pinId, anchorX, anchorY, lat, 
             lng = EXCLUDED.lng,
             title = EXCLUDED.title
         `,
-        [pinId, TRACK_ID, anchorX, anchorY, lat, lng, "gps", title]
+        [pinId, trackId, anchorX, anchorY, lat, lng, "gps", title]
       );
     };
     if (pgClient) {
@@ -689,7 +689,7 @@ async function storeGpsPin({ db, pgClient = null, pinId, anchorX, anchorY, lat, 
   }
   upsertGpsPin(db, {
     pin_id: pinId,
-    track_id: TRACK_ID,
+    track_id: trackId,
     anchor_x: anchorX,
     anchor_y: anchorY,
     lat,
@@ -1065,6 +1065,7 @@ export async function POST(request) {
   const areaId = String(body?.areaId || "").trim();
   const series = String(body?.series || "").trim().toLowerCase();
   const requestedSlug = slugifyAlbumTitle(body?.slug || "");
+  const trackId = String(body?.trackId || DEFAULT_TRACK_ID).trim().toLowerCase();
   const year = normalizeYear(body?.year);
   const race = normalizeRace(body?.race);
 
@@ -1138,7 +1139,7 @@ export async function POST(request) {
 
   const db = getDb();
   const nowIso = new Date().toISOString();
-  const projector = getProjectorForTrack(TRACK_ID);
+  const projector = getProjectorForTrack(trackId);
   let pgClient = null;
   let imported = 0;
   let assigned = 0;
@@ -1284,6 +1285,7 @@ export async function POST(request) {
       await storePhotoAsset({
         db,
         pgClient,
+        trackId,
         assetId: sharedAssetId,
         captureTime,
         altText: `${albumTitle} via Lightroom shared album`,
@@ -1314,6 +1316,7 @@ export async function POST(request) {
         await storeGpsPin({
           db,
           pgClient,
+          trackId,
           pinId,
           anchorX: pos.x,
           anchorY: pos.y,
@@ -1336,6 +1339,7 @@ export async function POST(request) {
         await storeAreaAssignment({
           db,
           pgClient,
+          trackId,
           areaId,
           assetId: sharedAssetId,
           name: photoName,

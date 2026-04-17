@@ -9,7 +9,7 @@ function usage() {
   console.error(
     [
       "Usage:",
-      "  node scripts/import-shared-album-with-local-gps.cjs --series <imsa|wec|f1> --slug <album-slug> --folder <path> --short-link <url> [--album-api-base <url>] [--year <yyyy>] [--race <name>] [--dry-run]",
+      "  node scripts/import-shared-album-with-local-gps.cjs --series <imsa|wec|f1> --slug <album-slug> --folder <path> --short-link <url> [--track <track-id>] [--album-api-base <url>] [--year <yyyy>] [--race <name>] [--dry-run]",
       "",
       "Example:",
       "  POSTGRES_URL=... node scripts/import-shared-album-with-local-gps.cjs --series imsa --slug 2026-weathertech-practice-am --folder ~/Desktop/temp_jpg --short-link https://adobe.ly/... --album-api-base https://crashdaypics.com --year 2026 --race \"12 Hours of Sebring\"",
@@ -23,6 +23,7 @@ function parseArgs(argv) {
     slug: "",
     folder: "",
     shortLink: "",
+    trackId: "sebring",
     albumApiBase: "",
     year: "",
     race: "",
@@ -34,6 +35,7 @@ function parseArgs(argv) {
     else if (arg === "--slug") args.slug = String(argv[i + 1] || "").trim();
     else if (arg === "--folder") args.folder = String(argv[i + 1] || "").trim();
     else if (arg === "--short-link") args.shortLink = String(argv[i + 1] || "").trim();
+    else if (arg === "--track") args.trackId = String(argv[i + 1] || "").trim().toLowerCase();
     else if (arg === "--album-api-base") args.albumApiBase = String(argv[i + 1] || "").trim();
     else if (arg === "--year") args.year = String(argv[i + 1] || "").trim();
     else if (arg === "--race") args.race = String(argv[i + 1] || "").trim();
@@ -90,6 +92,7 @@ async function main() {
     shortLink: args.shortLink,
     series: args.series,
     slug: args.slug,
+    trackId: args.trackId,
   };
   if (args.year) importPayload.year = Number(args.year);
   if (args.race) importPayload.race = args.race;
@@ -131,6 +134,8 @@ async function main() {
     args.slug,
     "--folder",
     args.folder,
+    "--track",
+    args.trackId,
     "--album-api-base",
     albumApiBase,
   ];

@@ -7,7 +7,7 @@ const { getDb, getPhotoAsset, getSharedAlbumBySlug, getSharedAlbumAssetsByAlbumK
 const { readPhotoMetadataFromExiftool } = require("../lib/exiftool-gps");
 const { getProjectorForTrack } = require("../lib/geo-projector");
 
-const TRACK_ID = "sebring";
+const DEFAULT_TRACK_ID = "sebring";
 const IMAGE_EXT_RE = /\.(jpe?g|png|webp|heic|heif|tif|tiff)$/i;
 const VALID_SERIES = new Set(["imsa", "wec", "f1"]);
 
@@ -35,7 +35,7 @@ function usage() {
   console.error(
     [
       "Usage:",
-      "  node scripts/import-shared-album-local-gps.cjs --series <imsa|wec|f1> --slug <album-slug> --folder <path> [--album-api-base <url>]",
+      "  node scripts/import-shared-album-local-gps.cjs --series <imsa|wec|f1> --slug <album-slug> --folder <path> [--track <track-id>] [--album-api-base <url>]",
       "",
       "Examples:",
       "  POSTGRES_URL=... node scripts/import-shared-album-local-gps.cjs --series imsa --slug sebring-thursday --folder ~/Pictures/sebring-thursday --album-api-base https://crashdaypics.com",
@@ -45,12 +45,13 @@ function usage() {
 }
 
 function parseArgs(argv) {
-  const args = { series: "", slug: "", folder: "", dryRun: false, albumApiBase: "" };
+  const args = { series: "", slug: "", folder: "", trackId: DEFAULT_TRACK_ID, dryRun: false, albumApiBase: "" };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--series") args.series = String(argv[i + 1] || "").trim().toLowerCase();
     else if (arg === "--slug") args.slug = String(argv[i + 1] || "").trim();
     else if (arg === "--folder") args.folder = String(argv[i + 1] || "").trim();
+    else if (arg === "--track") args.trackId = String(argv[i + 1] || "").trim().toLowerCase();
     else if (arg === "--album-api-base") args.albumApiBase = String(argv[i + 1] || "").trim();
     else if (arg === "--dry-run") args.dryRun = true;
     else continue;
@@ -220,7 +221,7 @@ async function loadAlbumAssets(series, slug) {
   };
 }
 
-async function storeGpsPinAssignment({ assetId, lat, lng, anchorX, anchorY, title, sortOrder, addedAt }) {
+async function storeGpsPinAssignment({ trackId, assetId, lat, lng, anchorX, anchorY, title, sortOrder, addedAt }) {
   const pinId = `gps:${assetId}`;
 
   if (hasPostgresConfig()) {
@@ -236,7 +237,7 @@ async function storeGpsPinAssignment({ assetId, lat, lng, anchorX, anchorY, titl
             lng = EXCLUDED.lng,
             title = EXCLUDED.title
         `,
-        [pinId, TRACK_ID, anchorX, anchorY, lat, lng, "gps", title]
+        [pinId, trackId, anchorX, anchorY, lat, lng, "gps", title]
       );
       await client.query(
         `
@@ -254,7 +255,7 @@ async function storeGpsPinAssignment({ assetId, lat, lng, anchorX, anchorY, titl
   const db = getDb();
   upsertGpsPin(db, {
     pin_id: pinId,
-    track_id: TRACK_ID,
+    track_id: trackId,
     anchor_x: anchorX,
     anchor_y: anchorY,
     lat,
@@ -283,9 +284,10 @@ async function main() {
     throw new Error(`Folder not found: ${folder}`);
   }
 
-  const projector = getProjectorForTrack(TRACK_ID);
+  const trackId = args.trackId || DEFAULT_TRACK_ID;
+  const projector = getProjectorForTrack(trackId);
   if (!projector) {
-    throw new Error(`Track projector is not configured for ${TRACK_ID}`);
+    throw new Error(`Track projector is not configured for ${trackId}`);
   }
 
   const album = await loadAlbumAssets(args.series, args.slug);
@@ -367,6 +369,7 @@ async function main() {
     if (!args.dryRun) {
       const pos = projector(metadata.gps.lon, metadata.gps.lat);
       await storeGpsPinAssignment({
+        trackId,
         assetId: matched.assetId,
         lat: metadata.gps.lat,
         lng: metadata.gps.lon,
@@ -396,6 +399,7 @@ async function main() {
     databaseSource: getPostgresConfig().source || null,
     albumSource: global.__sharedAlbumApiBase ? "album-api" : hasPostgresConfig() ? "database" : "sqlite",
     album: `${args.series}/${args.slug}`,
+    trackId,
     folder,
     albumAssetCount: album.assets.length,
     localFileCount: localFiles.length,
