@@ -721,7 +721,95 @@ function CornerPicker({ enabled, activeCorner, onPick }) {
   return null;
 }
 
-export default function SebringLeaflet() {
+const TRACK_TOOL_SECTIONS = [
+  ["lightroom", "Lightroom"],
+  ["bounds", "Bounds"],
+  ["areaStyle", "Area Style"],
+  ["areas", "Areas"],
+  ["corner", "Corner"],
+];
+
+function SebringTrackTools({ mapSkin, toolPanels, setToolPanels, toolsVisible, setToolsVisible, children }) {
+  return (
+    <>
+      <div
+        style={{
+          position: "absolute",
+          zIndex: 10000,
+          bottom: 34,
+          right: 12,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setToolsVisible((value) => !value)}
+          style={{
+            background: mapSkin.buttonBg,
+            border: `1px solid ${mapSkin.buttonBorder}`,
+            color: "#fff",
+            padding: "8px 10px",
+            borderRadius: 10,
+            cursor: "pointer",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: 0.2,
+          }}
+        >
+          Track Tools: {toolsVisible ? "On" : "Off"}
+        </button>
+      </div>
+      {toolsVisible ? (
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 9999,
+            bottom: 78,
+            right: 12,
+            background: mapSkin.panelBg,
+            color: mapSkin.panelText,
+            padding: "12px 12px",
+            borderRadius: 14,
+            fontSize: 12,
+            border: `1px solid ${mapSkin.panelBorder}`,
+            boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
+            backdropFilter: "blur(10px)",
+            width: "min(340px, calc(100vw - 24px))",
+            maxHeight: "calc(100vh - 136px)",
+            overflowY: "auto",
+          }}
+        >
+          <div style={{ fontWeight: 800, marginBottom: 2, letterSpacing: 0.4 }}>Track Tools</div>
+          <div style={{ color: "#91a6cb", fontSize: 11, marginBottom: 8 }}>Toggle sections on demand</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+            {TRACK_TOOL_SECTIONS.map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setToolPanels((prev) => ({ ...prev, [key]: !prev[key] }))}
+                style={{
+                  background: toolPanels[key] ? "linear-gradient(150deg, #17335e, #123058)" : "rgba(11,20,34,0.9)",
+                  border: toolPanels[key] ? "1px solid #75b7ff" : "1px solid #2d476e",
+                  color: "#fff",
+                  padding: "5px 8px",
+                  borderRadius: 999,
+                  cursor: "pointer",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: 0.25,
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {children}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+export function SebringMapView({ showTrackTools = true } = {}) {
   const showDebugWindow = false;
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK_LIGHTROOM === "true";
   const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
@@ -875,12 +963,12 @@ export default function SebringLeaflet() {
   const didRunPhotoAreaPersistRef = useRef(false);
 
   useEffect(() => {
-    if (!toolPanels.bounds) setPickMode(false);
-  }, [toolPanels.bounds]);
+    if (!showTrackTools || !toolPanels.bounds) setPickMode(false);
+  }, [showTrackTools, toolPanels.bounds]);
 
   useEffect(() => {
-    if (!toolPanels.corner) setCornerPickMode(false);
-  }, [toolPanels.corner]);
+    if (!showTrackTools || !toolPanels.corner) setCornerPickMode(false);
+  }, [showTrackTools, toolPanels.corner]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -2520,84 +2608,14 @@ export default function SebringLeaflet() {
         </div>
       ) : null}
 
-      {!isMobileToolsHidden ? (
-        <>
-          <div
-            style={{
-              position: "absolute",
-              zIndex: 10000,
-              bottom: 34,
-              right: 12,
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setToolsVisible((v) => !v)}
-              style={{
-                background: mapSkin.buttonBg,
-                border: `1px solid ${mapSkin.buttonBorder}`,
-                color: "#fff",
-                padding: "8px 10px",
-                borderRadius: 10,
-                cursor: "pointer",
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: 0.2,
-              }}
-            >
-              Track Tools: {toolsVisible ? "On" : "Off"}
-            </button>
-          </div>
-          {toolsVisible ? (
-            <div
-              style={{
-                position: "absolute",
-                zIndex: 9999,
-                bottom: 78,
-                right: 12,
-                background: mapSkin.panelBg,
-                color: mapSkin.panelText,
-                padding: "12px 12px",
-                borderRadius: 14,
-                fontSize: 12,
-                border: `1px solid ${mapSkin.panelBorder}`,
-                boxShadow: "0 18px 36px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(255,255,255,0.04)",
-                backdropFilter: "blur(10px)",
-                width: "min(340px, calc(100vw - 24px))",
-                maxHeight: "calc(100vh - 136px)",
-                overflowY: "auto",
-              }}
-            >
-        <div style={{ fontWeight: 800, marginBottom: 2, letterSpacing: 0.4 }}>Track Tools</div>
-        <div style={{ color: "#91a6cb", fontSize: 11, marginBottom: 8 }}>Toggle sections on demand</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-          {[
-            ["lightroom", "Lightroom"],
-            ["bounds", "Bounds"],
-            ["areaStyle", "Area Style"],
-            ["areas", "Areas"],
-            ["corner", "Corner"],
-          ].map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setToolPanels((prev) => ({ ...prev, [key]: !prev[key] }))}
-              style={{
-                background: toolPanels[key] ? "linear-gradient(150deg, #17335e, #123058)" : "rgba(11,20,34,0.9)",
-                border: toolPanels[key] ? "1px solid #75b7ff" : "1px solid #2d476e",
-                color: "#fff",
-                padding: "5px 8px",
-                borderRadius: 999,
-                cursor: "pointer",
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: 0.25,
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      {showTrackTools && !isMobileToolsHidden ? (
+        <SebringTrackTools
+          mapSkin={mapSkin}
+          toolPanels={toolPanels}
+          setToolPanels={setToolPanels}
+          toolsVisible={toolsVisible}
+          setToolsVisible={setToolsVisible}
+        >
 
         {toolPanels.lightroom ? (
           <>
@@ -3343,9 +3361,7 @@ export default function SebringLeaflet() {
             ) : null}
           </>
         ) : null}
-            </div>
-          ) : null}
-        </>
+        </SebringTrackTools>
       ) : null}
 
       {shareOpen ? (
@@ -3942,8 +3958,8 @@ export default function SebringLeaflet() {
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
         {viewLatLngBounds ? <FitToBounds bounds={viewLatLngBounds} lockZoom version={viewBoundsVersion} /> : data ? <FitToGeoJSON data={data} /> : null}
-        {toolPanels.bounds ? <BoundsPicker enabled={pickMode} onChange={setBounds} /> : null}
-        {toolPanels.corner ? <CornerPicker enabled={cornerPickMode} activeCorner={activeCorner} onPick={onCornerPick} /> : null}
+        {showTrackTools && toolPanels.bounds ? <BoundsPicker enabled={pickMode} onChange={setBounds} /> : null}
+        {showTrackTools && toolPanels.corner ? <CornerPicker enabled={cornerPickMode} activeCorner={activeCorner} onPick={onCornerPick} /> : null}
         {showDebugWindow ? <MapDebug viewLatLngBounds={viewLatLngBounds} /> : null}
 
         {cornerMarkers.map((corner) => (
@@ -4270,4 +4286,8 @@ export default function SebringLeaflet() {
       </div>
     </div>
   );
+}
+
+export default function SebringLeaflet() {
+  return <SebringMapView />;
 }

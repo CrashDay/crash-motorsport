@@ -2,10 +2,13 @@
 
 import dynamic from "next/dynamic";
 
-const SebringLeaflet = dynamic(() => import("./sebring-leaflet"), {
-  ssr: false,
-});
+const SebringMapView = dynamic(
+  () => import("./sebring-leaflet").then((mod) => mod.SebringMapView),
+  {
+    ssr: false,
+  }
+);
 
 export default function SebringPageClient() {
-  return <SebringLeaflet />;
+  return <SebringMapView showTrackTools={false} />;
 }
