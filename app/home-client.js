@@ -240,6 +240,9 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
               <a className="mapsItem" href="/daniels-park">
                 Daniels Park
               </a>
+              <Link className="mapsItem" href="/maps/daytona-road-course">
+                Daytona Road Course
+              </Link>
             </div>
           </div>
           <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>

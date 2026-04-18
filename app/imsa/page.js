@@ -77,6 +77,9 @@ export default async function IMSAIndex() {
               <a style={{ display: "block", color: "#dfe8ff", textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, textTransform: "none", fontSize: 13 }} href="/daniels-park">
                 Daniels Park
               </a>
+              <Link style={{ display: "block", color: "#dfe8ff", textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, textTransform: "none", fontSize: 13 }} href="/maps/daytona-road-course">
+                Daytona Road Course
+              </Link>
             </div>
           </details>
         </div>

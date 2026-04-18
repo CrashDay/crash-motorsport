@@ -2358,6 +2358,12 @@ export function SebringMapView({ showTrackTools = true } = {}) {
             >
               Daniels Park
             </a>
+            <Link
+              style={{ display: "block", color: mapSkin.panelText, textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
+              href="/maps/daytona-road-course"
+            >
+              Daytona Road Course
+            </Link>
           </div>
         </details>
       </div>
