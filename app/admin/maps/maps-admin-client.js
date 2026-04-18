@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 function slugify(value) {
   return String(value || "")
@@ -26,6 +26,10 @@ export default function MapsAdminClient({ initialMaps = [] }) {
 
   const suggestedSlug = useMemo(() => slugify(title), [title]);
   const resolvedSlug = trackId.trim() || suggestedSlug;
+
+  useEffect(() => {
+    refreshMaps();
+  }, []);
 
   async function refreshMaps() {
     const res = await fetch("/api/admin/maps", { cache: "no-store" });
