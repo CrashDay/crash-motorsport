@@ -243,6 +243,9 @@ export default function HomeClient({ heroCards, imsaFeatured, f1Featured, imsaAl
               <Link className="mapsItem" href="/maps/daytona-road-course">
                 Daytona Road Course
               </Link>
+              <Link className="mapsItem" href="/maps/laguna-seca">
+                WeatherTech Raceway Laguna Seca
+              </Link>
             </div>
           </div>
           <a href="/contact" style={{ color: "#bbb", textDecoration: "none" }}>

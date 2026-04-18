@@ -80,6 +80,9 @@ export default async function IMSAIndex() {
               <Link style={{ display: "block", color: "#dfe8ff", textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, textTransform: "none", fontSize: 13 }} href="/maps/daytona-road-course">
                 Daytona Road Course
               </Link>
+              <Link style={{ display: "block", color: "#dfe8ff", textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, textTransform: "none", fontSize: 13 }} href="/maps/laguna-seca">
+                WeatherTech Raceway Laguna Seca
+              </Link>
             </div>
           </details>
         </div>

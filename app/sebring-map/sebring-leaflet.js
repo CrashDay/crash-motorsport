@@ -2364,6 +2364,12 @@ export function SebringMapView({ showTrackTools = true } = {}) {
             >
               Daytona Road Course
             </Link>
+            <Link
+              style={{ display: "block", color: mapSkin.panelText, textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
+              href="/maps/laguna-seca"
+            >
+              WeatherTech Raceway Laguna Seca
+            </Link>
           </div>
         </details>
       </div>
