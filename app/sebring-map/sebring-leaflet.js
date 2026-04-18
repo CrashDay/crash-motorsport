@@ -429,7 +429,7 @@ function normalizePhotoArea(area) {
   };
 }
 
-function AreaOverlay({ bounds, points, title, mode, photoCount = 0, maxPhotoCount = 1, skin }) {
+function AreaOverlay({ bounds, points, title, mode, photoCount = 0, maxPhotoCount = 1, skin, onClick = null }) {
   const areaPoints = normalizeAreaPoints(points);
   const hasPolygon = areaPoints.length === 4;
   const center = centerFromAreaPoints(areaPoints, bounds);
@@ -568,13 +568,23 @@ function AreaOverlay({ bounds, points, title, mode, photoCount = 0, maxPhotoCoun
       ) : null}
 
       {hasPolygon ? (
-        <Polygon positions={areaPoints} interactive pathOptions={{ color: overlayColor, weight: 0, fillOpacity: 0, opacity: 0 }}>
+        <Polygon
+          positions={areaPoints}
+          interactive
+          eventHandlers={onClick ? { click: onClick } : undefined}
+          pathOptions={{ color: overlayColor, weight: 0, fillOpacity: 0.01, opacity: 0 }}
+        >
           <Tooltip sticky direction="top" opacity={0.95}>
             {mode === "photo_heatmap" ? `${title} - ${photoCount} photo${photoCount === 1 ? "" : "s"}` : title}
           </Tooltip>
         </Polygon>
       ) : (
-        <Rectangle bounds={rect} interactive pathOptions={{ color: overlayColor, weight: 0, fillOpacity: 0, opacity: 0 }}>
+        <Rectangle
+          bounds={rect}
+          interactive
+          eventHandlers={onClick ? { click: onClick } : undefined}
+          pathOptions={{ color: overlayColor, weight: 0, fillOpacity: 0.01, opacity: 0 }}
+        >
           <Tooltip sticky direction="top" opacity={0.95}>
             {mode === "photo_heatmap" ? `${title} - ${photoCount} photo${photoCount === 1 ? "" : "s"}` : title}
           </Tooltip>
@@ -4258,6 +4268,7 @@ export function SebringMapView({
               photoCount={Array.isArray(area.photos) ? area.photos.length : 0}
               maxPhotoCount={maxAreaPhotoCount}
               skin={mapSkin}
+              onClick={Array.isArray(area.photos) && area.photos.length ? () => openAreaViewer(area) : null}
             />
             {Array.isArray(area.photos) && area.photos.length > 0 ? (
               <CircleMarker

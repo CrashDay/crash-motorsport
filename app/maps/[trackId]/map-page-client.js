@@ -2,10 +2,13 @@
 
 import dynamic from "next/dynamic";
 
-const PhotoMapClient = dynamic(() => import("@/app/components/photo-map-client"), {
-  ssr: false,
-});
+const TrackMapView = dynamic(
+  () => import("@/app/sebring-map/sebring-leaflet").then((mod) => mod.SebringMapView),
+  {
+    ssr: false,
+  }
+);
 
 export default function MapPageClient(props) {
-  return <PhotoMapClient {...props} />;
+  return <TrackMapView showTrackTools={false} {...props} />;
 }
