@@ -9,10 +9,8 @@ const VALID_TRACKS = {
 
 function isValidAreaId(trackId, areaId) {
   if (!areaId) return false;
-  if (!VALID_TRACKS[trackId]) return false;
-  if (VALID_TRACKS[trackId].has(areaId)) return true;
-  if (trackId === "sebring" && areaId.startsWith("area-")) return true;
-  return false;
+  if (VALID_TRACKS[trackId]?.has(areaId)) return true;
+  return areaId.startsWith("area-");
 }
 
 let postgresReady = false;
@@ -147,8 +145,8 @@ export async function POST(request) {
   const year = explicitYear ?? inferredYear;
   const race = normalizeRace(asset.race) || "12 Hours of Sebring";
 
-  if (!trackId || !VALID_TRACKS[trackId]) {
-    return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
+  if (!trackId) {
+    return NextResponse.json({ error: "trackId is required" }, { status: 400 });
   }
   if (!isValidAreaId(trackId, areaId)) {
     return NextResponse.json({ error: "Invalid areaId" }, { status: 400 });
@@ -239,8 +237,8 @@ export async function DELETE(request) {
   const areaId = String(body?.areaId || "").trim();
   const assetId = String(body?.assetId || "").trim();
 
-  if (!trackId || !VALID_TRACKS[trackId]) {
-    return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
+  if (!trackId) {
+    return NextResponse.json({ error: "trackId is required" }, { status: 400 });
   }
   if (!isValidAreaId(trackId, areaId)) {
     return NextResponse.json({ error: "Invalid areaId" }, { status: 400 });

@@ -5,8 +5,6 @@ import { getDb, getTrackCornersByTrack, replaceTrackCorners } from "@/lib/db";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const SUPPORTED_TRACKS = new Set(["sebring"]);
-
 let postgresReady = false;
 
 function getPostgresConnectionString() {
@@ -97,8 +95,8 @@ function normalizeCornerMap(raw) {
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const trackId = String(searchParams.get("trackId") || "").trim().toLowerCase();
-  if (!SUPPORTED_TRACKS.has(trackId)) {
-    return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
+  if (!trackId) {
+    return NextResponse.json({ error: "trackId is required" }, { status: 400 });
   }
 
   try {
@@ -145,8 +143,8 @@ export async function POST(request) {
   }
 
   const trackId = String(body?.trackId || "").trim().toLowerCase();
-  if (!SUPPORTED_TRACKS.has(trackId)) {
-    return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
+  if (!trackId) {
+    return NextResponse.json({ error: "trackId is required" }, { status: 400 });
   }
 
   const corners = normalizeCornerMap(body?.corners);

@@ -5,7 +5,6 @@ import sebringAreas from "@/data/sebring-photo-areas.json";
 import { assignAreaAsset, getDb, upsertGpsPin, upsertPhotoAsset, upsertPinAsset } from "@/lib/db";
 import { getProjectorForTrack } from "@/lib/geo-projector";
 
-const TRACK_ID = "sebring";
 const STATIC_AREA_IDS = new Set(sebringAreas.map((a) => a.id));
 let postgresReady = false;
 
@@ -205,6 +204,7 @@ export async function POST(request) {
   }
 
   const shortLink = normalizeUrl(body?.shortLink);
+  const trackId = String(body?.trackId || "sebring").trim().toLowerCase();
   const areaId = String(body?.areaId || "").trim();
   const year = normalizeYear(body?.year);
   const race = normalizeRace(body?.race);
@@ -271,7 +271,7 @@ export async function POST(request) {
 
   upsertPhotoAsset(db, {
     asset_id: assetId,
-    track_id: TRACK_ID,
+    track_id: trackId,
     capture_time: captureTime,
     alt_text_snapshot: "Shared via Lightroom link",
     thumb_url: shortLink,
@@ -282,7 +282,7 @@ export async function POST(request) {
 
   let pinId = null;
   if (hasLocation) {
-    const projector = getProjectorForTrack(TRACK_ID);
+    const projector = getProjectorForTrack(trackId);
     if (!projector) {
       return NextResponse.json({ error: "Track projector unavailable" }, { status: 500 });
     }
@@ -290,7 +290,7 @@ export async function POST(request) {
     pinId = `gps:${assetId}`;
     upsertGpsPin(db, {
       pin_id: pinId,
-      track_id: TRACK_ID,
+      track_id: trackId,
       anchor_x: pos.x,
       anchor_y: pos.y,
       lat: effectiveLat,
@@ -317,7 +317,7 @@ export async function POST(request) {
                 DELETE FROM photo_area_assets
                 WHERE track_id = $1 AND asset_id = $2
               `,
-              [TRACK_ID, canonicalAreaAssetId]
+              [trackId, canonicalAreaAssetId]
             );
             await client.query(
               `
@@ -331,7 +331,7 @@ export async function POST(request) {
                   race = EXCLUDED.race,
                   assigned_at = EXCLUDED.assigned_at
               `,
-              [TRACK_ID, areaId, canonicalAreaAssetId, "Shared Lightroom Photo", shortLink, shortLink, year, race, nowIso]
+              [trackId, areaId, canonicalAreaAssetId, "Shared Lightroom Photo", shortLink, shortLink, year, race, nowIso]
             );
             await client.query("COMMIT");
           } catch (txError) {
@@ -345,9 +345,9 @@ export async function POST(request) {
             DELETE FROM photo_area_assets
             WHERE track_id = ? AND asset_id = ?
           `
-        ).run(TRACK_ID, canonicalAreaAssetId);
+        ).run(trackId, canonicalAreaAssetId);
         assignAreaAsset(db, {
-          track_id: TRACK_ID,
+          track_id: trackId,
           area_id: areaId,
           asset_id: canonicalAreaAssetId,
           asset_name: "Shared Lightroom Photo",

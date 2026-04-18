@@ -1,29 +1,28 @@
-import { notFound } from "next/navigation";
-import { getMapPageConfigs } from "@/lib/map-page-configs";
+import { redirect, notFound } from "next/navigation";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { loadMapPage } from "@/lib/map-pages";
-import MapPageClient from "./map-page-client";
+import MapToolsClient from "./map-tools-client";
 
 export const dynamic = "force-dynamic";
 
-export function generateStaticParams() {
-  return getMapPageConfigs().map((config) => ({ trackId: config.id }));
-}
-
 export default async function Page({ params }) {
+  if (!(await isAdminAuthenticated())) {
+    const awaitedParams = await params;
+    redirect(`/admin/login?next=/admin/maps/${encodeURIComponent(awaitedParams?.trackId || "")}`);
+  }
+
   const { trackId } = await params;
   const config = await loadMapPage(trackId);
   if (!config) notFound();
 
   return (
-    <MapPageClient
+    <MapToolsClient
       title={config.title}
       trackId={config.id}
       center={config.center}
       zoom={config.zoom}
+      geoJsonUrl={`/maps/${config.id}.geojson`}
       mapGeoJson={config.mapGeoJson}
-      photoMarkers={config.photoMarkers}
-      loadPins={config.loadPins}
-      fitOnLoad={config.fitOnLoad}
     />
   );
 }

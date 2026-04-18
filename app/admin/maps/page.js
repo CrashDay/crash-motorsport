@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { loadBuiltinMapSummaries } from "@/lib/map-pages";
 import MapsAdminClient from "./maps-admin-client";
 
 export const dynamic = "force-dynamic";
@@ -9,5 +10,5 @@ export default async function Page() {
     redirect("/admin/login?next=/admin/maps");
   }
 
-  return <MapsAdminClient />;
+  return <MapsAdminClient initialMaps={loadBuiltinMapSummaries()} />;
 }

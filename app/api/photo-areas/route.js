@@ -2,20 +2,33 @@ import { NextResponse } from "next/server";
 import { Client } from "pg";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import { getAreaAssetsByTrack, getDb } from "@/lib/db";
+import { getMapPageConfigs } from "@/lib/map-page-configs";
 import lightroomImageUrl from "@/lib/lightroom-image-url";
 
 const { normalizeLightroomImageUrl } = lightroomImageUrl;
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+const LOCAL_PHOTO_AREAS_PATH = "data/photo-areas.json";
 
-const TRACKS = {
-  sebring: {
-    id: "sebring",
-    name: "Sebring International Raceway",
-    areas: sebringAreas,
-  },
-};
+function normalizeTrackId(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function getTrackConfig(trackId) {
+  const id = normalizeTrackId(trackId);
+  if (!id) return null;
+  const config = getMapPageConfigs().find((map) => map.id === id);
+  return {
+    id,
+    name: config?.title || id,
+    areas: id === "sebring" ? sebringAreas : [],
+  };
+}
+
+function getTrackSummaries() {
+  return getMapPageConfigs().map((map) => ({ id: map.id, name: map.title }));
+}
 
 let postgresReady = false;
 
@@ -99,6 +112,10 @@ async function ensurePostgresSchema() {
       PRIMARY KEY (track_id, area_id)
     )
   `);
+  await runPgQuery(`
+    ALTER TABLE photo_areas
+    ADD COLUMN IF NOT EXISTS points JSONB
+  `);
   postgresReady = true;
 }
 
@@ -112,6 +129,30 @@ function hasPostgresConfig() {
 
 function isVercelRuntime() {
   return process.env.VERCEL === "1" || String(process.env.VERCEL || "").toLowerCase() === "true";
+}
+
+async function loadLocalPhotoAreaDefinitions(trackId) {
+  const fs = await import("fs");
+  const path = await import("path");
+  const filePath = path.join(process.cwd(), LOCAL_PHOTO_AREAS_PATH);
+  if (!fs.existsSync(filePath)) return [];
+  const raw = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  const byTrack = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  return Array.isArray(byTrack[trackId]) ? byTrack[trackId] : [];
+}
+
+async function saveLocalPhotoAreaDefinitions(trackId, areas) {
+  const fs = await import("fs");
+  const path = await import("path");
+  const filePath = path.join(process.cwd(), LOCAL_PHOTO_AREAS_PATH);
+  let byTrack = {};
+  if (fs.existsSync(filePath)) {
+    const raw = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    byTrack = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  }
+  byTrack[trackId] = areas;
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(byTrack, null, 2)}\n`);
 }
 
 function inferYearFromPhotoLike(photo) {
@@ -209,43 +250,94 @@ function keepMostRecentByAsset(assignedByArea) {
   return out;
 }
 
+function normalizeAreaPoints(points) {
+  if (!Array.isArray(points)) return [];
+  return points
+    .map((point) => {
+      const lat = Number(Array.isArray(point) ? point[0] : point?.lat);
+      const lng = Number(Array.isArray(point) ? point[1] : point?.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      return [Number(lat.toFixed(6)), Number(lng.toFixed(6))];
+    })
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
+function boundsFromAreaPoints(points) {
+  const normalized = normalizeAreaPoints(points);
+  if (!normalized.length) return null;
+  const lats = normalized.map((p) => p[0]);
+  const lngs = normalized.map((p) => p[1]);
+  return {
+    north: Number(Math.max(...lats).toFixed(6)),
+    south: Number(Math.min(...lats).toFixed(6)),
+    east: Number(Math.max(...lngs).toFixed(6)),
+    west: Number(Math.min(...lngs).toFixed(6)),
+  };
+}
+
+function centerFromAreaPoints(points, bounds) {
+  const normalized = normalizeAreaPoints(points);
+  if (normalized.length) {
+    const totals = normalized.reduce((acc, point) => [acc[0] + point[0], acc[1] + point[1]], [0, 0]);
+    return [
+      Number((totals[0] / normalized.length).toFixed(6)),
+      Number((totals[1] / normalized.length).toFixed(6)),
+    ];
+  }
+  return [
+    Number(((bounds.north + bounds.south) / 2).toFixed(6)),
+    Number(((bounds.east + bounds.west) / 2).toFixed(6)),
+  ];
+}
+
 function normalizeAreaDefinition(rawArea) {
   if (!rawArea || typeof rawArea !== "object") return null;
   const id = String(rawArea.id || "").trim();
   if (!id) return null;
   const title = String(rawArea.title || id).trim();
-  const north = Number(rawArea?.bounds?.north);
-  const south = Number(rawArea?.bounds?.south);
-  const east = Number(rawArea?.bounds?.east);
-  const west = Number(rawArea?.bounds?.west);
+  const points = normalizeAreaPoints(rawArea.points);
+  const pointBounds = points.length === 4 ? boundsFromAreaPoints(points) : null;
+  const north = Number(pointBounds?.north ?? rawArea?.bounds?.north);
+  const south = Number(pointBounds?.south ?? rawArea?.bounds?.south);
+  const east = Number(pointBounds?.east ?? rawArea?.bounds?.east);
+  const west = Number(pointBounds?.west ?? rawArea?.bounds?.west);
   if (![north, south, east, west].every(Number.isFinite)) return null;
   const bounds = {
-    north: Math.max(north, south),
-    south: Math.min(north, south),
-    east: Math.max(east, west),
-    west: Math.min(east, west),
+    north: Number(Math.max(north, south).toFixed(6)),
+    south: Number(Math.min(north, south).toFixed(6)),
+    east: Number(Math.max(east, west).toFixed(6)),
+    west: Number(Math.min(east, west).toFixed(6)),
   };
   let centerLat = Number(rawArea?.center?.[0]);
   let centerLng = Number(rawArea?.center?.[1]);
   if (!Number.isFinite(centerLat) || !Number.isFinite(centerLng)) {
-    centerLat = (bounds.north + bounds.south) / 2;
-    centerLng = (bounds.east + bounds.west) / 2;
+    const center = centerFromAreaPoints(points, bounds);
+    centerLat = center[0];
+    centerLng = center[1];
   }
   return {
     id,
     title,
     bounds,
+    points: points.length === 4 ? points : undefined,
     center: [Number(centerLat.toFixed(6)), Number(centerLng.toFixed(6))],
     defaultPhoto: rawArea.defaultPhoto || null,
   };
 }
 
 async function loadTrackAreas(trackId, track) {
-  if (!hasPostgresConfig()) return track.areas;
+  if (!hasPostgresConfig()) {
+    if (isVercelRuntime()) return track.areas;
+    const localAreas = (await loadLocalPhotoAreaDefinitions(trackId))
+      .map((a) => normalizeAreaDefinition(a))
+      .filter(Boolean);
+    return localAreas.length ? localAreas : track.areas;
+  }
   await ensurePostgresSchema();
   const { rows } = await runPgQuery(
     `
-      SELECT area_id, title, north, south, east, west, center_lat, center_lng
+      SELECT area_id, title, north, south, east, west, center_lat, center_lng, points
       FROM photo_areas
       WHERE track_id = $1
       ORDER BY area_id
@@ -264,6 +356,7 @@ async function loadTrackAreas(trackId, track) {
           east: r.east,
           west: r.west,
         },
+        points: r.points,
         center: [r.center_lat, r.center_lng],
       })
     )
@@ -280,18 +373,18 @@ async function loadTrackAreas(trackId, track) {
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const trackId = String(searchParams.get("trackId") || "").trim().toLowerCase();
+  const trackId = normalizeTrackId(searchParams.get("trackId"));
 
   if (!trackId) {
     return NextResponse.json(
       {
-        tracks: Object.values(TRACKS).map((t) => ({ id: t.id, name: t.name })),
+        tracks: getTrackSummaries(),
       },
       { headers: { "Cache-Control": "no-store" } }
     );
   }
 
-  const track = TRACKS[trackId];
+  const track = getTrackConfig(trackId);
   if (!track) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
   }
@@ -371,14 +464,10 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const trackId = String(body?.trackId || "").trim().toLowerCase();
-  const track = TRACKS[trackId];
+  const trackId = normalizeTrackId(body?.trackId);
+  const track = getTrackConfig(trackId);
   if (!track) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
-  }
-
-  if (!hasPostgresConfig()) {
-    return NextResponse.json({ error: "Area sync storage is not configured" }, { status: 400 });
   }
 
   const inputAreas = Array.isArray(body?.areas) ? body.areas : [];
@@ -388,6 +477,14 @@ export async function POST(request) {
   }
 
   try {
+    if (!hasPostgresConfig()) {
+      if (isVercelRuntime()) {
+        return NextResponse.json({ error: "Area sync storage is not configured" }, { status: 400 });
+      }
+      await saveLocalPhotoAreaDefinitions(trackId, normalized);
+      return NextResponse.json({ ok: true, trackId, count: normalized.length });
+    }
+
     await ensurePostgresSchema();
     await withPgClient(async (client) => {
       try {
@@ -397,8 +494,8 @@ export async function POST(request) {
         for (const area of normalized) {
           await client.query(
             `
-              INSERT INTO photo_areas (track_id, area_id, title, north, south, east, west, center_lat, center_lng, updated_at)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+              INSERT INTO photo_areas (track_id, area_id, title, north, south, east, west, center_lat, center_lng, points, updated_at)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11)
             `,
             [
               trackId,
@@ -410,6 +507,7 @@ export async function POST(request) {
               area.bounds.west,
               area.center[0],
               area.center[1],
+              area.points ? JSON.stringify(area.points) : null,
               updatedAt,
             ]
           );

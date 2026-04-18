@@ -2,17 +2,25 @@ import { NextResponse } from "next/server";
 import { Client } from "pg";
 import sebringAreas from "@/data/sebring-photo-areas.json";
 import { getAreaAssetsByTrack, getDb } from "@/lib/db";
+import { getMapPageConfigs } from "@/lib/map-page-configs";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const TRACKS = {
-  sebring: {
-    id: "sebring",
-    name: "Sebring International Raceway",
-    areas: sebringAreas,
-  },
-};
+function normalizeTrackId(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function getTrackConfig(trackId) {
+  const id = normalizeTrackId(trackId);
+  if (!id) return null;
+  const config = getMapPageConfigs().find((map) => map.id === id);
+  return {
+    id,
+    name: config?.title || id,
+    areas: id === "sebring" ? sebringAreas : [],
+  };
+}
 
 function getPostgresConnectionString() {
   return (
@@ -172,8 +180,8 @@ function removeSqliteRows(rows) {
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const trackId = String(searchParams.get("trackId") || "").trim().toLowerCase();
-  const track = TRACKS[trackId];
+  const trackId = normalizeTrackId(searchParams.get("trackId"));
+  const track = getTrackConfig(trackId);
   if (!track) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
   }
@@ -200,8 +208,8 @@ export async function DELETE(request) {
     body = {};
   }
 
-  const trackId = String(body?.trackId || "").trim().toLowerCase();
-  const track = TRACKS[trackId];
+  const trackId = normalizeTrackId(body?.trackId);
+  const track = getTrackConfig(trackId);
   if (!track) {
     return NextResponse.json({ error: "Unsupported trackId" }, { status: 400 });
   }

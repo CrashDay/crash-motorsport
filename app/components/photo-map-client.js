@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, Rectangle, Polygon, Tooltip, useMap } from "react-leaflet";
 import { divIcon, geoJSON, latLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -67,6 +67,59 @@ function makeMarkerIcon(photoCount, variant) {
   });
 }
 
+function normalizeAreaPoints(points) {
+  if (!Array.isArray(points)) return [];
+  return points
+    .map((point) => {
+      const lat = Number(Array.isArray(point) ? point[0] : point?.lat);
+      const lng = Number(Array.isArray(point) ? point[1] : point?.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      return [lat, lng];
+    })
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
+function areaBoundsToLeaflet(bounds) {
+  const north = Number(bounds?.north);
+  const south = Number(bounds?.south);
+  const east = Number(bounds?.east);
+  const west = Number(bounds?.west);
+  if (![north, south, east, west].every(Number.isFinite)) return null;
+  return [
+    [Math.min(north, south), Math.min(east, west)],
+    [Math.max(north, south), Math.max(east, west)],
+  ];
+}
+
+function PhotoAreaOverlay({ area }) {
+  const points = normalizeAreaPoints(area?.points);
+  const bounds = areaBoundsToLeaflet(area?.bounds);
+  const pathOptions = {
+    color: "#5da2ff",
+    weight: 2,
+    opacity: 0.9,
+    fillColor: "#5da2ff",
+    fillOpacity: 0.14,
+  };
+  const label = `${area?.title || "Photo area"} - ${Array.isArray(area?.photos) ? area.photos.length : 0} photo${Array.isArray(area?.photos) && area.photos.length === 1 ? "" : "s"}`;
+
+  if (points.length === 4) {
+    return (
+      <Polygon positions={points} pathOptions={pathOptions}>
+        <Tooltip sticky>{label}</Tooltip>
+      </Polygon>
+    );
+  }
+
+  if (!bounds) return null;
+  return (
+    <Rectangle bounds={bounds} pathOptions={pathOptions}>
+      <Tooltip sticky>{label}</Tooltip>
+    </Rectangle>
+  );
+}
+
 function ViewerBody({ viewer, onNext, onPrev, setViewer }) {
   const active = viewer.photos[viewer.index];
 
@@ -120,8 +173,10 @@ export default function PhotoMapClient({
   mapGeoJson = null,
   photoMarkers = [],
   loadPins = false,
+  fitOnLoad = true,
 }) {
   const [pins, setPins] = useState([]);
+  const [photoAreas, setPhotoAreas] = useState([]);
   const [pinsError, setPinsError] = useState("");
   const [viewer, setViewer] = useState({ open: false, markerId: null, photos: [], index: 0, loading: false });
 
@@ -144,6 +199,22 @@ export default function PhotoMapClient({
       cancelled = true;
     };
   }, [loadPins, trackId]);
+
+  useEffect(() => {
+    if (!trackId) return;
+    let cancelled = false;
+    fetch(`/api/photo-areas?trackId=${encodeURIComponent(trackId)}`, { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then((payload) => {
+        if (!cancelled) setPhotoAreas(Array.isArray(payload?.areas) ? payload.areas : []);
+      })
+      .catch(() => {
+        if (!cancelled) setPhotoAreas([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [trackId]);
 
   const markers = useMemo(() => {
     const staticMarkers = (Array.isArray(photoMarkers) ? photoMarkers : [])
@@ -230,6 +301,10 @@ export default function PhotoMapClient({
 
         {mapGeoJson ? <GeoJSON data={mapGeoJson} style={{ color: "#1f7a5c", weight: 3, fillOpacity: 0.12 }} /> : null}
 
+        {photoAreas.map((area) => (
+          <PhotoAreaOverlay key={area.id} area={area} />
+        ))}
+
         {markers.map((marker) => (
           <Marker key={marker.id} position={[marker.lat, marker.lng]} icon={markerIcons[marker.id]}>
             <Popup closeOnClick={false} autoClose={false}>
@@ -252,7 +327,7 @@ export default function PhotoMapClient({
           </Marker>
         ))}
 
-        <FitToData mapGeoJson={mapGeoJson} markers={markers} />
+        {fitOnLoad ? <FitToData mapGeoJson={mapGeoJson} markers={markers} /> : null}
       </MapContainer>
 
       {viewer.open ? (

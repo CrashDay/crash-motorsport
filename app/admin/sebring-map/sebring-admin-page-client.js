@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 
 const SebringMapView = dynamic(
   () => import("@/app/sebring-map/sebring-leaflet").then((mod) => mod.SebringMapView),
@@ -12,7 +13,7 @@ const SebringMapView = dynamic(
 export default function SebringAdminPageClient() {
   return (
     <>
-      <a
+      <Link
         href="/admin/maps"
         style={{
           position: "fixed",
@@ -30,7 +31,7 @@ export default function SebringAdminPageClient() {
         }}
       >
         Manage maps
-      </a>
+      </Link>
       <SebringMapView showTrackTools />
     </>
   );

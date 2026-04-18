@@ -85,7 +85,6 @@ export default function MapsAdminClient({ initialMaps = [] }) {
           <p>Add map pages and keep the creation workflow behind admin sign-in.</p>
         </div>
         <nav>
-          <Link href="/admin/sebring-map">Sebring tools</Link>
           <Link href="/">Site</Link>
           <form action="/api/admin/logout" method="post">
             <button type="submit">Sign out</button>
@@ -152,7 +151,10 @@ export default function MapsAdminClient({ initialMaps = [] }) {
                   <strong>{map.title}</strong>
                   <span>{map.builtin ? "Built-in" : "Admin-added"}</span>
                 </div>
-                <Link href={`/maps/${map.id}`}>Open</Link>
+                <div className="adminMapsActions">
+                  <Link href={`/admin/maps/${map.id}`}>Tools</Link>
+                  <Link href={`/maps/${map.id}`}>Open</Link>
+                </div>
               </article>
             ))}
           </div>
@@ -318,6 +320,12 @@ export default function MapsAdminClient({ initialMaps = [] }) {
         .adminMapsItem span {
           color: #a8cdb7;
           font-size: 12px;
+        }
+        .adminMapsActions {
+          display: flex !important;
+          gap: 8px;
+          flex-wrap: wrap;
+          justify-content: flex-end;
         }
         @media (max-width: 820px) {
           .adminMapsHeader,

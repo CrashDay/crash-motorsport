@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Rectangle, Circle, Polyline, Polygon, CircleMarker, Popup, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import { geoJSON, icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import lightroomImageUrl from "@/lib/lightroom-image-url";
@@ -30,10 +30,6 @@ const CORNER_ORDER = [
   { short: "T16", name: "Turn 16" },
   { short: "T17", name: "Turn 17" },
 ];
-const CORNER_STORAGE_KEY = "sebring_corner_coords_v1";
-const PHOTO_AREA_STORAGE_KEY = "sebring_photo_areas_v1";
-const AREA_STYLE_STORAGE_KEY = "sebring_area_style_v1";
-const MAP_SKIN_STORAGE_KEY = "sebring_map_skin_v1";
 const DEFAULT_PHOTO_AREAS = [
   {
     id: "area-1772982986829-6a537i",
@@ -356,15 +352,59 @@ function hasCornerData(cornerMap) {
   return Object.keys(normalizeCornerMap(cornerMap)).length > 0;
 }
 
+function normalizeAreaPoints(points) {
+  if (!Array.isArray(points)) return [];
+  return points
+    .map((point) => {
+      const lat = Number(Array.isArray(point) ? point[0] : point?.lat);
+      const lng = Number(Array.isArray(point) ? point[1] : point?.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      return [Number(lat.toFixed(6)), Number(lng.toFixed(6))];
+    })
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
+function boundsFromAreaPoints(points) {
+  const normalized = normalizeAreaPoints(points);
+  if (!normalized.length) return null;
+  const lats = normalized.map((p) => p[0]);
+  const lngs = normalized.map((p) => p[1]);
+  return {
+    north: Number(Math.max(...lats).toFixed(6)),
+    south: Number(Math.min(...lats).toFixed(6)),
+    east: Number(Math.max(...lngs).toFixed(6)),
+    west: Number(Math.min(...lngs).toFixed(6)),
+  };
+}
+
+function centerFromAreaPoints(points, bounds) {
+  const normalized = normalizeAreaPoints(points);
+  if (normalized.length) {
+    const totals = normalized.reduce((acc, point) => [acc[0] + point[0], acc[1] + point[1]], [0, 0]);
+    return [
+      Number((totals[0] / normalized.length).toFixed(6)),
+      Number((totals[1] / normalized.length).toFixed(6)),
+    ];
+  }
+  if (!bounds) return null;
+  return [
+    Number(((bounds.north + bounds.south) / 2).toFixed(6)),
+    Number(((bounds.east + bounds.west) / 2).toFixed(6)),
+  ];
+}
+
 function normalizePhotoArea(area) {
   if (!area || typeof area !== "object") return null;
   const id = String(area.id || "").trim();
   if (!id || id === TURN3_INSIDE_AREA.id) return null;
   const title = String(area.title || id).trim();
-  const north = Number(area?.bounds?.north);
-  const south = Number(area?.bounds?.south);
-  const east = Number(area?.bounds?.east);
-  const west = Number(area?.bounds?.west);
+  const points = normalizeAreaPoints(area.points);
+  const pointBounds = points.length === 4 ? boundsFromAreaPoints(points) : null;
+  const north = Number(pointBounds?.north ?? area?.bounds?.north);
+  const south = Number(pointBounds?.south ?? area?.bounds?.south);
+  const east = Number(pointBounds?.east ?? area?.bounds?.east);
+  const west = Number(pointBounds?.west ?? area?.bounds?.west);
   if (![north, south, east, west].every(Number.isFinite)) return null;
   const bounds = {
     north: Number(Math.max(north, south).toFixed(6)),
@@ -375,20 +415,24 @@ function normalizePhotoArea(area) {
   let centerLat = Number(area?.center?.[0]);
   let centerLng = Number(area?.center?.[1]);
   if (!Number.isFinite(centerLat) || !Number.isFinite(centerLng)) {
-    centerLat = (bounds.north + bounds.south) / 2;
-    centerLng = (bounds.east + bounds.west) / 2;
+    const center = centerFromAreaPoints(points, bounds);
+    centerLat = center[0];
+    centerLng = center[1];
   }
   return {
     id,
     title,
     bounds,
+    points: points.length === 4 ? points : undefined,
     center: [Number(centerLat.toFixed(6)), Number(centerLng.toFixed(6))],
     photos: Array.isArray(area.photos) ? area.photos : [],
   };
 }
 
-function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1, skin }) {
-  const center = [(bounds.north + bounds.south) / 2, (bounds.east + bounds.west) / 2];
+function AreaOverlay({ bounds, points, title, mode, photoCount = 0, maxPhotoCount = 1, skin }) {
+  const areaPoints = normalizeAreaPoints(points);
+  const hasPolygon = areaPoints.length === 4;
+  const center = centerFromAreaPoints(areaPoints, bounds);
   const rect = toLatLngBounds(bounds);
   const safeMax = Math.max(1, Number(maxPhotoCount) || 1);
   const ratio = Math.max(0, Math.min(1, (Number(photoCount) || 0) / safeMax));
@@ -401,34 +445,67 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1, s
   return (
     <Fragment>
       {mode === "soft_fill" ? (
-        <Rectangle
-          bounds={rect}
-          interactive={false}
-          pathOptions={{ stroke: false, fillColor: overlayColor, fillOpacity: 0.16 }}
-        />
+        hasPolygon ? (
+          <Polygon
+            positions={areaPoints}
+            interactive={false}
+            pathOptions={{ stroke: false, fillColor: overlayColor, fillOpacity: 0.16 }}
+          />
+        ) : (
+          <Rectangle
+            bounds={rect}
+            interactive={false}
+            pathOptions={{ stroke: false, fillColor: overlayColor, fillOpacity: 0.16 }}
+          />
+        )
       ) : null}
 
       {mode === "dashed_glow" ? (
         <Fragment>
-          <Rectangle
-            bounds={rect}
-            interactive={false}
-            pathOptions={{ color: overlayColor, weight: 6, opacity: 0.22, fillOpacity: 0 }}
-          />
-          <Rectangle
-            bounds={rect}
-            interactive={false}
-            pathOptions={{ color: overlayColor, weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
-          />
+          {hasPolygon ? (
+            <>
+              <Polygon
+                positions={areaPoints}
+                interactive={false}
+                pathOptions={{ color: overlayColor, weight: 6, opacity: 0.22, fillOpacity: 0 }}
+              />
+              <Polygon
+                positions={areaPoints}
+                interactive={false}
+                pathOptions={{ color: overlayColor, weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
+              />
+            </>
+          ) : (
+            <>
+              <Rectangle
+                bounds={rect}
+                interactive={false}
+                pathOptions={{ color: overlayColor, weight: 6, opacity: 0.22, fillOpacity: 0 }}
+              />
+              <Rectangle
+                bounds={rect}
+                interactive={false}
+                pathOptions={{ color: overlayColor, weight: 2, dashArray: "4 4", fillOpacity: 0.04 }}
+              />
+            </>
+          )}
         </Fragment>
       ) : null}
 
       {mode === "corner_brackets" ? (
-        <Fragment>
-          {bracketLines(bounds).map((line, i) => (
-            <Polyline key={`${title}-br-${i}`} positions={line} interactive={false} pathOptions={{ color: overlayColor, weight: 3 }} />
-          ))}
-        </Fragment>
+        hasPolygon ? (
+          <Polygon
+            positions={areaPoints}
+            interactive={false}
+            pathOptions={{ color: overlayColor, weight: 3, fillOpacity: 0.04 }}
+          />
+        ) : (
+          <Fragment>
+            {bracketLines(bounds).map((line, i) => (
+              <Polyline key={`${title}-br-${i}`} positions={line} interactive={false} pathOptions={{ color: overlayColor, weight: 3 }} />
+            ))}
+          </Fragment>
+        )
       ) : null}
 
       {mode === "heat_blur" ? (
@@ -450,17 +527,31 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1, s
 
       {mode === "photo_heatmap" ? (
         <Fragment>
-          <Rectangle
-            bounds={rect}
-            interactive={false}
-            pathOptions={{
-              color: overlayColor,
-              weight: 2,
-              opacity: 0.9,
-              fillOpacity: 0.12 + ratio * 0.2,
-              fillColor: heatColor,
-            }}
-          />
+          {hasPolygon ? (
+            <Polygon
+              positions={areaPoints}
+              interactive={false}
+              pathOptions={{
+                color: overlayColor,
+                weight: 2,
+                opacity: 0.9,
+                fillOpacity: 0.12 + ratio * 0.2,
+                fillColor: heatColor,
+              }}
+            />
+          ) : (
+            <Rectangle
+              bounds={rect}
+              interactive={false}
+              pathOptions={{
+                color: overlayColor,
+                weight: 2,
+                opacity: 0.9,
+                fillOpacity: 0.12 + ratio * 0.2,
+                fillColor: heatColor,
+              }}
+            />
+          )}
           <Circle
             center={center}
             radius={photoHeatRadius}
@@ -476,11 +567,19 @@ function AreaOverlay({ bounds, title, mode, photoCount = 0, maxPhotoCount = 1, s
         </Fragment>
       ) : null}
 
-      <Rectangle bounds={rect} interactive pathOptions={{ color: overlayColor, weight: 0, fillOpacity: 0, opacity: 0 }}>
-        <Tooltip sticky direction="top" opacity={0.95}>
-          {mode === "photo_heatmap" ? `${title} - ${photoCount} photo${photoCount === 1 ? "" : "s"}` : title}
-        </Tooltip>
-      </Rectangle>
+      {hasPolygon ? (
+        <Polygon positions={areaPoints} interactive pathOptions={{ color: overlayColor, weight: 0, fillOpacity: 0, opacity: 0 }}>
+          <Tooltip sticky direction="top" opacity={0.95}>
+            {mode === "photo_heatmap" ? `${title} - ${photoCount} photo${photoCount === 1 ? "" : "s"}` : title}
+          </Tooltip>
+        </Polygon>
+      ) : (
+        <Rectangle bounds={rect} interactive pathOptions={{ color: overlayColor, weight: 0, fillOpacity: 0, opacity: 0 }}>
+          <Tooltip sticky direction="top" opacity={0.95}>
+            {mode === "photo_heatmap" ? `${title} - ${photoCount} photo${photoCount === 1 ? "" : "s"}` : title}
+          </Tooltip>
+        </Rectangle>
+      )}
     </Fragment>
   );
 }
@@ -657,58 +756,43 @@ function MapDebug({ viewLatLngBounds }) {
   );
 }
 
-function BoundsPicker({ enabled, onChange }) {
-  const [start, setStart] = useState(null);
-  const [end, setEnd] = useState(null);
-  const [dragging, setDragging] = useState(false);
-  const map = useMap();
-
-  useEffect(() => {
-    if (!map) return;
-    if (enabled) {
-      map.dragging.disable();
-    } else {
-      map.dragging.enable();
-    }
-    return () => {
-      map.dragging.enable();
-    };
-  }, [map, enabled]);
-
+function AreaPointPicker({ enabled, points, onChange, onComplete }) {
   useMapEvents({
-    mousedown(e) {
+    click(e) {
       if (!enabled) return;
-      setStart(e.latlng);
-      setEnd(e.latlng);
-      setDragging(true);
-    },
-    mousemove(e) {
-      if (!enabled || !dragging) return;
-      setEnd(e.latlng);
-    },
-    mouseup() {
-      if (!enabled || !dragging) return;
-      setDragging(false);
+      const clicked = [Number(e.latlng.lat.toFixed(6)), Number(e.latlng.lng.toFixed(6))];
+      const current = normalizeAreaPoints(points);
+      const next = current.length >= 4 ? [clicked] : [...current, clicked];
+      onChange(next);
+      if (next.length === 4) onComplete?.();
     },
   });
 
-  useEffect(() => {
-    if (!start || !end) return;
-    const north = Math.max(start.lat, end.lat);
-    const south = Math.min(start.lat, end.lat);
-    const east = Math.max(start.lng, end.lng);
-    const west = Math.min(start.lng, end.lng);
-    onChange({ north, south, east, west });
-  }, [start, end, onChange]);
+  const areaPoints = normalizeAreaPoints(points);
+  if (!areaPoints.length) return null;
 
-  if (!start || !end) return null;
-
-  const bounds = [
-    [Math.min(start.lat, end.lat), Math.min(start.lng, end.lng)],
-    [Math.max(start.lat, end.lat), Math.max(start.lng, end.lng)],
-  ];
-
-  return <Rectangle bounds={bounds} interactive={false} pathOptions={{ color: "#00e5ff", weight: 2 }} />;
+  return (
+    <Fragment>
+      {areaPoints.length === 4 ? (
+        <Polygon
+          positions={areaPoints}
+          interactive={false}
+          pathOptions={{ color: "#00e5ff", weight: 2, fillColor: "#00e5ff", fillOpacity: 0.12 }}
+        />
+      ) : (
+        <Polyline positions={areaPoints} interactive={false} pathOptions={{ color: "#00e5ff", weight: 2 }} />
+      )}
+      {areaPoints.map((point, index) => (
+        <CircleMarker
+          key={`area-point-${index}-${point[0]}-${point[1]}`}
+          center={point}
+          radius={5}
+          interactive={false}
+          pathOptions={{ color: "#00e5ff", fillColor: "#101827", fillOpacity: 1, weight: 2 }}
+        />
+      ))}
+    </Fragment>
+  );
 }
 
 function CornerPicker({ enabled, activeCorner, onPick }) {
@@ -723,9 +807,8 @@ function CornerPicker({ enabled, activeCorner, onPick }) {
 
 const TRACK_TOOL_SECTIONS = [
   ["lightroom", "Lightroom"],
-  ["bounds", "Bounds"],
-  ["areaStyle", "Area Style"],
   ["areas", "Areas"],
+  ["areaStyle", "Area Style"],
   ["corner", "Corner"],
 ];
 
@@ -785,7 +868,15 @@ function SebringTrackTools({ mapSkin, toolPanels, setToolPanels, toolsVisible, s
               <button
                 key={key}
                 type="button"
-                onClick={() => setToolPanels((prev) => ({ ...prev, [key]: !prev[key] }))}
+                onClick={() =>
+                  setToolPanels((prev) => {
+                    const next = !prev[key];
+                    if (key === "areas") {
+                      return { ...prev, areas: next, bounds: next || prev.bounds };
+                    }
+                    return { ...prev, [key]: next };
+                  })
+                }
                 style={{
                   background: toolPanels[key] ? "linear-gradient(150deg, #17335e, #123058)" : "rgba(11,20,34,0.9)",
                   border: toolPanels[key] ? "1px solid #75b7ff" : "1px solid #2d476e",
@@ -809,7 +900,25 @@ function SebringTrackTools({ mapSkin, toolPanels, setToolPanels, toolsVisible, s
   );
 }
 
-export function SebringMapView({ showTrackTools = true } = {}) {
+export function SebringMapView({
+  showTrackTools = true,
+  trackId = "sebring",
+  title = "Sebring International Raceway",
+  center = [27.4564, -81.3483],
+  zoom = 14,
+  geoJsonUrl = "",
+  mapGeoJson = null,
+} = {}) {
+  const currentTrackId = String(trackId || "sebring").trim().toLowerCase();
+  const mapTitle = String(title || currentTrackId || "Track map").trim();
+  const isSebring = currentTrackId === "sebring";
+  const cornerStorageKey = `${currentTrackId}_corner_coords_v1`;
+  const photoAreaStorageKey = `${currentTrackId}_photo_areas_v1`;
+  const areaStyleStorageKey = `${currentTrackId}_area_style_v1`;
+  const mapSkinStorageKey = `${currentTrackId}_map_skin_v1`;
+  const defaultCorners = isSebring ? DEFAULT_CORNERS : {};
+  const defaultPhotoAreas = isSebring ? DEFAULT_PHOTO_AREAS : [];
+  const resolvedGeoJsonUrl = geoJsonUrl || `/maps/${currentTrackId}.geojson`;
   const showDebugWindow = false;
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK_LIGHTROOM === "true";
   const useLocalExports = process.env.NEXT_PUBLIC_USE_LOCAL_EXPORTS === "true";
@@ -823,7 +932,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
   const [mapSkinId, setMapSkinId] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_MAP_SKIN_ID;
     try {
-      const raw = window.localStorage.getItem(MAP_SKIN_STORAGE_KEY);
+      const raw = window.localStorage.getItem(mapSkinStorageKey);
       if (raw && MAP_SKINS.some((skin) => skin.id === raw)) return raw;
     } catch {
       // ignore localStorage read errors
@@ -837,14 +946,14 @@ export function SebringMapView({ showTrackTools = true } = {}) {
   const [cornerPickMode, setCornerPickMode] = useState(false);
   const [activeCorner, setActiveCorner] = useState(CORNER_ORDER[0].short);
   const [corners, setCorners] = useState(() => {
-    if (typeof window === "undefined") return DEFAULT_CORNERS;
+    if (typeof window === "undefined") return defaultCorners;
     try {
-      const raw = window.localStorage.getItem(CORNER_STORAGE_KEY);
-      if (!raw) return DEFAULT_CORNERS;
+      const raw = window.localStorage.getItem(cornerStorageKey);
+      if (!raw) return defaultCorners;
       const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === "object" ? { ...DEFAULT_CORNERS, ...parsed } : DEFAULT_CORNERS;
+      return parsed && typeof parsed === "object" ? { ...defaultCorners, ...parsed } : defaultCorners;
     } catch {
-      return DEFAULT_CORNERS;
+      return defaultCorners;
     }
   });
   const initialCornersRef = useRef(corners);
@@ -863,17 +972,18 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     error: "",
   });
   const [bounds, setBounds] = useState(null);
+  const [photoAreaPoints, setPhotoAreaPoints] = useState([]);
   const [viewBounds, setViewBounds] = useState({
-    north: 27.457426,
-    south: 27.448115,
-    east: -81.345928,
-    west: -81.359682,
+    north: Number(center?.[0] || 0) + 0.0045,
+    south: Number(center?.[0] || 0) - 0.0045,
+    east: Number(center?.[1] || 0) + 0.0065,
+    west: Number(center?.[1] || 0) - 0.0065,
   });
   const [viewBoundsVersion, setViewBoundsVersion] = useState(0);
   const [areaVisualMode, setAreaVisualMode] = useState(() => {
     if (typeof window === "undefined") return "photo_heatmap";
     try {
-      const raw = window.localStorage.getItem(AREA_STYLE_STORAGE_KEY);
+      const raw = window.localStorage.getItem(areaStyleStorageKey);
       if (raw && AREA_VISUAL_MODES.some((m) => m.id === raw)) return raw;
     } catch {
       // ignore localStorage read errors
@@ -932,12 +1042,12 @@ export function SebringMapView({ showTrackTools = true } = {}) {
   const [toolsVisible, setToolsVisible] = useState(false);
   const [assignedAreaPhotos, setAssignedAreaPhotos] = useState({});
   const [photoAreas, setPhotoAreas] = useState(() => {
-    if (typeof window === "undefined") return DEFAULT_PHOTO_AREAS;
+    if (typeof window === "undefined") return defaultPhotoAreas;
     try {
-      const raw = window.localStorage.getItem(PHOTO_AREA_STORAGE_KEY);
+      const raw = window.localStorage.getItem(photoAreaStorageKey);
       const parsed = raw ? JSON.parse(raw) : [];
       const localAreas = Array.isArray(parsed) ? parsed : [];
-      const mergedMap = new Map(DEFAULT_PHOTO_AREAS.map((area) => [area.id, area]));
+      const mergedMap = new Map(defaultPhotoAreas.map((area) => [area.id, area]));
       for (const area of localAreas) {
         if (!area || typeof area !== "object") continue;
         if (!area.id) continue;
@@ -956,7 +1066,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
       }
       return Array.from(mergedMap.values());
     } catch {
-      return DEFAULT_PHOTO_AREAS;
+      return defaultPhotoAreas;
     }
   });
   const initialPhotoAreasRef = useRef(photoAreas);
@@ -977,7 +1087,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     apply();
     media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);
-  }, []);
+  }, [resolvedGeoJsonUrl]);
 
   useEffect(() => {
     if (!isMobileToolsHidden) return;
@@ -993,15 +1103,19 @@ export function SebringMapView({ showTrackTools = true } = {}) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(MAP_SKIN_STORAGE_KEY, mapSkin.id);
-  }, [mapSkin.id]);
+    window.localStorage.setItem(mapSkinStorageKey, mapSkin.id);
+  }, [mapSkin.id, mapSkinStorageKey]);
 
   const allAreaRowsBase = [
-    {
-      ...TURN3_INSIDE_AREA,
-      photos: [{ id: "builtin-photo-turn3", src: "/photos/imsa/sebring1.jpg", alt: "Turn 3 Inside" }],
-      locked: true,
-    },
+    ...(isSebring
+      ? [
+          {
+            ...TURN3_INSIDE_AREA,
+            photos: [{ id: "builtin-photo-turn3", src: "/photos/imsa/sebring1.jpg", alt: "Turn 3 Inside" }],
+            locked: true,
+          },
+        ]
+      : []),
     ...photoAreas,
   ].map((area) => ({
     ...area,
@@ -1229,7 +1343,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          trackId: "sebring",
+          trackId: currentTrackId,
           areaId: areaViewer.areaId,
           assetId: current.id,
         }),
@@ -1254,21 +1368,33 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     }
   };
 
+  const updatePhotoAreaShape = useCallback((points) => {
+    const normalized = normalizeAreaPoints(points);
+    setPhotoAreaPoints(normalized);
+    const nextBounds = boundsFromAreaPoints(normalized);
+    if (nextBounds) setBounds(nextBounds);
+  }, []);
+
+  const currentAreaPoints = normalizeAreaPoints(photoAreaPoints);
+  const hasCompletePhotoAreaShape = currentAreaPoints.length === 4 && !!bounds;
+
   const createPhotoAreaFromBounds = () => {
-    if (!bounds) return;
+    if (!hasCompletePhotoAreaShape) {
+      setPhotoAreaMsg("Click 4 points on the map to define the area first");
+      return;
+    }
     const title = (photoAreaName || "").trim() || `Photo area ${photoAreas.length + 1}`;
-    const north = Number(bounds.north.toFixed(6));
-    const south = Number(bounds.south.toFixed(6));
-    const east = Number(bounds.east.toFixed(6));
-    const west = Number(bounds.west.toFixed(6));
-    const center = [
-      Number(((north + south) / 2).toFixed(6)),
-      Number(((east + west) / 2).toFixed(6)),
-    ];
+    const areaBounds = boundsFromAreaPoints(currentAreaPoints);
+    const north = Number(areaBounds.north.toFixed(6));
+    const south = Number(areaBounds.south.toFixed(6));
+    const east = Number(areaBounds.east.toFixed(6));
+    const west = Number(areaBounds.west.toFixed(6));
+    const center = centerFromAreaPoints(currentAreaPoints, areaBounds);
     const next = {
       id: `area-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       title,
       bounds: { north, south, east, west },
+      points: currentAreaPoints,
       center,
       photos: [],
     };
@@ -1297,23 +1423,31 @@ export function SebringMapView({ showTrackTools = true } = {}) {
       east: Number(area.bounds.east),
       west: Number(area.bounds.west),
     });
+    setPhotoAreaPoints(
+      normalizeAreaPoints(area.points).length === 4
+        ? normalizeAreaPoints(area.points)
+        : [
+            [Number(area.bounds.north), Number(area.bounds.west)],
+            [Number(area.bounds.north), Number(area.bounds.east)],
+            [Number(area.bounds.south), Number(area.bounds.east)],
+            [Number(area.bounds.south), Number(area.bounds.west)],
+          ]
+    );
     setPickMode(true);
     setPhotoAreaMsg(`Loaded: ${area.title}`);
   };
 
   const updatePhotoAreaFromBounds = () => {
-    if (!bounds || !editingAreaId) {
-      setPhotoAreaMsg("Select an area and draw or load bounds first");
+    if (!hasCompletePhotoAreaShape || !editingAreaId) {
+      setPhotoAreaMsg("Select an area and click 4 points first");
       return;
     }
-    const north = Number(bounds.north.toFixed(6));
-    const south = Number(bounds.south.toFixed(6));
-    const east = Number(bounds.east.toFixed(6));
-    const west = Number(bounds.west.toFixed(6));
-    const center = [
-      Number(((north + south) / 2).toFixed(6)),
-      Number(((east + west) / 2).toFixed(6)),
-    ];
+    const areaBounds = boundsFromAreaPoints(currentAreaPoints);
+    const north = Number(areaBounds.north.toFixed(6));
+    const south = Number(areaBounds.south.toFixed(6));
+    const east = Number(areaBounds.east.toFixed(6));
+    const west = Number(areaBounds.west.toFixed(6));
+    const center = centerFromAreaPoints(currentAreaPoints, areaBounds);
     const nextTitle = (photoAreaName || "").trim();
     let updated = false;
     setPhotoAreas((prev) =>
@@ -1324,32 +1458,32 @@ export function SebringMapView({ showTrackTools = true } = {}) {
           ...a,
           title: nextTitle || a.title,
           bounds: { north, south, east, west },
+          points: currentAreaPoints,
           center,
         };
       })
     );
-    setPhotoAreaMsg(updated ? "Area bounds updated" : "Selected area not found");
+    setPhotoAreaMsg(updated ? "Area points updated" : "Selected area not found");
   };
 
   const copyPhotoAreaJson = async () => {
-    if (!bounds) {
-      setPhotoAreaMsg("Draw bounds first to copy current area JSON");
+    if (!hasCompletePhotoAreaShape) {
+      setPhotoAreaMsg("Click 4 points first to copy current area JSON");
       return;
     }
     const title = (photoAreaName || "").trim() || "New photo area";
-    const north = Number(bounds.north.toFixed(6));
-    const south = Number(bounds.south.toFixed(6));
-    const east = Number(bounds.east.toFixed(6));
-    const west = Number(bounds.west.toFixed(6));
-    const center = [
-      Number(((north + south) / 2).toFixed(6)),
-      Number(((east + west) / 2).toFixed(6)),
-    ];
+    const areaBounds = boundsFromAreaPoints(currentAreaPoints);
+    const north = Number(areaBounds.north.toFixed(6));
+    const south = Number(areaBounds.south.toFixed(6));
+    const east = Number(areaBounds.east.toFixed(6));
+    const west = Number(areaBounds.west.toFixed(6));
+    const center = centerFromAreaPoints(currentAreaPoints, areaBounds);
     const payload = [
       {
         id: `area-${Date.now()}-draft`,
         title,
         bounds: { north, south, east, west },
+        points: currentAreaPoints,
         center,
         photos: [],
       },
@@ -1454,7 +1588,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
 
   const loadPinsCount = async () => {
     try {
-      const res = await fetch("/api/tracks/sebring/pins", { cache: "no-store" });
+      const res = await fetch(`/api/tracks/${encodeURIComponent(currentTrackId)}/pins`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Pins HTTP ${res.status}`);
       const payload = await res.json();
       setPinsCount(Array.isArray(payload?.pins) ? payload.pins.length : 0);
@@ -1465,7 +1599,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
 
   const loadPins = async () => {
     try {
-      const res = await fetch("/api/tracks/sebring/pins", { cache: "no-store" });
+      const res = await fetch(`/api/tracks/${encodeURIComponent(currentTrackId)}/pins`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Pins HTTP ${res.status}`);
       const payload = await res.json();
       const nextPins = Array.isArray(payload?.pins) ? payload.pins : [];
@@ -1478,7 +1612,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
 
   const loadAssignedAreaPhotos = async () => {
     try {
-      const res = await fetch("/api/photo-areas?trackId=sebring", { cache: "no-store" });
+      const res = await fetch(`/api/photo-areas?trackId=${encodeURIComponent(currentTrackId)}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Areas HTTP ${res.status}`);
       const payload = await res.json();
       const list = Array.isArray(payload?.areas) ? payload.areas : [];
@@ -1496,7 +1630,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     setStaleAreaPhotosLoading(true);
     setStaleAreaPhotosMsg("");
     try {
-      const res = await fetch("/api/photo-areas/stale?trackId=sebring", { cache: "no-store" });
+      const res = await fetch(`/api/photo-areas/stale?trackId=${encodeURIComponent(currentTrackId)}`, { cache: "no-store" });
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
       const staleRows = Array.isArray(payload?.staleRows) ? payload.staleRows : [];
@@ -1521,7 +1655,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     setStaleGpsPhotosLoading(true);
     setStaleGpsPhotosMsg("");
     try {
-      const res = await fetch("/api/tracks/sebring/pins/stale", { cache: "no-store" });
+      const res = await fetch(`/api/tracks/${encodeURIComponent(currentTrackId)}/pins/stale`, { cache: "no-store" });
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
       const staleRows = Array.isArray(payload?.staleRows) ? payload.staleRows : [];
@@ -1547,7 +1681,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     setStaleGpsPhotosRemoving(true);
     setStaleGpsPhotosMsg("");
     try {
-      const res = await fetch("/api/tracks/sebring/pins/stale", {
+      const res = await fetch(`/api/tracks/${encodeURIComponent(currentTrackId)}/pins/stale`, {
         method: "DELETE",
       });
       const payload = await res.json();
@@ -1575,7 +1709,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
       const res = await fetch("/api/photo-areas/stale", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackId: "sebring" }),
+        body: JSON.stringify({ trackId: currentTrackId }),
       });
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
@@ -1599,7 +1733,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     const res = await fetch("/api/track-corners", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ trackId: "sebring", corners: cleaned }),
+      body: JSON.stringify({ trackId: currentTrackId, corners: cleaned }),
     });
     if (!res.ok) {
       const payload = await res.json().catch(() => ({}));
@@ -1608,7 +1742,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
   };
 
   const loadCornersFromCloud = async () => {
-    const res = await fetch("/api/track-corners?trackId=sebring", { cache: "no-store" });
+    const res = await fetch(`/api/track-corners?trackId=${encodeURIComponent(currentTrackId)}`, { cache: "no-store" });
     if (!res.ok) throw new Error(`Corners HTTP ${res.status}`);
     const payload = await res.json();
     return normalizeCornerMap(payload?.corners);
@@ -1622,7 +1756,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     const res = await fetch("/api/photo-areas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ trackId: "sebring", areas: cleaned }),
+      body: JSON.stringify({ trackId: currentTrackId, areas: cleaned }),
     });
     if (!res.ok) {
       const payload = await res.json().catch(() => ({}));
@@ -1631,7 +1765,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
   };
 
   const loadPhotoAreasFromCloud = async () => {
-    const res = await fetch("/api/photo-areas?trackId=sebring", { cache: "no-store" });
+    const res = await fetch(`/api/photo-areas?trackId=${encodeURIComponent(currentTrackId)}`, { cache: "no-store" });
     if (!res.ok) throw new Error(`Areas HTTP ${res.status}`);
     const payload = await res.json();
     return (Array.isArray(payload?.areas) ? payload.areas : [])
@@ -1658,7 +1792,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     setSyncing(true);
     setSyncMsg("");
     try {
-      const res = await fetch("/api/sync/mock-lightroom?trackId=sebring", { method: "POST" });
+      const res = await fetch(`/api/sync/mock-lightroom?trackId=${encodeURIComponent(currentTrackId)}`, { method: "POST" });
       if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
       await loadPins();
       setSyncMsg("Mock sync complete");
@@ -1673,7 +1807,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     setSyncing(true);
     setSyncMsg("");
     try {
-      const res = await fetch("/api/sync/local-exports?trackId=sebring", { method: "POST" });
+      const res = await fetch(`/api/sync/local-exports?trackId=${encodeURIComponent(currentTrackId)}`, { method: "POST" });
       if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
       await loadPins();
       setSyncMsg("Local export sync complete");
@@ -1688,7 +1822,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     setSyncing(true);
     setSyncMsg("");
     try {
-      const res = await fetch("/api/sync/lightroom?trackId=sebring", { method: "POST" });
+      const res = await fetch(`/api/sync/lightroom?trackId=${encodeURIComponent(currentTrackId)}`, { method: "POST" });
       if (!res.ok) throw new Error(`Sync HTTP ${res.status}`);
       await loadPins();
       setSyncMsg("Lightroom sync complete");
@@ -1700,24 +1834,24 @@ export function SebringMapView({ showTrackTools = true } = {}) {
   };
 
   const startConnect = () => {
-    window.location.href = "/api/auth/adobe/start?redirect=/sebring-map";
+    window.location.href = `/api/auth/adobe/start?redirect=/admin/maps/${encodeURIComponent(currentTrackId)}`;
   };
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(CORNER_STORAGE_KEY, JSON.stringify(corners));
+      window.localStorage.setItem(cornerStorageKey, JSON.stringify(corners));
     } catch {
       // ignore storage write failures
     }
-  }, [corners]);
+  }, [corners, cornerStorageKey]);
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(PHOTO_AREA_STORAGE_KEY, JSON.stringify(photoAreas));
+      window.localStorage.setItem(photoAreaStorageKey, JSON.stringify(photoAreas));
     } catch {
       // ignore storage write failures
     }
-  }, [photoAreas]);
+  }, [photoAreas, photoAreaStorageKey]);
 
   useEffect(() => {
     if (!editingAreaId) return;
@@ -1728,11 +1862,11 @@ export function SebringMapView({ showTrackTools = true } = {}) {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(AREA_STYLE_STORAGE_KEY, areaVisualMode);
+      window.localStorage.setItem(areaStyleStorageKey, areaVisualMode);
     } catch {
       // ignore storage write failures
     }
-  }, [areaVisualMode]);
+  }, [areaVisualMode, areaStyleStorageKey]);
 
   useEffect(() => {
     if (!areaViewer.open) return;
@@ -1757,7 +1891,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
         const remoteCorners = await loadCornersFromCloud();
         if (cancelled) return;
 
-        const localRaw = window.localStorage.getItem(CORNER_STORAGE_KEY);
+        const localRaw = window.localStorage.getItem(cornerStorageKey);
         const hasLocalSnapshot = !!localRaw;
         const localCorners = normalizeCornerMap(initialCornersRef.current);
 
@@ -1778,7 +1912,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [cornerStorageKey]);
 
   useEffect(() => {
     if (!didRunCornerPersistRef.current) {
@@ -1801,7 +1935,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
         const remoteAreas = await loadPhotoAreasFromCloud();
         if (cancelled || !remoteAreas.length) return;
 
-        const localRaw = window.localStorage.getItem(PHOTO_AREA_STORAGE_KEY);
+        const localRaw = window.localStorage.getItem(photoAreaStorageKey);
         const hasLocalSnapshot = !!localRaw;
         const localAreas = (Array.isArray(initialPhotoAreasRef.current) ? initialPhotoAreasRef.current : [])
           .map((a) => normalizePhotoArea(a))
@@ -1825,7 +1959,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [photoAreaStorageKey]);
 
   useEffect(() => {
     if (!didRunPhotoAreaPersistRef.current) {
@@ -1843,27 +1977,36 @@ export function SebringMapView({ showTrackTools = true } = {}) {
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/maps/sebring.geojson")
+    const applyGeoJson = (geo) => {
+      if (cancelled) return;
+      if (geo?.type === "FeatureCollection" && Array.isArray(geo.features)) {
+        const lineFeatures = geo.features.filter((f) => {
+          const t = f?.geometry?.type;
+          return t === "LineString" || t === "MultiLineString";
+        });
+
+        if (lineFeatures.length > 0) {
+          setData({ ...geo, features: lineFeatures });
+          return;
+        }
+      }
+      setData(geo);
+    };
+
+    if (mapGeoJson) {
+      applyGeoJson(mapGeoJson);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    fetch(resolvedGeoJsonUrl)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
       .then((geo) => {
-        if (cancelled) return;
-
-        if (geo?.type === "FeatureCollection" && Array.isArray(geo.features)) {
-          const lineFeatures = geo.features.filter((f) => {
-            const t = f?.geometry?.type;
-            return t === "LineString" || t === "MultiLineString";
-          });
-
-          if (lineFeatures.length > 0) {
-            setData({ ...geo, features: lineFeatures });
-            return;
-          }
-        }
-
-        setData(geo);
+        applyGeoJson(geo);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -1873,7 +2016,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [mapGeoJson, resolvedGeoJsonUrl]);
 
   useEffect(() => {
     loadPins();
@@ -1933,6 +2076,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          trackId: currentTrackId,
           shortLink: trimmedShortLink,
           year: shareYear ? Number(shareYear) : undefined,
           race: shareRace || undefined,
@@ -2048,6 +2192,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        trackId: currentTrackId,
         series,
         slug,
         localFiles,
@@ -2143,6 +2288,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          trackId: currentTrackId,
           shortLink: trimmedShortLink,
           series: trimmedSeries,
           slug: trimmedSlug || undefined,
@@ -2346,12 +2492,12 @@ export function SebringMapView({ showTrackTools = true } = {}) {
               boxShadow: "0 12px 28px rgba(0,0,0,0.5)",
             }}
           >
-            <a
+            <Link
               style={{ display: "block", color: mapSkin.panelText, textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
-              href="/sebring-map"
+              href="/maps/sebring"
             >
               Sebring International Raceway
-            </a>
+            </Link>
             <a
               style={{ display: "block", color: mapSkin.panelText, textDecoration: "none", padding: "10px 12px", letterSpacing: 0.3, fontSize: 13 }}
               href="/daniels-park"
@@ -2397,7 +2543,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
           maxWidth: "calc(100vw - 24px)",
         }}
       >
-        <div>Sebring International Raceway</div>
+        <div>{mapTitle}</div>
       </div>
       <div
         style={{
@@ -2845,12 +2991,16 @@ export function SebringMapView({ showTrackTools = true } = {}) {
         {toolPanels.bounds ? (
           <>
             <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginTop: 10, marginBottom: 8 }} />
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>Bounds Picker</div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Photo Area Picker</div>
             <div style={{ color: "#b8c4d8" }}>
-              {pickMode ? "Click and drag to draw a rectangle. The bounds will appear below." : "Picker is off."}
+              {pickMode ? `Click point ${Math.min(currentAreaPoints.length + 1, 4)} of 4 on the map.` : "Picker is off."}
             </div>
-            {pickMode ? <div style={{ marginTop: 4, color: "#9fb2d6" }}>Disable picker to interact with map markers and popups.</div> : null}
-            <div style={{ marginTop: 8 }}>
+            {pickMode ? (
+              <div style={{ marginTop: 4, color: "#9fb2d6" }}>
+                After the 4th click, the area closes back to the first point.
+              </div>
+            ) : null}
+            <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
               <button
                 type="button"
                 onClick={() => {
@@ -2872,7 +3022,35 @@ export function SebringMapView({ showTrackTools = true } = {}) {
               >
                 {pickMode ? "Disable picker" : "Enable picker"}
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPhotoAreaPoints([]);
+                  setBounds(null);
+                  setPhotoAreaMsg("");
+                }}
+                disabled={!currentAreaPoints.length && !bounds}
+                style={{
+                  background: "#101827",
+                  border: "1px solid #2a3a57",
+                  color: "#fff",
+                  padding: "6px 8px",
+                  borderRadius: 8,
+                  cursor: currentAreaPoints.length || bounds ? "pointer" : "default",
+                  fontSize: 12,
+                  opacity: currentAreaPoints.length || bounds ? 1 : 0.65,
+                }}
+              >
+                Start over
+              </button>
             </div>
+            {currentAreaPoints.length ? (
+              <div style={{ marginTop: 8, lineHeight: 1.4 }}>
+                {currentAreaPoints.map((point, index) => (
+                  <div key={`area-point-readout-${index}`}>Point {index + 1}: {point[0].toFixed(6)}, {point[1].toFixed(6)}</div>
+                ))}
+              </div>
+            ) : null}
             {bounds ? (
               <div style={{ marginTop: 8 }}>
                 <button
@@ -2924,6 +3102,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
                 <button
                   type="button"
                   onClick={createPhotoAreaFromBounds}
+                  disabled={!hasCompletePhotoAreaShape}
                   style={{
                     marginTop: 6,
                     width: "100%",
@@ -2932,11 +3111,12 @@ export function SebringMapView({ showTrackTools = true } = {}) {
                     color: "#fff",
                     padding: "6px 8px",
                     borderRadius: 8,
-                    cursor: "pointer",
+                    cursor: hasCompletePhotoAreaShape ? "pointer" : "default",
                     fontSize: 12,
+                    opacity: hasCompletePhotoAreaShape ? 1 : 0.65,
                   }}
                 >
-                  Create area from current bounds
+                  Create area from 4 points
                 </button>
                 {photoAreaMsg ? (
                   <div style={{ marginTop: 6, color: "#9dd8a3" }}>{photoAreaMsg}</div>
@@ -3002,12 +3182,12 @@ export function SebringMapView({ showTrackTools = true } = {}) {
                       fontSize: 12,
                     }}
                   >
-                    {pickMode ? "Redraw mode on" : "Redraw on map"}
+                    {pickMode ? "Point mode on" : "Pick points"}
                   </button>
                   <button
                     type="button"
                     onClick={updatePhotoAreaFromBounds}
-                    disabled={!editingAreaId || !bounds}
+                    disabled={!editingAreaId || !hasCompletePhotoAreaShape}
                     style={{
                       flex: 1,
                       background: "#15233a",
@@ -3015,17 +3195,17 @@ export function SebringMapView({ showTrackTools = true } = {}) {
                       color: "#fff",
                       padding: "6px 8px",
                       borderRadius: 8,
-                      cursor: editingAreaId && bounds ? "pointer" : "default",
+                      cursor: editingAreaId && hasCompletePhotoAreaShape ? "pointer" : "default",
                       fontSize: 12,
-                      opacity: editingAreaId && bounds ? 1 : 0.65,
+                      opacity: editingAreaId && hasCompletePhotoAreaShape ? 1 : 0.65,
                     }}
                   >
-                    Save bounds
+                    Save points
                   </button>
                 </div>
-                {!bounds ? <div style={{ marginTop: 6, color: "#9fb2d6", fontSize: 11 }}>Load an area or draw bounds before saving.</div> : null}
+                {!hasCompletePhotoAreaShape ? <div style={{ marginTop: 6, color: "#9fb2d6", fontSize: 11 }}>Load an area or click 4 points before saving.</div> : null}
                 <div style={{ marginTop: 6, color: "#9fb2d6", fontSize: 11 }}>
-                  Redraw: click and drag on the map to define the new rectangle, then click Save bounds.
+                  Redraw: click four map points in order, then click Save points.
                 </div>
               </div>
             ) : null}
@@ -3957,8 +4137,8 @@ export function SebringMapView({ showTrackTools = true } = {}) {
       ) : null}
 
       <MapContainer
-        center={[27.4564, -81.3483]}
-        zoom={14}
+        center={center}
+        zoom={zoom}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
@@ -3970,7 +4150,17 @@ export function SebringMapView({ showTrackTools = true } = {}) {
         />
         {data ? <GeoJSON data={data} style={geoStyle} /> : null}
         {viewLatLngBounds ? <FitToBounds bounds={viewLatLngBounds} lockZoom version={viewBoundsVersion} /> : data ? <FitToGeoJSON data={data} /> : null}
-        {showTrackTools && toolPanels.bounds ? <BoundsPicker enabled={pickMode} onChange={setBounds} /> : null}
+        {showTrackTools && toolPanels.bounds ? (
+          <AreaPointPicker
+            enabled={pickMode}
+            points={currentAreaPoints}
+            onChange={updatePhotoAreaShape}
+            onComplete={() => {
+              setPickMode(false);
+              setPhotoAreaMsg("Area shape ready");
+            }}
+          />
+        ) : null}
         {showTrackTools && toolPanels.corner ? <CornerPicker enabled={cornerPickMode} activeCorner={activeCorner} onPick={onCornerPick} /> : null}
         {showDebugWindow ? <MapDebug viewLatLngBounds={viewLatLngBounds} /> : null}
 
@@ -4062,6 +4252,7 @@ export function SebringMapView({ showTrackTools = true } = {}) {
           <Fragment key={area.id}>
             <AreaOverlay
               bounds={area.bounds}
+              points={area.points}
               title={area.title}
               mode={areaVisualMode}
               photoCount={Array.isArray(area.photos) ? area.photos.length : 0}
