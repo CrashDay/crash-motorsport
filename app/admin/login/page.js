@@ -11,7 +11,7 @@ function getErrorMessage(error) {
 
 function getSafeNext(value) {
   const next = String(value || "").trim();
-  if (!next.startsWith("/admin") || next.startsWith("/admin/login")) return "/admin/sebring-map";
+  if (!next.startsWith("/admin") || next.startsWith("/admin/login")) return "/admin/maps";
   return next;
 }
 
@@ -50,7 +50,7 @@ export default async function Page({ searchParams }) {
       >
         <h1 style={{ margin: 0, fontSize: 24, lineHeight: 1.1 }}>Admin Sign In</h1>
         <p style={{ margin: "8px 0 16px", color: "#b8c4d8", fontSize: 13, lineHeight: 1.45 }}>
-          Enter the admin password to manage Sebring track tools.
+          Enter the admin password to manage maps and track tools.
         </p>
         <input type="hidden" name="next" value={next} />
         <label style={{ display: "block", color: "#dfe8ff", fontSize: 12, fontWeight: 700, marginBottom: 6 }}>

@@ -8,7 +8,7 @@ import {
 } from "@/lib/admin-auth";
 
 function getSafeNextUrl(request, value) {
-  const fallback = new URL("/admin/sebring-map", request.url);
+  const fallback = new URL("/admin/maps", request.url);
   const candidate = String(value || "").trim();
   if (!candidate.startsWith("/admin") || candidate.startsWith("/admin/login")) return fallback;
   return new URL(candidate, request.url);
