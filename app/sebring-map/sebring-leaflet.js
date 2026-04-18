@@ -129,6 +129,7 @@ const AREA_VISUAL_MODES = [
   { id: "heat_blur", label: "Heat Blur" },
   { id: "photo_heatmap", label: "Photo Heatmap" },
 ];
+const AREA_HEATMAP_FULL_PHOTO_COUNT = 24;
 const AREA_OVERLAY_COLOR = "#5da2ff";
 const AREA_MARKER_COLOR = "rgb(210, 40, 40)";
 
@@ -325,10 +326,12 @@ function heatRadiusMeters(bounds) {
   return Math.max(10, Math.hypot(latMeters, lngMeters) * 0.28);
 }
 
-function areaPhotoHeatRadiusMeters(bounds, ratio) {
+function areaPhotoHeatRadiusMeters(bounds, photoCount) {
   const geometryRadius = heatRadiusMeters(bounds);
-  const countRadius = 46 + Math.max(0, Math.min(1, ratio)) * 72;
-  return Math.max(countRadius, Math.min(geometryRadius, 112));
+  const count = Math.max(0, Number(photoCount) || 0);
+  const countRadius = 24 + Math.sqrt(count) * 11;
+  const areaCap = Math.max(34, Math.min(geometryRadius, 96));
+  return Math.min(countRadius, areaCap);
 }
 
 function normalizeCornerMap(raw) {
@@ -429,18 +432,17 @@ function normalizePhotoArea(area) {
   };
 }
 
-function AreaOverlay({ bounds, points, title, mode, photoCount = 0, maxPhotoCount = 1, skin, onClick = null }) {
+function AreaOverlay({ bounds, points, title, mode, photoCount = 0, skin, onClick = null }) {
   const areaPoints = normalizeAreaPoints(points);
   const hasPolygon = areaPoints.length === 4;
   const center = centerFromAreaPoints(areaPoints, bounds);
   const rect = toLatLngBounds(bounds);
-  const safeMax = Math.max(1, Number(maxPhotoCount) || 1);
-  const ratio = Math.max(0, Math.min(1, (Number(photoCount) || 0) / safeMax));
+  const ratio = Math.max(0, Math.min(1, (Number(photoCount) || 0) / AREA_HEATMAP_FULL_PHOTO_COUNT));
   const overlayColor = skin?.areaOverlayColor || AREA_OVERLAY_COLOR;
   const areaLow = skin?.areaLow || [120, 10, 10];
   const areaHigh = skin?.areaHigh || [255, 50, 45];
   const heatColor = interpolateRgb(areaLow, areaHigh, ratio);
-  const photoHeatRadius = areaPhotoHeatRadiusMeters(bounds, ratio);
+  const photoHeatRadius = areaPhotoHeatRadiusMeters(bounds, photoCount);
 
   return (
     <Fragment>
@@ -1179,10 +1181,6 @@ export function SebringMapView({
         return yearOk && raceOk;
       }),
     }));
-  const maxAreaPhotoCount = useMemo(
-    () => Math.max(1, ...allAreaRows.map((area) => (Array.isArray(area.photos) ? area.photos.length : 0))),
-    [allAreaRows]
-  );
   const visibleGpsPins = useMemo(() => {
     const grouped = new Map();
     for (const pin of pins) {
@@ -4266,7 +4264,6 @@ export function SebringMapView({
               title={area.title}
               mode={areaVisualMode}
               photoCount={Array.isArray(area.photos) ? area.photos.length : 0}
-              maxPhotoCount={maxAreaPhotoCount}
               skin={mapSkin}
               onClick={Array.isArray(area.photos) && area.photos.length ? () => openAreaViewer(area) : null}
             />
