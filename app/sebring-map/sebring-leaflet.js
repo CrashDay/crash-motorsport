@@ -230,7 +230,7 @@ const MAP_SKINS = [
     areaHigh: [206, 55, 44],
   },
 ];
-const DEFAULT_MAP_SKIN_ID = "night";
+const DEFAULT_MAP_SKIN_ID = "paper";
 
 function getMapSkin(skinId) {
   return MAP_SKINS.find((skin) => skin.id === skinId) || MAP_SKINS[0];
