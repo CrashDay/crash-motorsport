@@ -1,0 +1,271 @@
+{
+  "date": "2026-05-22",
+  "records": [
+    {
+      "symbol": "AMZN",
+      "date": "2026-05-22",
+      "verifiedAt": "2026-05-23T16:48:33.249Z",
+      "verifiedAtLabel": "Last checked 5/23/2026, 10:48:33 AM",
+      "state": "pass",
+      "summary": "AMZN is a pass for now because the setup is broken, degraded, or blocked by fresh evidence.",
+      "why": [
+        "Schwab account context: this ticker is not currently held.",
+        "Approximate Schwab buying power available: $19,289.",
+        "Swing overlay sees this as Catalyst Continuation.",
+        "Scanner setup is Needs More Confirmation with No major pattern.",
+        "Relative strength is outperforming versus SPY/QQQ."
+      ],
+      "entryPlan": "No long trigger yet.",
+      "riskPlan": "Stop below 253.66.",
+      "targetPlan": "Initial target near 275.5 with 2R minimum.",
+      "blockingIssue": "Fresh news check found 1 negative headline for AMZN.",
+      "sourcesUsed": [
+        "Motley Fool Breakfast News",
+        "Marketaux news",
+        "Polygon snapshot",
+        "Polygon news",
+        "Schwab positions"
+      ],
+      "freshness": "Market snapshot updated 17 hours ago. Latest Polygon news item published 2 hours ago. Latest Marketaux headline published 2 hours ago.",
+      "liveSnapshot": {
+        "currentPrice": 265.4,
+        "previousClose": 268.46,
+        "dayVolume": 27540521,
+        "minuteVolume": 1045,
+        "updatedAt": "2026-05-23T00:00:00.000Z"
+      },
+      "liveNews": [
+        {
+          "title": "Rivian Automotive vs. Lucid: Which EV Stock Is a Better Buy in 2026?",
+          "publishedUtc": "2026-05-23T14:22:32Z",
+          "publisher": "The Motley Fool",
+          "sentiment": "neutral",
+          "articleUrl": "https://www.fool.com/coverage/better-buy/2026/05/23/rivian-automotive-vs-lucid-which-ev-stock-is-a-better-buy-in-2026/?source=iedfolrf0000001"
+        },
+        {
+          "title": "2 Stocks I Plan to Hold for the Next 20 Years",
+          "publishedUtc": "2026-05-23T14:05:00Z",
+          "publisher": "The Motley Fool",
+          "sentiment": "positive",
+          "articleUrl": "https://www.fool.com/investing/2026/05/23/2-stocks-i-plan-to-hold-for-the-next-20-years/?source=iedfolrf0000001"
+        },
+        {
+          "title": "The Best Stocks to Invest $5,000 In Right Now",
+          "publishedUtc": "2026-05-22T20:21:00Z",
+          "publisher": "The Motley Fool",
+          "sentiment": "neutral",
+          "articleUrl": "https://www.fool.com/investing/2026/05/22/the-best-stocks-to-invest-5000-in-right-now/?source=iedfolrf0000001"
+        },
+        {
+          "title": "SpaceX IPO Vs. Tesla 2010: Different Era, Same Hype?",
+          "publishedUtc": "2026-05-22T18:17:24Z",
+          "publisher": "Benzinga",
+          "sentiment": "negative",
+          "articleUrl": "https://www.benzinga.com/Opinion/26/05/52754010/spacex-ipo-vs-tesla-2010-different-era-same-hype?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel"
+        },
+        {
+          "title": "Is This AI Data Center Stock a Buy While the Market Panics About Oversupply?",
+          "publishedUtc": "2026-05-22T18:01:00Z",
+          "publisher": "The Motley Fool",
+          "sentiment": "neutral",
+          "articleUrl": "https://www.fool.com/investing/2026/05/22/ai-data-center-stock-buy-oversupply-vrt/?source=iedfolrf0000001"
+        }
+      ],
+      "schwabHolding": null,
+      "marketauxNews": [
+        {
+          "title": "Why Wall Street Still Can’t Ignore Amazon.com, Inc. (AMZN)",
+          "description": "Amazon.com, Inc. (NASDAQ:AMZN) is among the most traded US stocks so far in 2026. On May 20, Wells Fargo slightly trimmed the price target on Amazon.com, Inc. (NASDAQ:AMZN) to $312, down from $313, and reiterated an Overweight rating. According to the firm, market confidence is strengthening in companies directly monetizing compute investments through their cloud […]",
+          "snippet": "Amazon.com, Inc. (NASDAQ:AMZN) is among the most traded US stocks so far in 2026. On May 20, Wells Fargo slightly trimmed the price target on Amazon.com, Inc. (...",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/why-wall-street-still-t-145200990.html",
+          "source": "finance.yahoo.com",
+          "publishedAt": "2026-05-23T14:52:00.000000Z",
+          "sentiment": "neutral",
+          "entitySentimentScore": 0.134283,
+          "entityName": "Amazon.com, Inc.",
+          "entityMatchScore": 98.31125,
+          "qualityScore": 83
+        }
+      ],
+      "marketauxSentiment": "neutral"
+    },
+    {
+      "symbol": "IBM",
+      "date": "2026-05-22",
+      "verifiedAt": "2026-05-23T16:45:45.384Z",
+      "verifiedAtLabel": "Last checked 5/23/2026, 10:45:45 AM",
+      "state": "pass",
+      "summary": "IBM is a pass for now because the setup is broken, degraded, or blocked by fresh evidence.",
+      "why": [
+        "Schwab account context: this ticker is not currently held.",
+        "Approximate Schwab buying power available: $19,289.",
+        "Swing overlay sees this as Breakout / Momentum.",
+        "Scanner setup is Needs More Confirmation with 20-Day Breakout Close.",
+        "Marketaux did not add a strong symbol-specific catalyst check."
+      ],
+      "entryPlan": "No long trigger yet.",
+      "riskPlan": "Stop below 210.38.",
+      "targetPlan": "Initial target near 265.6 with 2R minimum.",
+      "blockingIssue": "Relative strength is laggard versus SPY/QQQ.",
+      "sourcesUsed": [
+        "Motley Fool Breakfast News",
+        "Polygon snapshot",
+        "Polygon news",
+        "Schwab positions"
+      ],
+      "freshness": "Market snapshot updated 17 hours ago. Latest Polygon news item published 9 hours ago.",
+      "liveSnapshot": {
+        "currentPrice": 252.01,
+        "previousClose": 252.97,
+        "dayVolume": 19074374,
+        "minuteVolume": 622,
+        "updatedAt": "2026-05-23T00:00:00.000Z"
+      },
+      "liveNews": [
+        {
+          "title": "The AI Stock Retirees Are Adding to Their Portfolios -- and Growth Investors Should, Too",
+          "publishedUtc": "2026-05-23T07:25:00Z",
+          "publisher": "The Motley Fool",
+          "sentiment": "positive",
+          "articleUrl": "https://www.fool.com/investing/2026/05/23/the-ai-stock-retirees-are-adding-to-their-portfoli/?source=iedfolrf0000001"
+        },
+        {
+          "title": "Eight Weeks Up, And Even A Hawkish Fed Can't Stop It: This Week On Wall Street",
+          "publishedUtc": "2026-05-22T19:00:52Z",
+          "publisher": "Benzinga",
+          "sentiment": "positive",
+          "articleUrl": "https://www.benzinga.com/markets/equities/26/05/52755165/sp-500-eighth-weekly-gain-hawkish-fed-consumer-sentiment?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel"
+        },
+        {
+          "title": "Why IBM Stock Was Rocking it This Week",
+          "publishedUtc": "2026-05-22T17:33:09Z",
+          "publisher": "The Motley Fool",
+          "sentiment": "positive",
+          "articleUrl": "https://www.fool.com/investing/2026/05/22/why-ibm-stock-was-rocking-it-this-week/?source=iedfolrf0000001"
+        },
+        {
+          "title": "Why Does Quantum Computing Stock Keep Going Up?",
+          "publishedUtc": "2026-05-22T16:05:17Z",
+          "publisher": "The Motley Fool",
+          "sentiment": "positive",
+          "articleUrl": "https://www.fool.com/investing/2026/05/22/why-does-quantum-computing-stock-keep-going-up/?source=iedfolrf0000001"
+        },
+        {
+          "title": "S&P 500 Rally Defies Weak Sentiment and Hawkish Fed Signals",
+          "publishedUtc": "2026-05-22T16:04:00Z",
+          "publisher": "Investing.com",
+          "sentiment": "positive",
+          "articleUrl": "https://www.investing.com/analysis/sp-500-rally-defies-weak-sentiment-and-hawkish-fed-signals-200680810"
+        }
+      ],
+      "schwabHolding": null,
+      "marketauxNews": [],
+      "marketauxSentiment": "unknown"
+    },
+    {
+      "symbol": "WDAY",
+      "date": "2026-05-22",
+      "verifiedAt": "2026-05-23T16:46:05.304Z",
+      "verifiedAtLabel": "Last checked 5/23/2026, 10:46:05 AM",
+      "state": "pass",
+      "summary": "WDAY is a pass for now because the setup is broken, degraded, or blocked by fresh evidence.",
+      "why": [
+        "Schwab account context: this ticker is not currently held.",
+        "Approximate Schwab buying power available: $19,289.",
+        "Swing overlay sees this as Breakout / Momentum.",
+        "Scanner setup is Needs More Confirmation with No major pattern.",
+        "Marketaux found 4 supportive recent headlines."
+      ],
+      "entryPlan": "No long trigger yet.",
+      "riskPlan": "Stop below 110.66.",
+      "targetPlan": "Initial target near 139.43 with 2R minimum.",
+      "blockingIssue": "Relative strength is laggard versus SPY/QQQ.",
+      "sourcesUsed": [
+        "Motley Fool Breakfast News",
+        "Marketaux news",
+        "Polygon snapshot",
+        "Polygon news",
+        "Schwab positions"
+      ],
+      "freshness": "Market snapshot updated 17 hours ago. Latest Polygon news item published 20 hours ago. Latest Marketaux headline published 2 days ago.",
+      "liveSnapshot": {
+        "currentPrice": 127.75,
+        "previousClose": 121.85,
+        "dayVolume": 10789749,
+        "minuteVolume": 100,
+        "updatedAt": "2026-05-22T23:32:00.000Z"
+      },
+      "liveNews": [
+        {
+          "title": "Stock Market Today, May 22: S&P 500 Posts Eighth Straight Week of Gains",
+          "publishedUtc": "2026-05-22T21:10:42Z",
+          "publisher": "The Motley Fool",
+          "sentiment": "positive",
+          "articleUrl": "https://www.fool.com/coverage/stock-market-today/2026/05/22/stock-market-today-may-22-s-and-p-500-reaches-eighth-straight-week-of-gains/?source=iedfolrf0000001"
+        },
+        {
+          "title": "S&P 500 Rally Defies Weak Sentiment and Hawkish Fed Signals",
+          "publishedUtc": "2026-05-22T16:04:00Z",
+          "publisher": "Investing.com",
+          "sentiment": "positive",
+          "articleUrl": "https://www.investing.com/analysis/sp-500-rally-defies-weak-sentiment-and-hawkish-fed-signals-200680810"
+        },
+        {
+          "title": "Stock Market Today: Dow, S&P 500, Nasdaq Futures Rise As Investors Eye U.S.-Iran Peace Talks— Estee Lauder, Workday, Zoom In Focus  (UPDATED)",
+          "publishedUtc": "2026-05-22T12:27:43Z",
+          "publisher": "Benzinga",
+          "sentiment": "positive",
+          "articleUrl": "https://www.benzinga.com/markets/equities/26/05/52738958/stock-market-today-dow-jones-sp-500-futures-gain-as-investors-eye-us-iran-peace-talks-estee-laud?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel"
+        },
+        {
+          "title": "Why Is Workday Stock Soaring Friday?",
+          "publishedUtc": "2026-05-22T10:46:37Z",
+          "publisher": "Benzinga",
+          "sentiment": "positive",
+          "articleUrl": "https://www.benzinga.com/trading-ideas/movers/26/05/52740012/why-is-workday-stock-soaring-friday?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel"
+        },
+        {
+          "title": "Workday Stock Spikes After Q1 Earnings Release — Here's Why",
+          "publishedUtc": "2026-05-21T20:47:52Z",
+          "publisher": "Benzinga",
+          "sentiment": "positive",
+          "articleUrl": "https://www.benzinga.com/markets/earnings/26/05/52734068/workday-stock-spikes-after-q1-earnings-release-heres-why?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel"
+        }
+      ],
+      "schwabHolding": null,
+      "marketauxNews": [
+        {
+          "title": "Workday jumps 10% as it bumps up margin forecast on AI strength",
+          "description": "Workday's CEO says the company is seeing success in artificial intelligence.",
+          "snippet": "Workday's CEO says the company is seeing success in artificial intelligence.",
+          "url": "https://www.cnbc.com/2026/05/21/workday-wday-q1-earnings-report-2027.html",
+          "source": "CNBC",
+          "publishedAt": "2026-05-21T20:17:35Z",
+          "sentiment": "positive",
+          "qualityScore": 54
+        },
+        {
+          "title": "Analyzing Workday’s (WDAY) Ideocratic Earnings Growth Dynamics",
+          "description": "Eagle Capital Management, an investment management company, released its first quarter 2026 investor letter. A copy of the letter is available to download...",
+          "snippet": "Eagle Capital Management, an investment management company, released its first quarter 2026 investor letter. A copy of the letter is available to download...",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/analyzing-workday-wday-ideocratic-earnings-135137485.html",
+          "source": "Yahoo Entertainment",
+          "publishedAt": "2026-05-21T13:51:37Z",
+          "sentiment": "positive",
+          "qualityScore": 52
+        },
+        {
+          "title": "Workday Q1 Earnings Call Highlights",
+          "description": "Workday (NASDAQ:WDAY) reported first-quarter fiscal 2027 results that executives said reflected renewed momentum in new annual contract value growth...",
+          "snippet": "Workday (NASDAQ:WDAY) reported first-quarter fiscal 2027 results that executives said reflected renewed momentum in new annual contract value growth...",
+          "url": "https://www.marketbeat.com/instant-alerts/workday-q1-earnings-call-highlights-2026-05-21/?utm_source=yahoofinance&amp;utm_medium=yahoofinance",
+          "source": "MarketBeat",
+          "publishedAt": "2026-05-21T22:06:40Z",
+          "sentiment": "positive",
+          "qualityScore": 42
+        }
+      ],
+      "marketauxSentiment": "positive"
+    }
+  ]
+}
