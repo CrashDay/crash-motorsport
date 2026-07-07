@@ -1,0 +1,1025 @@
+{
+  "symbol": "KBWB",
+  "ok": true,
+  "provider": "Polygon.io",
+  "fetchedAt": "2026-07-07T12:00:39.543Z",
+  "from": "2025-11-29",
+  "to": "2026-07-07",
+  "candleCount": 148,
+  "analysis": {
+    "score": 80,
+    "pattern": "20-Day Breakout Close",
+    "setup": "Breakout Candidate",
+    "primaryStrategy": "Breakout",
+    "trend": "Uptrend",
+    "close": 96.25,
+    "sma20": 92.76,
+    "sma50": 88.78,
+    "atr14": 1.74,
+    "avgVolume20": 2190245,
+    "volumeRatio": 0.52,
+    "support20": 88.86,
+    "resistance20": 96.15,
+    "relativeLocation": "Above resistance",
+    "breakoutScore": 78,
+    "pullbackScore": 53,
+    "relativeStrengthScore": 66,
+    "relativeStrengthLabel": "Leader",
+    "sectorProxy": "XLF",
+    "sectorRelativeStrengthScore": 54,
+    "sectorRelativeStrengthLabel": "In line with sector",
+    "rsSector20": -1.03,
+    "rsSector50": 2.86,
+    "eventRiskScore": 36,
+    "eventRiskLabel": "Medium event risk",
+    "eventRiskFlags": [
+      "fresh earnings reaction",
+      "headline sensitivity"
+    ],
+    "extensionScore": 65,
+    "extensionLabel": "Fresh",
+    "structureQualityScore": 68,
+    "rsSpy20": 7.31,
+    "rsSpy50": 4.76,
+    "rsQqq20": 8.94,
+    "rsQqq50": 0.05,
+    "premarketMove": null,
+    "trigger": "Buy only above 96.26 with follow-through volume.",
+    "invalidation": "Stop below 93.81.",
+    "target": "First target 99.73; next area beyond 99.63.",
+    "notes": [
+      "Detected 20-Day Breakout Close.",
+      "Uptrend with close 96.25 versus SMA20 92.76 and SMA50 88.78.",
+      "Volume ran at 0.52x the 20-day average.",
+      "Relative strength is leader versus SPY/QQQ.",
+      "Sector check versus XLF: in line with sector.",
+      "Structure quality 68 with setup freshness tagged fresh.",
+      "Breakout score 78 | Pullback score 53.",
+      "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+      "Latest close improved versus the prior session.",
+      "Narrative: banking stocks continue to outperform, with the Invesco KBW Bank ETF (NASDAQ:KBWB ) reaching a new high yesterday, as the outlook for higher interest rates and…"
+    ]
+  },
+  "candles": [
+    {
+      "date": "2026-01-12",
+      "open": 86.53,
+      "high": 86.92,
+      "low": 86.105,
+      "close": 86.8,
+      "volume": 2352606
+    },
+    {
+      "date": "2026-01-13",
+      "open": 86.97,
+      "high": 87.11,
+      "low": 85.47,
+      "close": 85.66,
+      "volume": 2731709
+    },
+    {
+      "date": "2026-01-14",
+      "open": 85.1,
+      "high": 85.27,
+      "low": 84.205,
+      "close": 85.12,
+      "volume": 2575985
+    },
+    {
+      "date": "2026-01-15",
+      "open": 85.245,
+      "high": 86.87,
+      "low": 85.22,
+      "close": 86.49,
+      "volume": 4571198
+    },
+    {
+      "date": "2026-01-16",
+      "open": 86.27,
+      "high": 87.11,
+      "low": 86.08,
+      "close": 86.14,
+      "volume": 1614304
+    },
+    {
+      "date": "2026-01-20",
+      "open": 84.71,
+      "high": 86.22,
+      "low": 84.28,
+      "close": 84.7,
+      "volume": 2726959
+    },
+    {
+      "date": "2026-01-21",
+      "open": 84.79,
+      "high": 86.94,
+      "low": 84.79,
+      "close": 86.23,
+      "volume": 5220419
+    },
+    {
+      "date": "2026-01-22",
+      "open": 86.61,
+      "high": 87.735,
+      "low": 86.14,
+      "close": 86.29,
+      "volume": 2249849
+    },
+    {
+      "date": "2026-01-23",
+      "open": 85.65,
+      "high": 85.66,
+      "low": 84.13,
+      "close": 84.41,
+      "volume": 1752188
+    },
+    {
+      "date": "2026-01-26",
+      "open": 84.41,
+      "high": 85.42,
+      "low": 84.41,
+      "close": 85.13,
+      "volume": 1332840
+    },
+    {
+      "date": "2026-01-27",
+      "open": 85.1,
+      "high": 85.66,
+      "low": 84.88,
+      "close": 85.49,
+      "volume": 2787036
+    },
+    {
+      "date": "2026-01-28",
+      "open": 85.2,
+      "high": 85.51,
+      "low": 84.47,
+      "close": 85.09,
+      "volume": 1890800
+    },
+    {
+      "date": "2026-01-29",
+      "open": 85.52,
+      "high": 86.45,
+      "low": 84.975,
+      "close": 86.22,
+      "volume": 3145680
+    },
+    {
+      "date": "2026-01-30",
+      "open": 85.92,
+      "high": 86.48,
+      "low": 85.34,
+      "close": 86.2,
+      "volume": 4266628
+    },
+    {
+      "date": "2026-02-02",
+      "open": 86.14,
+      "high": 87.73,
+      "low": 85.59,
+      "close": 87.64,
+      "volume": 1576494
+    },
+    {
+      "date": "2026-02-03",
+      "open": 87.8,
+      "high": 89.24,
+      "low": 87,
+      "close": 88.35,
+      "volume": 3319440
+    },
+    {
+      "date": "2026-02-04",
+      "open": 88.63,
+      "high": 90.035,
+      "low": 88.59,
+      "close": 89.1,
+      "volume": 4134740
+    },
+    {
+      "date": "2026-02-05",
+      "open": 88.49,
+      "high": 89,
+      "low": 87.01,
+      "close": 88.13,
+      "volume": 3217129
+    },
+    {
+      "date": "2026-02-06",
+      "open": 89.19,
+      "high": 90.915,
+      "low": 89.19,
+      "close": 90.6,
+      "volume": 3152268
+    },
+    {
+      "date": "2026-02-09",
+      "open": 90.41,
+      "high": 91.22,
+      "low": 90.18,
+      "close": 90.7,
+      "volume": 1688418
+    },
+    {
+      "date": "2026-02-10",
+      "open": 90.6,
+      "high": 91.435,
+      "low": 88.31,
+      "close": 89.79,
+      "volume": 2662794
+    },
+    {
+      "date": "2026-02-11",
+      "open": 90.46,
+      "high": 91.005,
+      "low": 87.695,
+      "close": 88.17,
+      "volume": 3669894
+    },
+    {
+      "date": "2026-02-12",
+      "open": 88.82,
+      "high": 89.35,
+      "low": 84.59,
+      "close": 85.34,
+      "volume": 3193491
+    },
+    {
+      "date": "2026-02-13",
+      "open": 84.96,
+      "high": 85.95,
+      "low": 83.72,
+      "close": 85.61,
+      "volume": 2615206
+    },
+    {
+      "date": "2026-02-17",
+      "open": 85.79,
+      "high": 87.12,
+      "low": 85.79,
+      "close": 86.19,
+      "volume": 3793085
+    },
+    {
+      "date": "2026-02-18",
+      "open": 86.52,
+      "high": 87.89,
+      "low": 86.27,
+      "close": 87.29,
+      "volume": 2054046
+    },
+    {
+      "date": "2026-02-19",
+      "open": 86.62,
+      "high": 86.82,
+      "low": 85.4,
+      "close": 86.24,
+      "volume": 1427200
+    },
+    {
+      "date": "2026-02-20",
+      "open": 85.79,
+      "high": 87.08,
+      "low": 85.17,
+      "close": 87.08,
+      "volume": 2660873
+    },
+    {
+      "date": "2026-02-23",
+      "open": 86.53,
+      "high": 87.265,
+      "low": 82.74,
+      "close": 83.25,
+      "volume": 2525919.800422
+    },
+    {
+      "date": "2026-02-24",
+      "open": 82.56,
+      "high": 83.835,
+      "low": 81.86,
+      "close": 83.1,
+      "volume": 2004084.040937
+    },
+    {
+      "date": "2026-02-25",
+      "open": 83.69,
+      "high": 85.2,
+      "low": 83.56,
+      "close": 85.11,
+      "volume": 2602398.737348
+    },
+    {
+      "date": "2026-02-26",
+      "open": 85.52,
+      "high": 86.96,
+      "low": 85.22,
+      "close": 86.07,
+      "volume": 2031373.319278
+    },
+    {
+      "date": "2026-02-27",
+      "open": 84.44,
+      "high": 84.585,
+      "low": 80.92,
+      "close": 81.86,
+      "volume": 3488092.308083
+    },
+    {
+      "date": "2026-03-02",
+      "open": 80.51,
+      "high": 83.04,
+      "low": 80.0257,
+      "close": 82.43,
+      "volume": 2893968.374652
+    },
+    {
+      "date": "2026-03-03",
+      "open": 80.43,
+      "high": 82.67,
+      "low": 79.85,
+      "close": 81.94,
+      "volume": 2909105.691857
+    },
+    {
+      "date": "2026-03-04",
+      "open": 82.13,
+      "high": 82.62,
+      "low": 81.6,
+      "close": 82.45,
+      "volume": 2421425.711995
+    },
+    {
+      "date": "2026-03-05",
+      "open": 81.62,
+      "high": 82.37,
+      "low": 80.29,
+      "close": 81.06,
+      "volume": 2374304.361492
+    },
+    {
+      "date": "2026-03-06",
+      "open": 78.92,
+      "high": 79.21,
+      "low": 77.49,
+      "close": 79.09,
+      "volume": 3376579.618435
+    },
+    {
+      "date": "2026-03-09",
+      "open": 77.7,
+      "high": 79.27,
+      "low": 76.15,
+      "close": 78.89,
+      "volume": 3351595.546425
+    },
+    {
+      "date": "2026-03-10",
+      "open": 79.08,
+      "high": 80.32,
+      "low": 78.1,
+      "close": 78.88,
+      "volume": 1925410.770898
+    },
+    {
+      "date": "2026-03-11",
+      "open": 78.535,
+      "high": 78.88,
+      "low": 77.42,
+      "close": 78.34,
+      "volume": 1880043.094675
+    },
+    {
+      "date": "2026-03-12",
+      "open": 76.71,
+      "high": 77.07,
+      "low": 76.09,
+      "close": 76.38,
+      "volume": 3178735.918119
+    },
+    {
+      "date": "2026-03-13",
+      "open": 76.74,
+      "high": 77.41,
+      "low": 75.76,
+      "close": 75.84,
+      "volume": 2597561.462573
+    },
+    {
+      "date": "2026-03-16",
+      "open": 76.59,
+      "high": 77.56,
+      "low": 76.256,
+      "close": 76.42,
+      "volume": 1767908.748673
+    },
+    {
+      "date": "2026-03-17",
+      "open": 77.18,
+      "high": 77.98,
+      "low": 76.9,
+      "close": 77.03,
+      "volume": 1439298.980432
+    },
+    {
+      "date": "2026-03-18",
+      "open": 76.57,
+      "high": 77.74,
+      "low": 76.47,
+      "close": 76.57,
+      "volume": 2574236.727645
+    },
+    {
+      "date": "2026-03-19",
+      "open": 75.74,
+      "high": 77.25,
+      "low": 75.42,
+      "close": 76.77,
+      "volume": 2054250.000927
+    },
+    {
+      "date": "2026-03-20",
+      "open": 76.51,
+      "high": 77.535,
+      "low": 76.345,
+      "close": 77.08,
+      "volume": 2104819.499216
+    },
+    {
+      "date": "2026-03-23",
+      "open": 78.47,
+      "high": 79.03,
+      "low": 77.63,
+      "close": 77.68,
+      "volume": 5642948.377982
+    },
+    {
+      "date": "2026-03-24",
+      "open": 76.72,
+      "high": 79.23,
+      "low": 76.72,
+      "close": 78.61,
+      "volume": 1858968.851572
+    },
+    {
+      "date": "2026-03-25",
+      "open": 79.35,
+      "high": 79.955,
+      "low": 78.15,
+      "close": 79,
+      "volume": 1673195.70086
+    },
+    {
+      "date": "2026-03-26",
+      "open": 78.24,
+      "high": 79.04,
+      "low": 77.635,
+      "close": 78.07,
+      "volume": 1360231.711652
+    },
+    {
+      "date": "2026-03-27",
+      "open": 77.7,
+      "high": 77.7,
+      "low": 75.95,
+      "close": 76.21,
+      "volume": 1679374.098976
+    },
+    {
+      "date": "2026-03-30",
+      "open": 77.075,
+      "high": 77.19,
+      "low": 75.995,
+      "close": 76.4,
+      "volume": 1602643.623193
+    },
+    {
+      "date": "2026-03-31",
+      "open": 77.42,
+      "high": 79.27,
+      "low": 77.02,
+      "close": 79.12,
+      "volume": 6246095.368122
+    },
+    {
+      "date": "2026-04-01",
+      "open": 80.33,
+      "high": 80.76,
+      "low": 79.55,
+      "close": 80.14,
+      "volume": 2154183.671971
+    },
+    {
+      "date": "2026-04-02",
+      "open": 78.8,
+      "high": 80.48,
+      "low": 78.08,
+      "close": 80.29,
+      "volume": 1174979.180413
+    },
+    {
+      "date": "2026-04-06",
+      "open": 80.4,
+      "high": 81.1,
+      "low": 80.36,
+      "close": 81.07,
+      "volume": 654591.30244
+    },
+    {
+      "date": "2026-04-07",
+      "open": 80.46,
+      "high": 81.565,
+      "low": 80.45,
+      "close": 81.27,
+      "volume": 1499067.047686
+    },
+    {
+      "date": "2026-04-08",
+      "open": 84.14,
+      "high": 84.98,
+      "low": 83.69,
+      "close": 84.32,
+      "volume": 3606346.421627
+    },
+    {
+      "date": "2026-04-09",
+      "open": 83.95,
+      "high": 85.635,
+      "low": 83.88,
+      "close": 85.43,
+      "volume": 1173280.339251
+    },
+    {
+      "date": "2026-04-10",
+      "open": 85.31,
+      "high": 85.36,
+      "low": 84.49,
+      "close": 84.85,
+      "volume": 1399299.17754
+    },
+    {
+      "date": "2026-04-13",
+      "open": 83.91,
+      "high": 85.785,
+      "low": 83.66,
+      "close": 85.76,
+      "volume": 1065498.913678
+    },
+    {
+      "date": "2026-04-14",
+      "open": 85.61,
+      "high": 86.09,
+      "low": 84.86,
+      "close": 85.69,
+      "volume": 2982254.745174
+    },
+    {
+      "date": "2026-04-15",
+      "open": 86.23,
+      "high": 86.77,
+      "low": 85.55,
+      "close": 86.06,
+      "volume": 1388859.206998
+    },
+    {
+      "date": "2026-04-16",
+      "open": 85.72,
+      "high": 86.625,
+      "low": 85.57,
+      "close": 85.66,
+      "volume": 2068088.889713
+    },
+    {
+      "date": "2026-04-17",
+      "open": 86.76,
+      "high": 87.9,
+      "low": 86.41,
+      "close": 86.89,
+      "volume": 1975291.997489
+    },
+    {
+      "date": "2026-04-20",
+      "open": 86.42,
+      "high": 87.81,
+      "low": 86.42,
+      "close": 87.78,
+      "volume": 1094549.285019
+    },
+    {
+      "date": "2026-04-21",
+      "open": 88.01,
+      "high": 89.055,
+      "low": 87.43,
+      "close": 87.65,
+      "volume": 1770111.975161
+    },
+    {
+      "date": "2026-04-22",
+      "open": 88.08,
+      "high": 88.3,
+      "low": 86.965,
+      "close": 87.19,
+      "volume": 1007039.734993
+    },
+    {
+      "date": "2026-04-23",
+      "open": 86.99,
+      "high": 87.67,
+      "low": 85.92,
+      "close": 86.97,
+      "volume": 1022663.217293
+    },
+    {
+      "date": "2026-04-24",
+      "open": 86.71,
+      "high": 87.03,
+      "low": 85.645,
+      "close": 85.78,
+      "volume": 1936931.714379
+    },
+    {
+      "date": "2026-04-27",
+      "open": 85.58,
+      "high": 87.21,
+      "low": 85.58,
+      "close": 86.97,
+      "volume": 651299.671802
+    },
+    {
+      "date": "2026-04-28",
+      "open": 87.4,
+      "high": 87.97,
+      "low": 86.67,
+      "close": 86.87,
+      "volume": 842542.762287
+    },
+    {
+      "date": "2026-04-29",
+      "open": 86.68,
+      "high": 86.99,
+      "low": 85.56,
+      "close": 86.03,
+      "volume": 754099.833837
+    },
+    {
+      "date": "2026-04-30",
+      "open": 85.7,
+      "high": 87.595,
+      "low": 85.21,
+      "close": 87.33,
+      "volume": 931328.076038
+    },
+    {
+      "date": "2026-05-01",
+      "open": 87.33,
+      "high": 87.9,
+      "low": 86.79,
+      "close": 86.8,
+      "volume": 870561.978377
+    },
+    {
+      "date": "2026-05-04",
+      "open": 86.37,
+      "high": 86.51,
+      "low": 85.12,
+      "close": 85.33,
+      "volume": 1049713.592887
+    },
+    {
+      "date": "2026-05-05",
+      "open": 85.74,
+      "high": 86.51,
+      "low": 85.4,
+      "close": 86.22,
+      "volume": 771545.551741
+    },
+    {
+      "date": "2026-05-06",
+      "open": 86.93,
+      "high": 87.99,
+      "low": 86.93,
+      "close": 87.3,
+      "volume": 1154840.220232
+    },
+    {
+      "date": "2026-05-07",
+      "open": 87.2,
+      "high": 87.655,
+      "low": 85.61,
+      "close": 85.86,
+      "volume": 870895.003723
+    },
+    {
+      "date": "2026-05-08",
+      "open": 86.395,
+      "high": 86.395,
+      "low": 85,
+      "close": 85.24,
+      "volume": 941379.51647
+    },
+    {
+      "date": "2026-05-11",
+      "open": 85.17,
+      "high": 85.52,
+      "low": 84.01,
+      "close": 84.24,
+      "volume": 958974.427689
+    },
+    {
+      "date": "2026-05-12",
+      "open": 84.23,
+      "high": 84.905,
+      "low": 82.94,
+      "close": 84.67,
+      "volume": 1268134.439456
+    },
+    {
+      "date": "2026-05-13",
+      "open": 84.24,
+      "high": 84.46,
+      "low": 83.54,
+      "close": 83.56,
+      "volume": 698990.651127
+    },
+    {
+      "date": "2026-05-14",
+      "open": 84.11,
+      "high": 84.81,
+      "low": 83.91,
+      "close": 84.34,
+      "volume": 1025989.763096
+    },
+    {
+      "date": "2026-05-15",
+      "open": 83.93,
+      "high": 84.105,
+      "low": 83.07,
+      "close": 83.71,
+      "volume": 807352.124355
+    },
+    {
+      "date": "2026-05-18",
+      "open": 83.77,
+      "high": 84.71,
+      "low": 83.63,
+      "close": 84.3,
+      "volume": 779390.408796
+    },
+    {
+      "date": "2026-05-19",
+      "open": 83.83,
+      "high": 84.27,
+      "low": 83.142,
+      "close": 83.59,
+      "volume": 667964.094959
+    },
+    {
+      "date": "2026-05-20",
+      "open": 84.215,
+      "high": 85.82,
+      "low": 83.39,
+      "close": 85.66,
+      "volume": 659439.669008
+    },
+    {
+      "date": "2026-05-21",
+      "open": 85.34,
+      "high": 86.2,
+      "low": 84.99,
+      "close": 86.1,
+      "volume": 772524.751391
+    },
+    {
+      "date": "2026-05-22",
+      "open": 86.6,
+      "high": 87.01,
+      "low": 86.2601,
+      "close": 86.53,
+      "volume": 755497.784597
+    },
+    {
+      "date": "2026-05-26",
+      "open": 87.07,
+      "high": 87.79,
+      "low": 86.82,
+      "close": 87.27,
+      "volume": 533947.937033
+    },
+    {
+      "date": "2026-05-27",
+      "open": 87.37,
+      "high": 87.6,
+      "low": 86.06,
+      "close": 86.58,
+      "volume": 1657908.418061
+    },
+    {
+      "date": "2026-05-28",
+      "open": 86.2,
+      "high": 86.73,
+      "low": 85.78,
+      "close": 86.49,
+      "volume": 596569.296777
+    },
+    {
+      "date": "2026-05-29",
+      "open": 86.51,
+      "high": 87.18,
+      "low": 86.23,
+      "close": 87.14,
+      "volume": 515640.544763
+    },
+    {
+      "date": "2026-06-01",
+      "open": 86.31,
+      "high": 87.2,
+      "low": 86.07,
+      "close": 86.88,
+      "volume": 665195.836668
+    },
+    {
+      "date": "2026-06-02",
+      "open": 86.68,
+      "high": 88.7,
+      "low": 86.45,
+      "close": 88.39,
+      "volume": 2142410.537682
+    },
+    {
+      "date": "2026-06-03",
+      "open": 87.74,
+      "high": 87.74,
+      "low": 86.56,
+      "close": 87.16,
+      "volume": 951380.261776
+    },
+    {
+      "date": "2026-06-04",
+      "open": 87.97,
+      "high": 90.535,
+      "low": 87.97,
+      "close": 90.34,
+      "volume": 2364066.802569
+    },
+    {
+      "date": "2026-06-05",
+      "open": 90.555,
+      "high": 90.65,
+      "low": 89.26,
+      "close": 89.56,
+      "volume": 3543646.347095
+    },
+    {
+      "date": "2026-06-08",
+      "open": 89.94,
+      "high": 90.58,
+      "low": 89.42,
+      "close": 89.44,
+      "volume": 2548488.571089
+    },
+    {
+      "date": "2026-06-09",
+      "open": 90.15,
+      "high": 91.16,
+      "low": 88.86,
+      "close": 90.19,
+      "volume": 2546717.72357
+    },
+    {
+      "date": "2026-06-10",
+      "open": 89.99,
+      "high": 90.85,
+      "low": 89.32,
+      "close": 89.35,
+      "volume": 1313735.079223
+    },
+    {
+      "date": "2026-06-11",
+      "open": 89.86,
+      "high": 91.2,
+      "low": 89.24,
+      "close": 91.05,
+      "volume": 2585205.677097
+    },
+    {
+      "date": "2026-06-12",
+      "open": 91.77,
+      "high": 93.04,
+      "low": 91.71,
+      "close": 92.6,
+      "volume": 2172556.449037
+    },
+    {
+      "date": "2026-06-15",
+      "open": 93.81,
+      "high": 94.05,
+      "low": 91.905,
+      "close": 92.07,
+      "volume": 1613338.373487
+    },
+    {
+      "date": "2026-06-16",
+      "open": 92.86,
+      "high": 93.77,
+      "low": 92.67,
+      "close": 93.55,
+      "volume": 2966693.205449
+    },
+    {
+      "date": "2026-06-17",
+      "open": 93.66,
+      "high": 95.05,
+      "low": 92.83,
+      "close": 93.23,
+      "volume": 2810578.847981
+    },
+    {
+      "date": "2026-06-18",
+      "open": 94.22,
+      "high": 94.72,
+      "low": 92.46,
+      "close": 92.64,
+      "volume": 3759751.560068
+    },
+    {
+      "date": "2026-06-22",
+      "open": 92.74,
+      "high": 93.71,
+      "low": 92.705,
+      "close": 93.48,
+      "volume": 1113835.183997
+    },
+    {
+      "date": "2026-06-23",
+      "open": 93.11,
+      "high": 94.28,
+      "low": 92.72,
+      "close": 94.12,
+      "volume": 2604301.115153
+    },
+    {
+      "date": "2026-06-24",
+      "open": 94.14,
+      "high": 94.32,
+      "low": 93.39,
+      "close": 93.73,
+      "volume": 2183086.152431
+    },
+    {
+      "date": "2026-06-25",
+      "open": 94.29,
+      "high": 96.15,
+      "low": 94.29,
+      "close": 94.69,
+      "volume": 2809546.275061
+    },
+    {
+      "date": "2026-06-26",
+      "open": 94.8,
+      "high": 94.93,
+      "low": 93.06,
+      "close": 93.46,
+      "volume": 1513704.55831
+    },
+    {
+      "date": "2026-06-29",
+      "open": 93.67,
+      "high": 94.2799,
+      "low": 93.4,
+      "close": 93.68,
+      "volume": 767834.28141
+    },
+    {
+      "date": "2026-06-30",
+      "open": 93.47,
+      "high": 93.71,
+      "low": 92.79,
+      "close": 92.98,
+      "volume": 1709115.763899
+    },
+    {
+      "date": "2026-07-01",
+      "open": 93.015,
+      "high": 95.185,
+      "low": 92.57,
+      "close": 94.71,
+      "volume": 2944919.939609
+    },
+    {
+      "date": "2026-07-02",
+      "open": 95.57,
+      "high": 95.6,
+      "low": 93.62,
+      "close": 94.44,
+      "volume": 1169174.909806
+    },
+    {
+      "date": "2026-07-06",
+      "open": 94.8,
+      "high": 96.26,
+      "low": 94.685,
+      "close": 96.25,
+      "volume": 1128676.807522
+    }
+  ]
+}
