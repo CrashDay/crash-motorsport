@@ -1,0 +1,143 @@
+{
+  "date": "2026-07-30",
+  "generatedAt": "2026-07-30T12:00:45.349Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 729.46,
+      "return20": -2.32,
+      "return50": -1.31
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 661.73,
+      "return20": -10.14,
+      "return50": -6.66
+    },
+    "XLK": {
+      "ok": true,
+      "close": 166.57,
+      "return20": -12.57,
+      "return50": -5.5
+    },
+    "XLF": {
+      "ok": true,
+      "close": 56.68,
+      "return20": 5.73,
+      "return50": 10.92
+    },
+    "XLE": {
+      "ok": true,
+      "close": 58.65,
+      "return20": 10.43,
+      "return50": -1.33
+    },
+    "XLI": {
+      "ok": true,
+      "close": 176.66,
+      "return20": -4.63,
+      "return50": 3.07
+    },
+    "XLY": {
+      "ok": true,
+      "close": 111.61,
+      "return20": -4.83,
+      "return50": -4.22
+    },
+    "XLP": {
+      "ok": true,
+      "close": 87.36,
+      "return20": 5.16,
+      "return50": 3.21
+    },
+    "XLV": {
+      "ok": true,
+      "close": 166.24,
+      "return20": 4.78,
+      "return50": 14.57
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.96,
+      "return20": 4.38,
+      "return50": 6.32
+    },
+    "XLC": {
+      "ok": true,
+      "close": 109.51,
+      "return20": 2.22,
+      "return50": -5.66
+    },
+    "SMH": {
+      "ok": true,
+      "close": 504.22,
+      "return20": -23.12,
+      "return50": -9.37
+    },
+    "IBB": {
+      "ok": true,
+      "close": 188.53,
+      "return20": -0.87,
+      "return50": 13.01
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "AAPL",
+      "ok": true,
+      "snapshot": "AAPL.svg",
+      "score": 28,
+      "pattern": "Shooting Star",
+      "setup": "Risk / Avoid",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 338.19,
+      "sma20": 322.4,
+      "sma50": 308.59,
+      "atr14": 7.82,
+      "avgVolume20": 49550977,
+      "volumeRatio": 1.13,
+      "support20": 289.2,
+      "resistance20": 342.89,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 54,
+      "pullbackScore": 71,
+      "relativeStrengthScore": 100,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": "XLK",
+      "sectorRelativeStrengthScore": 100,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 29.45,
+      "rsSector50": 18.14,
+      "eventRiskScore": 36,
+      "eventRiskLabel": "Medium event risk",
+      "eventRiskFlags": [
+        "fresh earnings reaction",
+        "headline sensitivity"
+      ],
+      "extensionScore": 65,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 68,
+      "rsSpy20": 19.2,
+      "rsSpy50": 13.95,
+      "rsQqq20": 27.02,
+      "rsQqq50": 19.3,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Invalidation already broken; wait for a fresh base.",
+      "target": "No upside target until trend repairs.",
+      "notes": [
+        "Detected Shooting Star.",
+        "Uptrend with close 338.19 versus SMA20 322.4 and SMA50 308.59.",
+        "Volume ran at 1.13x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Sector check versus XLK: leading sector peers.",
+        "Structure quality 68 with setup freshness tagged fresh.",
+        "Breakout score 54 | Pullback score 71.",
+        "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+        "Narrative: * Apple reports after the closing bell, marking Tim Cook’s final earnings call as CEO before John Ternus takes over in September."
+      ]
+    }
+  ]
+}
