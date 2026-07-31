@@ -1,0 +1,143 @@
+{
+  "date": "2026-07-31",
+  "generatedAt": "2026-07-31T12:00:42.016Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 741.69,
+      "return20": -0.55,
+      "return50": 0.41
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 683.55,
+      "return20": -5.74,
+      "return50": -3.16
+    },
+    "XLK": {
+      "ok": true,
+      "close": 175.73,
+      "return20": -5.33,
+      "return50": 0.79
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57,
+      "return20": 4.05,
+      "return50": 10.17
+    },
+    "XLE": {
+      "ok": true,
+      "close": 58.96,
+      "return20": 11.65,
+      "return50": -2.67
+    },
+    "XLI": {
+      "ok": true,
+      "close": 178.39,
+      "return20": -2.71,
+      "return50": 4.47
+    },
+    "XLY": {
+      "ok": true,
+      "close": 112.39,
+      "return20": -4.83,
+      "return50": -3.38
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.47,
+      "return20": 2.61,
+      "return50": -0.5
+    },
+    "XLV": {
+      "ok": true,
+      "close": 163.52,
+      "return20": 2.49,
+      "return50": 12.22
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.3,
+      "return20": 2.54,
+      "return50": 3.54
+    },
+    "XLC": {
+      "ok": true,
+      "close": 106.58,
+      "return20": -2.88,
+      "return50": -8.89
+    },
+    "SMH": {
+      "ok": true,
+      "close": 538.9,
+      "return20": -13.15,
+      "return50": -1.33
+    },
+    "IBB": {
+      "ok": true,
+      "close": 189.96,
+      "return20": -0.08,
+      "return50": 15.81
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "AAPL",
+      "ok": true,
+      "snapshot": "AAPL.svg",
+      "score": 63,
+      "pattern": "No major pattern",
+      "setup": "Trend Pullback Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 333.43,
+      "sma20": 324.35,
+      "sma50": 309.3,
+      "atr14": 8.09,
+      "avgVolume20": 50785804,
+      "volumeRatio": 1.47,
+      "support20": 293.68,
+      "resistance20": 344.57,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 67,
+      "pullbackScore": 89,
+      "relativeStrengthScore": 95,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": "XLK",
+      "sectorRelativeStrengthScore": 100,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 18.6,
+      "rsSector50": 11.16,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 55,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 68,
+      "rsSpy20": 13.82,
+      "rsSpy50": 11.54,
+      "rsQqq20": 19.01,
+      "rsQqq50": 15.11,
+      "premarketMove": null,
+      "trigger": "Watch for support near 293.68 and a higher low before entry.",
+      "invalidation": "Stop below 291.66.",
+      "target": "Initial target near 345.57 with 2R minimum.",
+      "notes": [
+        "Uptrend with close 333.43 versus SMA20 324.35 and SMA50 309.3.",
+        "Volume ran at 1.47x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Sector check versus XLK: leading sector peers.",
+        "Structure quality 68 with setup freshness tagged workable.",
+        "Breakout score 67 | Pullback score 89.",
+        "Narrative: Apple's quarterly revenue growth over the past decade ----------------------------------------------"
+      ]
+    },
+    {
+      "symbol": "RSV",
+      "ok": false,
+      "error": "Polygon response missing candle data (DELAYED)"
+    }
+  ]
+}
