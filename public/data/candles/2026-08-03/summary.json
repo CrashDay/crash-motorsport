@@ -1,0 +1,141 @@
+{
+  "date": "2026-08-03",
+  "generatedAt": "2026-08-03T12:00:41.934Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 747.03,
+      "return20": 0.3,
+      "return50": 1.81
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 687.99,
+      "return20": -3.45,
+      "return50": -1.93
+    },
+    "XLK": {
+      "ok": true,
+      "close": 175.35,
+      "return20": -2.9,
+      "return50": 1.22
+    },
+    "XLF": {
+      "ok": true,
+      "close": 56.94,
+      "return20": 2.37,
+      "return50": 11.43
+    },
+    "XLE": {
+      "ok": true,
+      "close": 59.55,
+      "return20": 11.89,
+      "return50": -2.84
+    },
+    "XLI": {
+      "ok": true,
+      "close": 179.84,
+      "return20": -2.21,
+      "return50": 6.58
+    },
+    "XLY": {
+      "ok": true,
+      "close": 116.09,
+      "return20": -0.88,
+      "return50": 0.92
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.05,
+      "return20": 0.07,
+      "return50": -1.21
+    },
+    "XLV": {
+      "ok": true,
+      "close": 162.55,
+      "return20": -0.73,
+      "return50": 10.34
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.07,
+      "return20": 0.87,
+      "return50": 2.57
+    },
+    "XLC": {
+      "ok": true,
+      "close": 108.24,
+      "return20": -1.24,
+      "return50": -6.57
+    },
+    "SMH": {
+      "ok": true,
+      "close": 540.53,
+      "return20": -8.74,
+      "return50": -0.63
+    },
+    "IBB": {
+      "ok": true,
+      "close": 186.41,
+      "return20": -4.75,
+      "return50": 13.53
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "SHOP",
+      "ok": true,
+      "snapshot": "SHOP.svg",
+      "score": 27,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 117.15,
+      "sma20": 122.36,
+      "sma50": 116.07,
+      "atr14": 6.44,
+      "avgVolume20": 8115344,
+      "volumeRatio": 1.55,
+      "support20": 111.06,
+      "resistance20": 133.99,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 31,
+      "pullbackScore": 46,
+      "relativeStrengthScore": 74,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 36,
+      "eventRiskLabel": "Medium event risk",
+      "eventRiskFlags": [
+        "fresh earnings reaction",
+        "headline sensitivity"
+      ],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 44,
+      "rsSpy20": -2.23,
+      "rsSpy50": 14.17,
+      "rsQqq20": 1.52,
+      "rsQqq50": 17.91,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 109.44.",
+      "target": "Initial target near 126.82 with 2R minimum.",
+      "notes": [
+        "Mixed with close 117.15 versus SMA20 122.36 and SMA50 116.07.",
+        "Volume ran at 1.55x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Structure quality 44 with setup freshness tagged workable.",
+        "Breakout score 31 | Pullback score 46.",
+        "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+        "Narrative: * Shopify , beating the S&P 500 by 47% since June 2024’s Stock Advisor rec by Team Hidden Gems, reports Wednesday morning."
+      ]
+    }
+  ]
+}
