@@ -1,0 +1,193 @@
+{
+  "date": "2026-08-04",
+  "generatedAt": "2026-08-04T12:00:40.915Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 757.67,
+      "return20": 0.85,
+      "return50": 2.22
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 700.07,
+      "return20": -3.15,
+      "return50": -1.83
+    },
+    "XLK": {
+      "ok": true,
+      "close": 178.04,
+      "return20": -3.01,
+      "return50": 0.51
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.38,
+      "return20": 2.21,
+      "return50": 11.07
+    },
+    "XLE": {
+      "ok": true,
+      "close": 58.79,
+      "return20": 10.65,
+      "return50": -1.69
+    },
+    "XLI": {
+      "ok": true,
+      "close": 183.16,
+      "return20": -1.29,
+      "return50": 7.28
+    },
+    "XLY": {
+      "ok": true,
+      "close": 118.21,
+      "return20": 0.17,
+      "return50": 0.23
+    },
+    "XLP": {
+      "ok": true,
+      "close": 84.86,
+      "return20": 0.9,
+      "return50": -0.77
+    },
+    "XLV": {
+      "ok": true,
+      "close": 162.24,
+      "return20": 0.17,
+      "return50": 10.27
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.18,
+      "return20": 2.01,
+      "return50": 1.69
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.34,
+      "return20": 1.03,
+      "return50": -4.1
+    },
+    "SMH": {
+      "ok": true,
+      "close": 545.46,
+      "return20": -9.74,
+      "return50": -3.4
+    },
+    "IBB": {
+      "ok": true,
+      "close": 185.91,
+      "return20": -4.81,
+      "return50": 10.72
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "RSI",
+      "ok": true,
+      "snapshot": "RSI.svg",
+      "score": 35,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Breakout",
+      "trend": "Mixed",
+      "close": 28.16,
+      "sma20": 31.7,
+      "sma50": 29.76,
+      "atr14": 1.77,
+      "avgVolume20": 2818515,
+      "volumeRatio": 1.86,
+      "support20": 25.59,
+      "resistance20": 34.53,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 36,
+      "pullbackScore": 14,
+      "relativeStrengthScore": 35,
+      "relativeStrengthLabel": "Lagging",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 52,
+      "rsSpy20": -13.45,
+      "rsSpy50": -0.38,
+      "rsQqq20": -9.45,
+      "rsQqq50": 3.67,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 25.15.",
+      "target": "Initial target near 30.82 with 2R minimum.",
+      "notes": [
+        "Mixed with close 28.16 versus SMA20 31.7 and SMA50 29.76.",
+        "Volume ran at 1.86x the 20-day average.",
+        "Relative strength is lagging versus SPY/QQQ.",
+        "Structure quality 52 with setup freshness tagged workable.",
+        "Breakout score 36 | Pullback score 14.",
+        "Latest close improved versus the prior session.",
+        "Narrative: Alphabet Burns Cash Now, But Vows AI Payoff Later ---------------------------------------------------- Alphabet ’s DeepMind executive Jasjeet Sekhon said the i…"
+      ]
+    },
+    {
+      "symbol": "UPST",
+      "ok": true,
+      "snapshot": "UPST.svg",
+      "score": 12,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Downtrend",
+      "close": 29.43,
+      "sma20": 29.65,
+      "sma50": 31.12,
+      "atr14": 1.55,
+      "avgVolume20": 3536571,
+      "volumeRatio": 1.35,
+      "support20": 25.89,
+      "resistance20": 35.72,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 26,
+      "pullbackScore": 39,
+      "relativeStrengthScore": 33,
+      "relativeStrengthLabel": "Laggard",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 36,
+      "eventRiskLabel": "Medium event risk",
+      "eventRiskFlags": [
+        "fresh earnings reaction",
+        "headline sensitivity"
+      ],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 62,
+      "rsSpy20": -15.12,
+      "rsSpy50": -0.17,
+      "rsQqq20": -11.12,
+      "rsQqq50": 3.88,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 25.5.",
+      "target": "Initial target near 31.75 with 2R minimum.",
+      "notes": [
+        "Downtrend with close 29.43 versus SMA20 29.65 and SMA50 31.12.",
+        "Volume ran at 1.35x the 20-day average.",
+        "Relative strength is laggard versus SPY/QQQ.",
+        "Structure quality 62 with setup freshness tagged workable.",
+        "Breakout score 26 | Pullback score 39.",
+        "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+        "Latest close improved versus the prior session.",
+        "Narrative: * Upstart reports earnings once the market closes."
+      ]
+    }
+  ]
+}
