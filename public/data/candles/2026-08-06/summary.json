@@ -1,0 +1,139 @@
+{
+  "date": "2026-08-06",
+  "generatedAt": "2026-08-06T12:00:36.584Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 769.79,
+      "return20": 3.27,
+      "return50": 3.24
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 717.3,
+      "return20": 0.82,
+      "return50": -0.03
+    },
+    "XLK": {
+      "ok": true,
+      "close": 185.91,
+      "return20": 2.49,
+      "return50": 3.06
+    },
+    "XLF": {
+      "ok": true,
+      "close": 58,
+      "return20": 5.51,
+      "return50": 11.67
+    },
+    "XLE": {
+      "ok": true,
+      "close": 57.31,
+      "return20": 3.08,
+      "return50": -3.66
+    },
+    "XLI": {
+      "ok": true,
+      "close": 186.35,
+      "return20": 3.29,
+      "return50": 8.49
+    },
+    "XLY": {
+      "ok": true,
+      "close": 118.64,
+      "return20": 2.9,
+      "return50": -0.45
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.33,
+      "return20": 1.11,
+      "return50": 0.63
+    },
+    "XLV": {
+      "ok": true,
+      "close": 164.16,
+      "return20": 1.15,
+      "return50": 9.52
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.2,
+      "return20": 2.38,
+      "return50": 1.44
+    },
+    "XLC": {
+      "ok": true,
+      "close": 110.87,
+      "return20": 1.29,
+      "return50": -3.98
+    },
+    "SMH": {
+      "ok": true,
+      "close": 569.7,
+      "return20": -3.93,
+      "return50": -1.15
+    },
+    "IBB": {
+      "ok": true,
+      "close": 191.8,
+      "return20": -2.31,
+      "return50": 13.63
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "SHOP",
+      "ok": true,
+      "snapshot": "SHOP.svg",
+      "score": 52,
+      "pattern": "20-Day Breakout Close",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Breakout",
+      "trend": "Uptrend",
+      "close": 144.24,
+      "sma20": 123.52,
+      "sma50": 117.5,
+      "atr14": 8.12,
+      "avgVolume20": 10557938,
+      "volumeRatio": 3.93,
+      "support20": 111.06,
+      "resistance20": 133.99,
+      "relativeLocation": "Above resistance",
+      "breakoutScore": 75,
+      "pullbackScore": 54,
+      "relativeStrengthScore": 100,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 17,
+      "extensionLabel": "Stale / stretched",
+      "structureQualityScore": 68,
+      "rsSpy20": 17.72,
+      "rsSpy50": 36.8,
+      "rsQqq20": 20.17,
+      "rsQqq50": 40.07,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 109.03.",
+      "target": "Initial target near 156.42 with 2R minimum.",
+      "notes": [
+        "Detected 20-Day Breakout Close.",
+        "Uptrend with close 144.24 versus SMA20 123.52 and SMA50 117.5.",
+        "Volume ran at 3.93x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Structure quality 68 with setup freshness tagged stale / stretched.",
+        "Breakout score 75 | Pullback score 54.",
+        "Latest close improved versus the prior session.",
+        "Narrative: Shopify Delivers Again ------------------------- TEAM RULE BREAKERS When we recommended Shopify in Rule Breakers in 2016, the stock violated Trait #3 of David …"
+      ]
+    }
+  ]
+}
