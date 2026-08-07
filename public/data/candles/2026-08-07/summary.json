@@ -1,0 +1,138 @@
+{
+  "date": "2026-08-07",
+  "generatedAt": "2026-08-07T12:00:36.496Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 768.56,
+      "return20": 2.24,
+      "return50": 2.39
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 714.65,
+      "return20": -1.19,
+      "return50": -2.14
+    },
+    "XLK": {
+      "ok": true,
+      "close": 185.33,
+      "return20": -0.01,
+      "return50": 0.1
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.81,
+      "return20": 4.09,
+      "return50": 11.49
+    },
+    "XLE": {
+      "ok": true,
+      "close": 58.16,
+      "return20": 6.09,
+      "return50": 0.54
+    },
+    "XLI": {
+      "ok": true,
+      "close": 184.76,
+      "return20": 2.02,
+      "return50": 6
+    },
+    "XLY": {
+      "ok": true,
+      "close": 118.1,
+      "return20": 1.07,
+      "return50": -1.13
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.11,
+      "return20": 2.3,
+      "return50": 1.77
+    },
+    "XLV": {
+      "ok": true,
+      "close": 164.45,
+      "return20": 1.41,
+      "return50": 10.73
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 44.81,
+      "return20": 1.31,
+      "return50": 0.22
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.18,
+      "return20": 0.61,
+      "return50": -3.78
+    },
+    "SMH": {
+      "ok": true,
+      "close": 571.48,
+      "return20": -5.96,
+      "return50": -5.09
+    },
+    "IBB": {
+      "ok": true,
+      "close": 192.97,
+      "return20": -2.21,
+      "return50": 13.9
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 54,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 218.99,
+      "sma20": 206.17,
+      "sma50": 205.85,
+      "atr14": 7.81,
+      "avgVolume20": 129213276,
+      "volumeRatio": 0.89,
+      "support20": 190.01,
+      "resistance20": 222.22,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 50,
+      "pullbackScore": 59,
+      "relativeStrengthScore": 64,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 92,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 13.95,
+      "rsSector50": 7.01,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 65,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 68,
+      "rsSpy20": 5.75,
+      "rsSpy50": -0.47,
+      "rsQqq20": 9.18,
+      "rsQqq50": 4.06,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 188.06.",
+      "target": "Initial target near 230.7 with 2R minimum.",
+      "notes": [
+        "Uptrend with close 218.99 versus SMA20 206.17 and SMA50 205.85.",
+        "Volume ran at 0.89x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 68 with setup freshness tagged fresh.",
+        "Breakout score 50 | Pullback score 59.",
+        "Narrative: AMD Joins Nvidia in Hardwiring AI Into Silicon ------------------------------------------------- Advanced Micro Devices has agreed to buy Taalas, a Toronto sta…"
+      ]
+    }
+  ]
+}
