@@ -1,0 +1,144 @@
+{
+  "date": "2026-08-18",
+  "generatedAt": "2026-08-18T12:00:37.270Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 772.67,
+      "return20": 4.12,
+      "return50": 2.06
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 729.87,
+      "return20": 4.86,
+      "return50": -1.45
+    },
+    "XLK": {
+      "ok": true,
+      "close": 190.32,
+      "return20": 8.31,
+      "return50": -1.48
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.58,
+      "return20": 2.75,
+      "return50": 10.33
+    },
+    "XLE": {
+      "ok": true,
+      "close": 62.58,
+      "return20": 8.01,
+      "return50": 6.52
+    },
+    "XLI": {
+      "ok": true,
+      "close": 186.32,
+      "return20": 4.6,
+      "return50": 5.77
+    },
+    "XLY": {
+      "ok": true,
+      "close": 116.75,
+      "return20": 1.87,
+      "return50": -0.43
+    },
+    "XLP": {
+      "ok": true,
+      "close": 84.68,
+      "return20": -0.21,
+      "return50": 3.22
+    },
+    "XLV": {
+      "ok": true,
+      "close": 167.05,
+      "return20": 4.9,
+      "return50": 9.84
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 44.83,
+      "return20": -0.88,
+      "return50": 0.97
+    },
+    "XLC": {
+      "ok": true,
+      "close": 110.82,
+      "return20": 0.02,
+      "return50": -2.02
+    },
+    "SMH": {
+      "ok": true,
+      "close": 594.07,
+      "return20": 6.31,
+      "return50": -5.33
+    },
+    "IBB": {
+      "ok": true,
+      "close": 201.93,
+      "return20": 8.26,
+      "return50": 17.79
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 33,
+      "pattern": "Shooting Star",
+      "setup": "Risk / Avoid",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 225.01,
+      "sma20": 211.48,
+      "sma50": 206.65,
+      "atr14": 6.63,
+      "avgVolume20": 120624273,
+      "volumeRatio": 0.78,
+      "support20": 190.01,
+      "resistance20": 227.49,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 47,
+      "pullbackScore": 58,
+      "relativeStrengthScore": 63,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 75,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 4.38,
+      "rsSector50": 8.23,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 65,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 68,
+      "rsSpy20": 6.57,
+      "rsSpy50": 0.84,
+      "rsQqq20": 5.83,
+      "rsQqq50": 4.35,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Invalidation already broken; wait for a fresh base.",
+      "target": "No upside target until trend repairs.",
+      "notes": [
+        "Detected Shooting Star.",
+        "Uptrend with close 225.01 versus SMA20 211.48 and SMA50 206.65.",
+        "Volume ran at 0.78x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 68 with setup freshness tagged fresh.",
+        "Breakout score 47 | Pullback score 58.",
+        "Narrative: Your Take ------------- YESTERDAY'S TOP RESPONSE We asked: Now that Nvidia is trimming its own risk exposure on AI build-out, does that change how comfortable …"
+      ]
+    },
+    {
+      "symbol": "FSD",
+      "ok": false,
+      "error": "Polygon response missing candle data (DELAYED)"
+    }
+  ]
+}
