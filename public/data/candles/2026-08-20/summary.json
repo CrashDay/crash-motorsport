@@ -1,0 +1,143 @@
+{
+  "date": "2026-08-20",
+  "generatedAt": "2026-08-20T12:00:38.895Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 769.06,
+      "return20": 2.9,
+      "return50": 4.04
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 716.08,
+      "return20": 1.52,
+      "return50": 0
+    },
+    "XLK": {
+      "ok": true,
+      "close": 183.64,
+      "return20": 1.87,
+      "return50": -0.29
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.48,
+      "return20": 2.55,
+      "return50": 10.6
+    },
+    "XLE": {
+      "ok": true,
+      "close": 63.58,
+      "return20": 7.4,
+      "return50": 9
+    },
+    "XLI": {
+      "ok": true,
+      "close": 181.95,
+      "return20": 1.73,
+      "return50": 4.79
+    },
+    "XLY": {
+      "ok": true,
+      "close": 118.59,
+      "return20": 4.01,
+      "return50": 2.77
+    },
+    "XLP": {
+      "ok": true,
+      "close": 86.54,
+      "return20": 2.56,
+      "return50": 4.18
+    },
+    "XLV": {
+      "ok": true,
+      "close": 175.68,
+      "return20": 10.19,
+      "return50": 15.09
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 44.99,
+      "return20": -0.04,
+      "return50": 2.18
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.32,
+      "return20": 1.94,
+      "return50": 0.21
+    },
+    "SMH": {
+      "ok": true,
+      "close": 560.92,
+      "return20": -4.43,
+      "return50": -6.23
+    },
+    "IBB": {
+      "ok": true,
+      "close": 216.96,
+      "return20": 16.02,
+      "return50": 29.98
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "AAPL",
+      "ok": true,
+      "snapshot": "AAPL.svg",
+      "score": 52,
+      "pattern": "No major pattern",
+      "setup": "Trend Pullback Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 316.83,
+      "sma20": 316.04,
+      "sma50": 309.44,
+      "atr14": 8.38,
+      "avgVolume20": 53089266,
+      "volumeRatio": 0.97,
+      "support20": 300,
+      "resistance20": 344.57,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 38,
+      "pullbackScore": 91,
+      "relativeStrengthScore": 47,
+      "relativeStrengthLabel": "In line",
+      "sectorProxy": "XLK",
+      "sectorRelativeStrengthScore": 51,
+      "sectorRelativeStrengthLabel": "In line with sector",
+      "rsSector20": -4.65,
+      "rsSector50": 5.36,
+      "eventRiskScore": 36,
+      "eventRiskLabel": "Medium event risk",
+      "eventRiskFlags": [
+        "fresh earnings reaction",
+        "headline sensitivity"
+      ],
+      "extensionScore": 63,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 68,
+      "rsSpy20": -5.68,
+      "rsSpy50": 1.03,
+      "rsQqq20": -4.3,
+      "rsQqq50": 5.07,
+      "premarketMove": null,
+      "trigger": "Watch for support near 300 and a higher low before entry.",
+      "invalidation": "Stop below 297.9.",
+      "target": "Initial target near 329.41 with 2R minimum.",
+      "notes": [
+        "Uptrend with close 316.83 versus SMA20 316.04 and SMA50 309.44.",
+        "Volume ran at 0.97x the 20-day average.",
+        "Relative strength is in line versus SPY/QQQ.",
+        "Sector check versus XLK: in line with sector.",
+        "Structure quality 68 with setup freshness tagged fresh.",
+        "Breakout score 38 | Pullback score 91.",
+        "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+        "Latest close improved versus the prior session.",
+        "Narrative: Apple Sticks With 2027 Launch for Camera AirPods --------------------------------------------------- Bloomberg reports Apple is sticking to a 2027 launch for c…"
+      ]
+    }
+  ]
+}
