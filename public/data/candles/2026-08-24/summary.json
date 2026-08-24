@@ -1,0 +1,147 @@
+{
+  "date": "2026-08-24",
+  "generatedAt": "2026-08-24T12:00:40.264Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 765.72,
+      "return20": 3.63,
+      "return50": 5.55
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 713.44,
+      "return20": 4.27,
+      "return50": 2.85
+    },
+    "XLK": {
+      "ok": true,
+      "close": 183.31,
+      "return20": 4.22,
+      "return50": 3.78
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.48,
+      "return20": 2.08,
+      "return50": 10.05
+    },
+    "XLE": {
+      "ok": true,
+      "close": 63.64,
+      "return20": 6.74,
+      "return50": 9.25
+    },
+    "XLI": {
+      "ok": true,
+      "close": 180.25,
+      "return20": -1.32,
+      "return50": 6.24
+    },
+    "XLY": {
+      "ok": true,
+      "close": 118.02,
+      "return20": 7.87,
+      "return50": 3.99
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.99,
+      "return20": 2.21,
+      "return50": 0.58
+    },
+    "XLV": {
+      "ok": true,
+      "close": 174.62,
+      "return20": 7.41,
+      "return50": 14.24
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.08,
+      "return20": -1.89,
+      "return50": 0.2
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.4,
+      "return20": 4.8,
+      "return50": 0.35
+    },
+    "SMH": {
+      "ok": true,
+      "close": 560.42,
+      "return20": -0.14,
+      "return50": -1.84
+    },
+    "IBB": {
+      "ok": true,
+      "close": 213.56,
+      "return20": 13.51,
+      "return50": 28.7
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "PCE",
+      "ok": false,
+      "error": "Polygon response missing candle data (DELAYED)"
+    },
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 52,
+      "pattern": "No major pattern",
+      "setup": "Trend Pullback Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 214.72,
+      "sma20": 213.18,
+      "sma50": 207.58,
+      "atr14": 5.75,
+      "avgVolume20": 116601874,
+      "volumeRatio": 0.85,
+      "support20": 190.01,
+      "resistance20": 227.92,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 42,
+      "pullbackScore": 72,
+      "relativeStrengthScore": 54,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 76,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 3.95,
+      "rsSector50": 8.98,
+      "eventRiskScore": 36,
+      "eventRiskLabel": "Medium event risk",
+      "eventRiskFlags": [
+        "fresh earnings reaction",
+        "headline sensitivity"
+      ],
+      "extensionScore": 63,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 58,
+      "rsSpy20": 0.18,
+      "rsSpy50": 1.59,
+      "rsQqq20": -0.46,
+      "rsQqq50": 4.29,
+      "premarketMove": null,
+      "trigger": "Watch for support near 190.01 and a higher low before entry.",
+      "invalidation": "Stop below 188.57.",
+      "target": "Initial target near 223.35 with 2R minimum.",
+      "notes": [
+        "Uptrend with close 214.72 versus SMA20 213.18 and SMA50 207.58.",
+        "Volume ran at 0.85x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 58 with setup freshness tagged fresh.",
+        "Breakout score 42 | Pullback score 72.",
+        "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+        "Narrative: Big Week Ahead as Nvidia, CrowdStrike, and Veeva Report ---------------------------------------------------------- Nvidia, CrowdStrike, and Veeva vs. * Nvidia …"
+      ]
+    }
+  ]
+}
