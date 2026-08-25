@@ -1,0 +1,142 @@
+{
+  "date": "2026-08-25",
+  "generatedAt": "2026-08-25T12:00:48.489Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 763.47,
+      "return20": 3.3,
+      "return50": 3.48
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 706.32,
+      "return20": 3.55,
+      "return50": -1.51
+    },
+    "XLK": {
+      "ok": true,
+      "close": 180.05,
+      "return20": 3.3,
+      "return50": -1.72
+    },
+    "XLF": {
+      "ok": true,
+      "close": 58.22,
+      "return20": 2.36,
+      "return50": 10.64
+    },
+    "XLE": {
+      "ok": true,
+      "close": 63.11,
+      "return20": 8.14,
+      "return50": 10.49
+    },
+    "XLI": {
+      "ok": true,
+      "close": 179,
+      "return20": -2.29,
+      "return50": 2.2
+    },
+    "XLY": {
+      "ok": true,
+      "close": 118.3,
+      "return20": 6.73,
+      "return50": 1.72
+    },
+    "XLP": {
+      "ok": true,
+      "close": 87.45,
+      "return20": 2.45,
+      "return50": 2.56
+    },
+    "XLV": {
+      "ok": true,
+      "close": 174.7,
+      "return20": 6.92,
+      "return50": 13.38
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.33,
+      "return20": -0.94,
+      "return50": 0.91
+    },
+    "XLC": {
+      "ok": true,
+      "close": 112.32,
+      "return20": 4.33,
+      "return50": 0.18
+    },
+    "SMH": {
+      "ok": true,
+      "close": 546.8,
+      "return20": -0.32,
+      "return50": -10.28
+    },
+    "IBB": {
+      "ok": true,
+      "close": 212.53,
+      "return20": 12.85,
+      "return50": 24.66
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 19,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 208.48,
+      "sma20": 213.78,
+      "sma50": 207.65,
+      "atr14": 5.89,
+      "avgVolume20": 115716625,
+      "volumeRatio": 1.18,
+      "support20": 190.01,
+      "resistance20": 227.92,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 19,
+      "pullbackScore": 33,
+      "relativeStrengthScore": 55,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 87,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 6.41,
+      "rsSector50": 12.04,
+      "eventRiskScore": 36,
+      "eventRiskLabel": "Medium event risk",
+      "eventRiskFlags": [
+        "fresh earnings reaction",
+        "headline sensitivity"
+      ],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 34,
+      "rsSpy20": 2.79,
+      "rsSpy50": -1.72,
+      "rsQqq20": 2.54,
+      "rsQqq50": 3.27,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 188.54.",
+      "target": "Initial target near 217.31 with 2R minimum.",
+      "notes": [
+        "Mixed with close 208.48 versus SMA20 213.78 and SMA50 207.65.",
+        "Volume ran at 1.18x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 34 with setup freshness tagged workable.",
+        "Breakout score 19 | Pullback score 33.",
+        "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+        "Narrative: Nvidia's Earnings Loom Over a Chip Stock Selloff --------------------------------------------------- Micron shares dropped almost 6% Monday to $911.27, part of…"
+      ]
+    }
+  ]
+}
