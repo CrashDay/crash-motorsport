@@ -1,0 +1,194 @@
+{
+  "date": "2026-08-26",
+  "generatedAt": "2026-08-26T12:00:43.704Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 765.91,
+      "return20": 3.38,
+      "return50": 3.26
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 710.72,
+      "return20": 5.22,
+      "return50": -1.47
+    },
+    "XLK": {
+      "ok": true,
+      "close": 181.74,
+      "return20": 6.22,
+      "return50": -1.66
+    },
+    "XLF": {
+      "ok": true,
+      "close": 58.31,
+      "return20": 1.23,
+      "return50": 9.32
+    },
+    "XLE": {
+      "ok": true,
+      "close": 62.06,
+      "return20": 7.8,
+      "return50": 7.84
+    },
+    "XLI": {
+      "ok": true,
+      "close": 178.4,
+      "return20": -2.24,
+      "return50": 1.26
+    },
+    "XLY": {
+      "ok": true,
+      "close": 117.95,
+      "return20": 4.86,
+      "return50": 1.16
+    },
+    "XLP": {
+      "ok": true,
+      "close": 86.52,
+      "return20": -0.62,
+      "return50": 0.82
+    },
+    "XLV": {
+      "ok": true,
+      "close": 175.29,
+      "return20": 4.8,
+      "return50": 13.97
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.36,
+      "return20": -1.41,
+      "return50": 0
+    },
+    "XLC": {
+      "ok": true,
+      "close": 113.18,
+      "return20": 3.2,
+      "return50": 1.37
+    },
+    "SMH": {
+      "ok": true,
+      "close": 555.82,
+      "return20": 4.95,
+      "return50": -10.35
+    },
+    "IBB": {
+      "ok": true,
+      "close": 216.4,
+      "return20": 13.58,
+      "return50": 26.8
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 43,
+      "pattern": "Inside Day",
+      "setup": "Catalyst Continuation Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 213.05,
+      "sma20": 214.58,
+      "sma50": 207.81,
+      "atr14": 5.6,
+      "avgVolume20": 115056628,
+      "volumeRatio": 1.06,
+      "support20": 190.01,
+      "resistance20": 227.92,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 39,
+      "pullbackScore": 52,
+      "relativeStrengthScore": 60,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 85,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 3.19,
+      "rsSector50": 14.18,
+      "eventRiskScore": 36,
+      "eventRiskLabel": "Medium event risk",
+      "eventRiskFlags": [
+        "fresh earnings reaction",
+        "headline sensitivity"
+      ],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 42,
+      "rsSpy20": 4.76,
+      "rsSpy50": 0.57,
+      "rsQqq20": 2.92,
+      "rsQqq50": 5.3,
+      "premarketMove": null,
+      "trigger": "Enter only if the move stays above 212.42 and volume remains firm.",
+      "invalidation": "Stop below 188.61.",
+      "target": "Initial target near 221.45 with 2R minimum.",
+      "notes": [
+        "Detected Inside Day.",
+        "Mixed with close 213.05 versus SMA20 214.58 and SMA50 207.81.",
+        "Volume ran at 1.06x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 42 with setup freshness tagged workable.",
+        "Breakout score 39 | Pullback score 52.",
+        "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+        "Latest close improved versus the prior session.",
+        "Narrative: Nvidia Kills Its Darling --------------------------- Cap TEAM HIDDEN GEMS Nvidia reports Q2 2027 earnings results after market close today! Our Rule Breakers t…"
+      ]
+    },
+    {
+      "symbol": "CAVA",
+      "ok": true,
+      "snapshot": "CAVA.svg",
+      "score": 21,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 69.29,
+      "sma20": 67.6,
+      "sma50": 71.47,
+      "atr14": 3.83,
+      "avgVolume20": 3571905,
+      "volumeRatio": 0.5,
+      "support20": 60.15,
+      "resistance20": 75.65,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 12,
+      "pullbackScore": 30,
+      "relativeStrengthScore": 16,
+      "relativeStrengthLabel": "Laggard",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 55,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 42,
+      "rsSpy20": 3.22,
+      "rsSpy50": -27.11,
+      "rsQqq20": 1.38,
+      "rsQqq50": -22.38,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 59.19.",
+      "target": "Initial target near 75.04 with 2R minimum.",
+      "notes": [
+        "Mixed with close 69.29 versus SMA20 67.6 and SMA50 71.47.",
+        "Volume ran at 0.5x the 20-day average.",
+        "Relative strength is laggard versus SPY/QQQ.",
+        "Structure quality 42 with setup freshness tagged workable.",
+        "Breakout score 12 | Pullback score 30.",
+        "Narrative: CAVA Shrugs Off Food Scares as Sales Rebound ----------------------------------------------- A summer of food-safety scares rattled fast-casual dining, and CAV…"
+      ]
+    }
+  ]
+}
