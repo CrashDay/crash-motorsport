@@ -1,0 +1,192 @@
+{
+  "date": "2026-08-27",
+  "generatedAt": "2026-08-27T12:00:45.858Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 766.08,
+      "return20": 5.02,
+      "return50": 1.49
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 711.37,
+      "return20": 7.5,
+      "return50": -4.39
+    },
+    "XLK": {
+      "ok": true,
+      "close": 182.84,
+      "return20": 9.77,
+      "return50": -4.67
+    },
+    "XLF": {
+      "ok": true,
+      "close": 58.26,
+      "return20": 2.79,
+      "return50": 8.78
+    },
+    "XLE": {
+      "ok": true,
+      "close": 62.43,
+      "return20": 6.45,
+      "return50": 12.39
+    },
+    "XLI": {
+      "ok": true,
+      "close": 180.34,
+      "return20": 2.08,
+      "return50": 0.93
+    },
+    "XLY": {
+      "ok": true,
+      "close": 117.16,
+      "return20": 4.97,
+      "return50": -1.19
+    },
+    "XLP": {
+      "ok": true,
+      "close": 86.27,
+      "return20": -1.25,
+      "return50": 0.92
+    },
+    "XLV": {
+      "ok": true,
+      "close": 173.54,
+      "return20": 4.39,
+      "return50": 13.51
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 45.09,
+      "return20": -1.89,
+      "return50": 0.22
+    },
+    "XLC": {
+      "ok": true,
+      "close": 112.61,
+      "return20": 2.83,
+      "return50": 0.37
+    },
+    "SMH": {
+      "ok": true,
+      "close": 555.77,
+      "return20": 10.22,
+      "return50": -14.11
+    },
+    "IBB": {
+      "ok": true,
+      "close": 215.23,
+      "return20": 14.16,
+      "return50": 25.01
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 54,
+      "pattern": "No major pattern",
+      "setup": "Catalyst Continuation Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 209.66,
+      "sma20": 215.56,
+      "sma50": 207.75,
+      "atr14": 5.44,
+      "avgVolume20": 116664383,
+      "volumeRatio": 1.54,
+      "support20": 191.52,
+      "resistance20": 227.92,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 32,
+      "pullbackScore": 34,
+      "relativeStrengthScore": 56,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 76,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 0.12,
+      "rsSector50": 12.8,
+      "eventRiskScore": 24,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [
+        "headline sensitivity"
+      ],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 44,
+      "rsSpy20": 5.32,
+      "rsSpy50": -2.8,
+      "rsQqq20": 2.84,
+      "rsQqq50": 3.08,
+      "premarketMove": null,
+      "trigger": "Enter only if the move stays above 211.42 and volume remains firm.",
+      "invalidation": "Stop below 190.16.",
+      "target": "Initial target near 217.82 with 2R minimum.",
+      "notes": [
+        "Mixed with close 209.66 versus SMA20 215.56 and SMA50 207.75.",
+        "Volume ran at 1.54x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 44 with setup freshness tagged workable.",
+        "Breakout score 32 | Pullback score 34.",
+        "Narrative: Nvidia's $500B Problem: Paying Customers to Buy From You ----------------------------------------------------------- Nvidia's gross profit margin over 5 years …"
+      ]
+    },
+    {
+      "symbol": "GS",
+      "ok": true,
+      "snapshot": "GS.svg",
+      "score": 7,
+      "pattern": "Bearish Engulfing",
+      "setup": "Risk / Avoid",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 1040.46,
+      "sma20": 1036.72,
+      "sma50": 1052.6,
+      "atr14": 22.54,
+      "avgVolume20": 1901667,
+      "volumeRatio": 0.78,
+      "support20": 998.51,
+      "resistance20": 1077.21,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 20,
+      "pullbackScore": 51,
+      "relativeStrengthScore": 47,
+      "relativeStrengthLabel": "Lagging",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 63,
+      "sectorRelativeStrengthLabel": "Beating sector",
+      "rsSector20": -4.13,
+      "rsSector50": 10.79,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 63,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 42,
+      "rsSpy20": 1.07,
+      "rsSpy50": -4.81,
+      "rsQqq20": -1.41,
+      "rsQqq50": 1.07,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Invalidation already broken; wait for a fresh base.",
+      "target": "No upside target until trend repairs.",
+      "notes": [
+        "Detected Bearish Engulfing.",
+        "Mixed with close 1040.46 versus SMA20 1036.72 and SMA50 1052.6.",
+        "Volume ran at 0.78x the 20-day average.",
+        "Relative strength is lagging versus SPY/QQQ.",
+        "Sector check versus SMH: beating sector.",
+        "Structure quality 42 with setup freshness tagged fresh.",
+        "Breakout score 20 | Pullback score 51.",
+        "Narrative: * Now bankrolling its own buyers: This month Nvidia lined up $500 billion in outside capital with Apollo , BlackRock , and Goldman Sachs ."
+      ]
+    }
+  ]
+}
