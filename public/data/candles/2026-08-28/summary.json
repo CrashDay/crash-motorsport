@@ -1,0 +1,196 @@
+{
+  "date": "2026-08-28",
+  "generatedAt": "2026-08-28T12:00:45.831Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 771.1,
+      "return20": 3.97,
+      "return50": 2.77
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 721.11,
+      "return20": 5.49,
+      "return50": -1.2
+    },
+    "XLK": {
+      "ok": true,
+      "close": 188.61,
+      "return20": 7.33,
+      "return50": 1.16
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.88,
+      "return20": 1.54,
+      "return50": 6.49
+    },
+    "XLE": {
+      "ok": true,
+      "close": 62.29,
+      "return20": 5.65,
+      "return50": 12.52
+    },
+    "XLI": {
+      "ok": true,
+      "close": 178.8,
+      "return20": 0.23,
+      "return50": -0.58
+    },
+    "XLY": {
+      "ok": true,
+      "close": 115.88,
+      "return20": 3.11,
+      "return50": -2.18
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.08,
+      "return20": -0.46,
+      "return50": -0.6
+    },
+    "XLV": {
+      "ok": true,
+      "close": 171.58,
+      "return20": 4.93,
+      "return50": 12.19
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 44.66,
+      "return20": -1.41,
+      "return50": -0.98
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.41,
+      "return20": 4.53,
+      "return50": -0.81
+    },
+    "SMH": {
+      "ok": true,
+      "close": 573,
+      "return20": 6.33,
+      "return50": -6.98
+    },
+    "IBB": {
+      "ok": true,
+      "close": 214.8,
+      "return20": 13.08,
+      "return50": 25.29
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 100,
+      "pattern": "20-Day Breakout Close",
+      "setup": "Breakout Candidate",
+      "primaryStrategy": "Breakout",
+      "trend": "Uptrend",
+      "close": 227.98,
+      "sma20": 217.21,
+      "sma50": 208.16,
+      "atr14": 6.51,
+      "avgVolume20": 125131034,
+      "volumeRatio": 2.38,
+      "support20": 194.95,
+      "resistance20": 227.92,
+      "relativeLocation": "Above resistance",
+      "breakoutScore": 100,
+      "pullbackScore": 61,
+      "relativeStrengthScore": 82,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 100,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 10.56,
+      "rsSector50": 16.9,
+      "eventRiskScore": 36,
+      "eventRiskLabel": "Medium event risk",
+      "eventRiskFlags": [
+        "fresh earnings reaction",
+        "headline sensitivity"
+      ],
+      "extensionScore": 65,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 78,
+      "rsSpy20": 12.92,
+      "rsSpy50": 7.15,
+      "rsQqq20": 11.4,
+      "rsQqq50": 11.12,
+      "premarketMove": null,
+      "trigger": "Buy only above 230.47 with follow-through volume.",
+      "invalidation": "Stop below 217.64.",
+      "target": "First target 241.01; next area beyond 240.95.",
+      "notes": [
+        "Detected 20-Day Breakout Close.",
+        "Uptrend with close 227.98 versus SMA20 217.21 and SMA50 208.16.",
+        "Volume ran at 2.38x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 78 with setup freshness tagged fresh.",
+        "Breakout score 100 | Pullback score 61.",
+        "Event risk is medium event risk (fresh earnings reaction, headline sensitivity).",
+        "Latest close improved versus the prior session.",
+        "Narrative: Nvidia's Beat and a Telling Purchase --------------------------------------- Nvidia beat again. But our analyst Emily Flippen calls Nvidia \"a lagging indicator…"
+      ]
+    },
+    {
+      "symbol": "XYZ",
+      "ok": true,
+      "snapshot": "XYZ.svg",
+      "score": 21,
+      "pattern": "Shooting Star",
+      "setup": "Risk / Avoid",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 84.85,
+      "sma20": 81.37,
+      "sma50": 79.35,
+      "atr14": 2.52,
+      "avgVolume20": 4861838,
+      "volumeRatio": 1.19,
+      "support20": 77.23,
+      "resistance20": 86.75,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 44,
+      "pullbackScore": 62,
+      "relativeStrengthScore": 66,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 55,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 68,
+      "rsSpy20": -1.23,
+      "rsSpy50": 10.85,
+      "rsQqq20": -2.75,
+      "rsQqq50": 14.82,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Invalidation already broken; wait for a fresh base.",
+      "target": "No upside target until trend repairs.",
+      "notes": [
+        "Detected Shooting Star.",
+        "Uptrend with close 84.85 versus SMA20 81.37 and SMA50 79.35.",
+        "Volume ran at 1.19x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Structure quality 68 with setup freshness tagged workable.",
+        "Breakout score 44 | Pullback score 62.",
+        "Latest close improved versus the prior session.",
+        "Narrative: It will cap kids at two hours a day across Instagram and Facebook, block feeds overnight, and limit beauty filters and visible likes."
+      ]
+    }
+  ]
+}
