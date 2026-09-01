@@ -1,0 +1,138 @@
+{
+  "date": "2026-09-01",
+  "generatedAt": "2026-09-01T12:00:36.953Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 767.05,
+      "return20": 1.24,
+      "return50": 2.72
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 716.76,
+      "return20": 2.38,
+      "return50": -3.22
+    },
+    "XLK": {
+      "ok": true,
+      "close": 186.5,
+      "return20": 4.75,
+      "return50": -2.58
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.71,
+      "return20": 0.58,
+      "return50": 7.73
+    },
+    "XLE": {
+      "ok": true,
+      "close": 63.96,
+      "return20": 8.79,
+      "return50": 18.95
+    },
+    "XLI": {
+      "ok": true,
+      "close": 175.13,
+      "return20": -4.38,
+      "return50": -3.19
+    },
+    "XLY": {
+      "ok": true,
+      "close": 116.59,
+      "return20": -1.37,
+      "return50": -0.49
+    },
+    "XLP": {
+      "ok": true,
+      "close": 84.98,
+      "return20": 0.14,
+      "return50": 2.02
+    },
+    "XLV": {
+      "ok": true,
+      "close": 170.54,
+      "return20": 5.12,
+      "return50": 14.15
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 44.11,
+      "return20": -2.37,
+      "return50": 0.57
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.46,
+      "return20": 0.11,
+      "return50": 1.84
+    },
+    "SMH": {
+      "ok": true,
+      "close": 556.63,
+      "return20": 2.05,
+      "return50": -15.65
+    },
+    "IBB": {
+      "ok": true,
+      "close": 209.05,
+      "return20": 12.45,
+      "return50": 20.39
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "AAPL",
+      "ok": true,
+      "snapshot": "AAPL.svg",
+      "score": 40,
+      "pattern": "No major pattern",
+      "setup": "Trend Pullback Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 316.85,
+      "sma20": 310.53,
+      "sma50": 312.38,
+      "atr14": 6.13,
+      "avgVolume20": 41368450,
+      "volumeRatio": 1,
+      "support20": 300.57,
+      "resistance20": 322.37,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 25,
+      "pullbackScore": 71,
+      "relativeStrengthScore": 64,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "XLK",
+      "sectorRelativeStrengthScore": 67,
+      "sectorRelativeStrengthLabel": "Beating sector",
+      "rsSector20": -0.32,
+      "rsSector50": 8.9,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 65,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 52,
+      "rsSpy20": 3.19,
+      "rsSpy50": 3.6,
+      "rsQqq20": 2.05,
+      "rsQqq50": 9.54,
+      "premarketMove": null,
+      "trigger": "Watch for support near 300.57 and a higher low before entry.",
+      "invalidation": "Stop below 299.04.",
+      "target": "Initial target near 326.04 with 2R minimum.",
+      "notes": [
+        "Mixed with close 316.85 versus SMA20 310.53 and SMA50 312.38.",
+        "Volume ran at 1x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus XLK: beating sector.",
+        "Structure quality 52 with setup freshness tagged fresh.",
+        "Breakout score 25 | Pullback score 71.",
+        "Narrative: Apple's Cook Era Ends: Now What? ----------------------------------- Apple's free cash flow over the past 10 years Tim Cook stepped down as Apple CEO yesterday…"
+      ]
+    }
+  ]
+}
