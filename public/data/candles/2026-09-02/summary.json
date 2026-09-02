@@ -1,0 +1,189 @@
+{
+  "date": "2026-09-02",
+  "generatedAt": "2026-09-02T12:00:35.711Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 761.78,
+      "return20": -1.24,
+      "return50": 2.34
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 707.64,
+      "return20": -2.24,
+      "return50": -4.11
+    },
+    "XLK": {
+      "ok": true,
+      "close": 183.64,
+      "return20": -1.74,
+      "return50": -4.43
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.2,
+      "return20": -1.17,
+      "return50": 6.52
+    },
+    "XLE": {
+      "ok": true,
+      "close": 64.77,
+      "return20": 10.68,
+      "return50": 19.81
+    },
+    "XLI": {
+      "ok": true,
+      "close": 172.73,
+      "return20": -7.33,
+      "return50": -4.99
+    },
+    "XLY": {
+      "ok": true,
+      "close": 114.59,
+      "return20": -3.13,
+      "return50": -0.3
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.25,
+      "return20": -0.14,
+      "return50": 3.74
+    },
+    "XLV": {
+      "ok": true,
+      "close": 171.67,
+      "return20": 5.9,
+      "return50": 14.4
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 44.04,
+      "return20": -2.5,
+      "return50": 0.05
+    },
+    "XLC": {
+      "ok": true,
+      "close": 110.88,
+      "return20": -1.04,
+      "return50": 3.76
+    },
+    "SMH": {
+      "ok": true,
+      "close": 545.22,
+      "return20": -5.3,
+      "return50": -18.49
+    },
+    "IBB": {
+      "ok": true,
+      "close": 210.82,
+      "return20": 10.87,
+      "return50": 19.11
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 35,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 217.44,
+      "sma20": 219.03,
+      "sma50": 208.8,
+      "atr14": 6.67,
+      "avgVolume20": 126453046,
+      "volumeRatio": 0.87,
+      "support20": 207.25,
+      "resistance20": 230.47,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 26,
+      "pullbackScore": 61,
+      "relativeStrengthScore": 64,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 100,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 7.9,
+      "rsSector50": 22.7,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 34,
+      "rsSpy20": 3.84,
+      "rsSpy50": 1.87,
+      "rsQqq20": 4.84,
+      "rsQqq50": 8.32,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 205.58.",
+      "target": "Initial target near 227.45 with 2R minimum.",
+      "notes": [
+        "Mixed with close 217.44 versus SMA20 219.03 and SMA50 208.8.",
+        "Volume ran at 0.87x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 34 with setup freshness tagged workable.",
+        "Breakout score 26 | Pullback score 61.",
+        "Narrative: Catch up on Nvidia’s latest AI move Divider ---------------------------------------------------------------"
+      ]
+    },
+    {
+      "symbol": "AFRM",
+      "ok": true,
+      "snapshot": "AFRM.svg",
+      "score": 0,
+      "pattern": "20-Day Breakdown Close",
+      "setup": "Risk / Avoid",
+      "primaryStrategy": "Breakout",
+      "trend": "Downtrend",
+      "close": 69.94,
+      "sma20": 76.05,
+      "sma50": 77.2,
+      "atr14": 4.32,
+      "avgVolume20": 5073962,
+      "volumeRatio": 1.57,
+      "support20": 71.23,
+      "resistance20": 90.44,
+      "relativeLocation": "Below support",
+      "breakoutScore": 27,
+      "pullbackScore": 21,
+      "relativeStrengthScore": 34,
+      "relativeStrengthLabel": "Laggard",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 44,
+      "rsSpy20": -9.23,
+      "rsSpy50": -5.47,
+      "rsQqq20": -8.23,
+      "rsQqq50": 0.98,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Invalidation already broken; wait for a fresh base.",
+      "target": "No upside target until trend repairs.",
+      "notes": [
+        "Detected 20-Day Breakdown Close.",
+        "Downtrend with close 69.94 versus SMA20 76.05 and SMA50 77.2.",
+        "Volume ran at 1.57x the 20-day average.",
+        "Relative strength is laggard versus SPY/QQQ.",
+        "Structure quality 44 with setup freshness tagged workable.",
+        "Breakout score 27 | Pullback score 21.",
+        "Narrative: --------------------- What would it take to shake your confidence in the buy-now-pay-later business – think Sezzle, Affirm , Klarna , and PayPal ?"
+      ]
+    }
+  ]
+}
