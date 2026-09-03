@@ -1,0 +1,138 @@
+{
+  "date": "2026-09-03",
+  "generatedAt": "2026-09-03T12:00:34.505Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 765.16,
+      "return20": -0.6,
+      "return50": 4.3
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 709.24,
+      "return20": -1.12,
+      "return50": -0.62
+    },
+    "XLK": {
+      "ok": true,
+      "close": 183.6,
+      "return20": -1.24,
+      "return50": -0.32
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.66,
+      "return20": -0.59,
+      "return50": 7.02
+    },
+    "XLE": {
+      "ok": true,
+      "close": 65.1,
+      "return20": 13.59,
+      "return50": 19.54
+    },
+    "XLI": {
+      "ok": true,
+      "close": 172.78,
+      "return20": -7.28,
+      "return50": -3.01
+    },
+    "XLY": {
+      "ok": true,
+      "close": 114.86,
+      "return20": -3.19,
+      "return50": 0.97
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.53,
+      "return20": 0.23,
+      "return50": 2.16
+    },
+    "XLV": {
+      "ok": true,
+      "close": 172.95,
+      "return20": 5.35,
+      "return50": 13.65
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 43.73,
+      "return20": -3.25,
+      "return50": -2.04
+    },
+    "XLC": {
+      "ok": true,
+      "close": 112.42,
+      "return20": 1.4,
+      "return50": 4.8
+    },
+    "SMH": {
+      "ok": true,
+      "close": 550.48,
+      "return20": -3.37,
+      "return50": -11.51
+    },
+    "IBB": {
+      "ok": true,
+      "close": 213.8,
+      "return20": 11.47,
+      "return50": 20.05
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "SHOP",
+      "ok": true,
+      "snapshot": "SHOP.svg",
+      "score": 26,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 141.87,
+      "sma20": 149.93,
+      "sma50": 132.85,
+      "atr14": 5.11,
+      "avgVolume20": 7638365,
+      "volumeRatio": 0.81,
+      "support20": 139.23,
+      "resistance20": 158.87,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 26,
+      "pullbackScore": 44,
+      "relativeStrengthScore": 94,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 53,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 42,
+      "rsSpy20": -1.04,
+      "rsSpy50": 27.45,
+      "rsQqq20": -0.52,
+      "rsQqq50": 32.37,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 137.62.",
+      "target": "Initial target near 149.54 with 2R minimum.",
+      "notes": [
+        "Mixed with close 141.87 versus SMA20 149.93 and SMA50 132.85.",
+        "Volume ran at 0.81x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Structure quality 42 with setup freshness tagged workable.",
+        "Breakout score 26 | Pullback score 44.",
+        "Latest close improved versus the prior session.",
+        "Narrative: Will FIGS get to 120 recommendations across The Motley Fool like Shopify ?"
+      ]
+    }
+  ]
+}
