@@ -1,0 +1,139 @@
+{
+  "date": "2026-09-04",
+  "generatedAt": "2026-09-04T12:00:37.599Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 773.17,
+      "return20": 0.6,
+      "return50": 5.45
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 717.67,
+      "return20": 0.42,
+      "return50": 0.99
+    },
+    "XLK": {
+      "ok": true,
+      "close": 185.97,
+      "return20": 0.35,
+      "return50": 1.6
+    },
+    "XLF": {
+      "ok": true,
+      "close": 58.56,
+      "return20": 1.3,
+      "return50": 9.01
+    },
+    "XLE": {
+      "ok": true,
+      "close": 64.62,
+      "return20": 11.11,
+      "return50": 20.63
+    },
+    "XLI": {
+      "ok": true,
+      "close": 174.56,
+      "return20": -5.52,
+      "return50": -3.14
+    },
+    "XLY": {
+      "ok": true,
+      "close": 116.46,
+      "return20": -1.39,
+      "return50": 1.21
+    },
+    "XLP": {
+      "ok": true,
+      "close": 85.26,
+      "return20": 0.18,
+      "return50": 0.97
+    },
+    "XLV": {
+      "ok": true,
+      "close": 173.26,
+      "return20": 5.36,
+      "return50": 12.98
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 44.25,
+      "return20": -1.25,
+      "return50": -0.58
+    },
+    "XLC": {
+      "ok": true,
+      "close": 113.38,
+      "return20": 1.98,
+      "return50": 6.42
+    },
+    "SMH": {
+      "ok": true,
+      "close": 552.6,
+      "return20": -3.3,
+      "return50": -10.72
+    },
+    "IBB": {
+      "ok": true,
+      "close": 213.81,
+      "return20": 10.8,
+      "return50": 17.78
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 67,
+      "pattern": "No major pattern",
+      "setup": "Trend Pullback Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 228.45,
+      "sma20": 219.76,
+      "sma50": 209.87,
+      "atr14": 7.39,
+      "avgVolume20": 127420313,
+      "volumeRatio": 1.05,
+      "support20": 207.25,
+      "resistance20": 230.47,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 52,
+      "pullbackScore": 69,
+      "relativeStrengthScore": 73,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 100,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 7.62,
+      "rsSector50": 25.52,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 65,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 68,
+      "rsSpy20": 3.72,
+      "rsSpy50": 9.35,
+      "rsQqq20": 3.9,
+      "rsQqq50": 13.81,
+      "premarketMove": null,
+      "trigger": "Watch for support near 207.25 and a higher low before entry.",
+      "invalidation": "Stop below 205.4.",
+      "target": "Initial target near 239.53 with 2R minimum.",
+      "notes": [
+        "Uptrend with close 228.45 versus SMA20 219.76 and SMA50 209.87.",
+        "Volume ran at 1.05x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 68 with setup freshness tagged fresh.",
+        "Breakout score 52 | Pullback score 69.",
+        "Latest close improved versus the prior session.",
+        "Narrative: Nvidia Is Spending Like the Easy Years Are Over -------------------------------------------------- Nvidia confirmed on Thursday that it will spend $13 billion …"
+      ]
+    }
+  ]
+}
