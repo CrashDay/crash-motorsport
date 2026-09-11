@@ -1,0 +1,142 @@
+{
+  "date": "2026-09-11",
+  "generatedAt": "2026-09-11T12:00:22.696Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 757.83,
+      "return20": -1.9,
+      "return50": 1.48
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 708.69,
+      "return20": -2.07,
+      "return50": -3.76
+    },
+    "XLK": {
+      "ok": true,
+      "close": 185.22,
+      "return20": -1.93,
+      "return50": -2.78
+    },
+    "XLF": {
+      "ok": true,
+      "close": 56.87,
+      "return20": -1.81,
+      "return50": 6.08
+    },
+    "XLE": {
+      "ok": true,
+      "close": 64.93,
+      "return20": 6.39,
+      "return50": 22.26
+    },
+    "XLI": {
+      "ok": true,
+      "close": 170.55,
+      "return20": -8.25,
+      "return50": -7.93
+    },
+    "XLY": {
+      "ok": true,
+      "close": 111.96,
+      "return20": -5.03,
+      "return50": -4.54
+    },
+    "XLP": {
+      "ok": true,
+      "close": 83.09,
+      "return20": -2.34,
+      "return50": 0.02
+    },
+    "XLV": {
+      "ok": true,
+      "close": 165.66,
+      "return20": -1.65,
+      "return50": 4.41
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 43.05,
+      "return20": -3.24,
+      "return50": -2.23
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.5,
+      "return20": 1.12,
+      "return50": 4.08
+    },
+    "SMH": {
+      "ok": true,
+      "close": 560.28,
+      "return20": -4.2,
+      "return50": -14.58
+    },
+    "IBB": {
+      "ok": true,
+      "close": 202.64,
+      "return20": 0.96,
+      "return50": 6.55
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "ASML",
+      "ok": true,
+      "snapshot": "ASML.svg",
+      "score": 29,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 1687.43,
+      "sma20": 1744.56,
+      "sma50": 1741.77,
+      "atr14": 45.26,
+      "avgVolume20": 1136523,
+      "volumeRatio": 0.96,
+      "support20": 1619.34,
+      "resistance20": 1896.35,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 12,
+      "pullbackScore": 32,
+      "relativeStrengthScore": 22,
+      "relativeStrengthLabel": "Laggard",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 34,
+      "rsSpy20": -4.88,
+      "rsSpy50": -16.66,
+      "rsQqq20": -4.71,
+      "rsQqq50": -11.42,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 1608.02.",
+      "target": "Initial target near 1755.33 with 2R minimum.",
+      "notes": [
+        "Mixed with close 1687.43 versus SMA20 1744.56 and SMA50 1741.77.",
+        "Volume ran at 0.96x the 20-day average.",
+        "Relative strength is laggard versus SPY/QQQ.",
+        "Structure quality 34 with setup freshness tagged workable.",
+        "Breakout score 12 | Pullback score 32.",
+        "Narrative: TSMC, Samsung, and Amazon Committed Their Own Money ------------------------------------------------------ ASML is the only company on the planet that makes th…"
+      ]
+    },
+    {
+      "symbol": "CPI",
+      "ok": false,
+      "error": "Polygon response missing candle data (DELAYED)"
+    }
+  ]
+}
