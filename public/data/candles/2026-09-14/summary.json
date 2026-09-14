@@ -1,0 +1,143 @@
+{
+  "date": "2026-09-14",
+  "generatedAt": "2026-09-14T12:00:40.741Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 764.29,
+      "return20": -1.75,
+      "return50": 2.48
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 714.88,
+      "return20": -2.35,
+      "return50": -1.42
+    },
+    "XLK": {
+      "ok": true,
+      "close": 187.67,
+      "return20": -1.62,
+      "return50": 1.1
+    },
+    "XLF": {
+      "ok": true,
+      "close": 57.25,
+      "return20": -1.73,
+      "return50": 4.51
+    },
+    "XLE": {
+      "ok": true,
+      "close": 65.14,
+      "return20": 6.68,
+      "return50": 23.35
+    },
+    "XLI": {
+      "ok": true,
+      "close": 172.37,
+      "return20": -7.22,
+      "return50": -5.99
+    },
+    "XLY": {
+      "ok": true,
+      "close": 112.96,
+      "return20": -4.63,
+      "return50": -4.34
+    },
+    "XLP": {
+      "ok": true,
+      "close": 83.38,
+      "return20": -3.05,
+      "return50": 0.1
+    },
+    "XLV": {
+      "ok": true,
+      "close": 165.36,
+      "return20": -1.79,
+      "return50": 3.65
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 43.42,
+      "return20": -3.77,
+      "return50": -1.72
+    },
+    "XLC": {
+      "ok": true,
+      "close": 112.6,
+      "return20": 0.04,
+      "return50": 2.61
+    },
+    "SMH": {
+      "ok": true,
+      "close": 568.53,
+      "return20": -3.5,
+      "return50": -8.37
+    },
+    "IBB": {
+      "ok": true,
+      "close": 202.93,
+      "return20": 2.01,
+      "return50": 6.74
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 35,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 218.29,
+      "sma20": 220.16,
+      "sma50": 212.58,
+      "atr14": 7.69,
+      "avgVolume20": 127719037,
+      "volumeRatio": 0.7,
+      "support20": 207.25,
+      "resistance20": 234.76,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 24,
+      "pullbackScore": 60,
+      "relativeStrengthScore": 63,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 88,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 0.39,
+      "rsSector50": 18.85,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 34,
+      "rsSpy20": -1.36,
+      "rsSpy50": 8,
+      "rsQqq20": -0.76,
+      "rsQqq50": 11.9,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 205.33.",
+      "target": "Initial target near 229.83 with 2R minimum.",
+      "notes": [
+        "Mixed with close 218.29 versus SMA20 220.16 and SMA50 212.58.",
+        "Volume ran at 0.7x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 34 with setup freshness tagged workable.",
+        "Breakout score 24 | Pullback score 60.",
+        "Narrative: Nvidia May Anchor Anthropic's $2 Trillion IPO ------------------------------------------------ Nvidia plans to anchor Anthropic's IPO with a $10 billion invest…"
+      ]
+    },
+    {
+      "symbol": "PGI",
+      "ok": false,
+      "error": "Polygon response missing candle data (DELAYED)"
+    }
+  ]
+}
