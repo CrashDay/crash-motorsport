@@ -1,0 +1,139 @@
+{
+  "date": "2026-09-16",
+  "generatedAt": "2026-09-16T12:00:21.232Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 757.39,
+      "return20": -1.98,
+      "return50": 0.81
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 704.54,
+      "return20": -3.47,
+      "return50": -2.53
+    },
+    "XLK": {
+      "ok": true,
+      "close": 183.74,
+      "return20": -3.46,
+      "return50": 0.09
+    },
+    "XLF": {
+      "ok": true,
+      "close": 56.85,
+      "return20": -1.27,
+      "return50": 1.26
+    },
+    "XLE": {
+      "ok": true,
+      "close": 65.93,
+      "return20": 5.35,
+      "return50": 24.09
+    },
+    "XLI": {
+      "ok": true,
+      "close": 168.85,
+      "return20": -9.38,
+      "return50": -9.01
+    },
+    "XLY": {
+      "ok": true,
+      "close": 110.88,
+      "return20": -5.03,
+      "return50": -6.04
+    },
+    "XLP": {
+      "ok": true,
+      "close": 83.73,
+      "return20": -1.12,
+      "return50": -0.44
+    },
+    "XLV": {
+      "ok": true,
+      "close": 167.66,
+      "return20": 0.37,
+      "return50": 3.52
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 43.07,
+      "return20": -3.93,
+      "return50": -2.75
+    },
+    "XLC": {
+      "ok": true,
+      "close": 114.03,
+      "return20": 2.9,
+      "return50": 3.47
+    },
+    "SMH": {
+      "ok": true,
+      "close": 542.11,
+      "return20": -8.75,
+      "return50": -10.29
+    },
+    "IBB": {
+      "ok": true,
+      "close": 202,
+      "return20": 0.03,
+      "return50": 3.43
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 32,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 212.17,
+      "sma20": 218.81,
+      "sma50": 213.24,
+      "atr14": 7.53,
+      "avgVolume20": 130343082,
+      "volumeRatio": 0.69,
+      "support20": 207.25,
+      "resistance20": 234.76,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 25,
+      "pullbackScore": 34,
+      "relativeStrengthScore": 60,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 94,
+      "sectorRelativeStrengthLabel": "Leading sector peers",
+      "rsSector20": 3.04,
+      "rsSector50": 18.79,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 42,
+      "rsSpy20": -3.73,
+      "rsSpy50": 7.69,
+      "rsQqq20": -2.24,
+      "rsQqq50": 11.03,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 205.37.",
+      "target": "Initial target near 223.47 with 2R minimum.",
+      "notes": [
+        "Mixed with close 212.17 versus SMA20 218.81 and SMA50 213.24.",
+        "Volume ran at 0.69x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: leading sector peers.",
+        "Structure quality 42 with setup freshness tagged workable.",
+        "Breakout score 25 | Pullback score 34.",
+        "Latest close improved versus the prior session.",
+        "Narrative: Huang and Zuckerberg Pick a Side in AI Fight ----------------------------------------------- Nvidia CEO Jensen Huang stood on stage at Salesforce's Dreamforce …"
+      ]
+    }
+  ]
+}
