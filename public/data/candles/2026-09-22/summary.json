@@ -1,0 +1,192 @@
+{
+  "date": "2026-09-22",
+  "generatedAt": "2026-09-22T12:00:43.408Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 773.5,
+      "return20": 1.02,
+      "return50": 2.46
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 741.47,
+      "return20": 3.93,
+      "return50": 2.2
+    },
+    "XLK": {
+      "ok": true,
+      "close": 194.85,
+      "return20": 6.3,
+      "return50": 4.88
+    },
+    "XLF": {
+      "ok": true,
+      "close": 55.9,
+      "return20": -2.75,
+      "return50": 0.34
+    },
+    "XLE": {
+      "ok": true,
+      "close": 62.46,
+      "return20": -1.85,
+      "return50": 13.4
+    },
+    "XLI": {
+      "ok": true,
+      "close": 169.98,
+      "return20": -5.7,
+      "return50": -6.56
+    },
+    "XLY": {
+      "ok": true,
+      "close": 112.23,
+      "return20": -4.91,
+      "return50": -4.27
+    },
+    "XLP": {
+      "ok": true,
+      "close": 81.92,
+      "return20": -4.73,
+      "return50": -2.62
+    },
+    "XLV": {
+      "ok": true,
+      "close": 169.01,
+      "return20": -3.21,
+      "return50": 5.08
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 42.59,
+      "return20": -5.52,
+      "return50": -4.18
+    },
+    "XLC": {
+      "ok": true,
+      "close": 114.75,
+      "return20": 3.01,
+      "return50": 2.79
+    },
+    "SMH": {
+      "ok": true,
+      "close": 596.03,
+      "return20": 6.35,
+      "return50": -2.45
+    },
+    "IBB": {
+      "ok": true,
+      "close": 207.16,
+      "return20": -3,
+      "return50": 7.86
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 61,
+      "pattern": "No major pattern",
+      "setup": "Trend Pullback Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Uptrend",
+      "close": 227.38,
+      "sma20": 219.51,
+      "sma50": 214.6,
+      "atr14": 6.07,
+      "avgVolume20": 137838901,
+      "volumeRatio": 1.17,
+      "support20": 207.25,
+      "resistance20": 234.76,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 43,
+      "pullbackScore": 63,
+      "relativeStrengthScore": 63,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 70,
+      "sectorRelativeStrengthLabel": "Beating sector",
+      "rsSector20": -0.45,
+      "rsSector50": 10.23,
+      "eventRiskScore": 24,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [
+        "headline sensitivity"
+      ],
+      "extensionScore": 55,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 68,
+      "rsSpy20": 4.88,
+      "rsSpy50": 5.32,
+      "rsQqq20": 1.97,
+      "rsQqq50": 5.58,
+      "premarketMove": null,
+      "trigger": "Watch for support near 207.25 and a higher low before entry.",
+      "invalidation": "Stop below 205.73.",
+      "target": "Initial target near 236.48 with 2R minimum.",
+      "notes": [
+        "Uptrend with close 227.38 versus SMA20 219.51 and SMA50 214.6.",
+        "Volume ran at 1.17x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: beating sector.",
+        "Structure quality 68 with setup freshness tagged workable.",
+        "Breakout score 43 | Pullback score 63.",
+        "Latest close improved versus the prior session.",
+        "Narrative: Alibaba Unveils AI Chip to Rival Nvidia ------------------------------------------ Alibaba unveiled a new AI chip Tuesday, the Zhenwu V900. * Homegrown silicon…"
+      ]
+    },
+    {
+      "symbol": "SHOP",
+      "ok": true,
+      "snapshot": "SHOP.svg",
+      "score": 54,
+      "pattern": "No major pattern",
+      "setup": "Catalyst Continuation Watch",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 137.92,
+      "sma20": 139.31,
+      "sma50": 136.38,
+      "atr14": 6.3,
+      "avgVolume20": 8521208,
+      "volumeRatio": 1.95,
+      "support20": 124.03,
+      "resistance20": 156.49,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 40,
+      "pullbackScore": 43,
+      "relativeStrengthScore": 50,
+      "relativeStrengthLabel": "In line",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 62,
+      "rsSpy20": -8.61,
+      "rsSpy50": 10.09,
+      "rsQqq20": -11.52,
+      "rsQqq50": 10.35,
+      "premarketMove": null,
+      "trigger": "Enter only if the move stays above 132.21 and volume remains firm.",
+      "invalidation": "Stop below 122.46.",
+      "target": "Initial target near 147.36 with 2R minimum.",
+      "notes": [
+        "Mixed with close 137.92 versus SMA20 139.31 and SMA50 136.38.",
+        "Volume ran at 1.95x the 20-day average.",
+        "Relative strength is in line versus SPY/QQQ.",
+        "Structure quality 62 with setup freshness tagged workable.",
+        "Breakout score 40 | Pullback score 43.",
+        "Latest close improved versus the prior session.",
+        "Narrative: AI Agents Are Filling Shopify’s Cart --------------------------------------- AI Agents Are Filling Shopify’s Cart Meta built an artificial intelligence (AI) sh…"
+      ]
+    }
+  ]
+}
