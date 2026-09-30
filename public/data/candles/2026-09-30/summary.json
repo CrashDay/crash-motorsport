@@ -1,0 +1,143 @@
+{
+  "date": "2026-09-30",
+  "generatedAt": "2026-09-30T12:00:30.778Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 764.2,
+      "return20": -0.37,
+      "return50": 2.98
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 737.93,
+      "return20": 2.95,
+      "return50": 6.02
+    },
+    "XLK": {
+      "ok": true,
+      "close": 194.5,
+      "return20": 4.29,
+      "return50": 10.69
+    },
+    "XLF": {
+      "ok": true,
+      "close": 54.01,
+      "return20": -6.41,
+      "return50": -3.62
+    },
+    "XLE": {
+      "ok": true,
+      "close": 61.54,
+      "return20": -3.78,
+      "return50": 6.21
+    },
+    "XLI": {
+      "ok": true,
+      "close": 169.13,
+      "return20": -3.43,
+      "return50": -5.05
+    },
+    "XLY": {
+      "ok": true,
+      "close": 109.15,
+      "return20": -6.38,
+      "return50": -4.76
+    },
+    "XLP": {
+      "ok": true,
+      "close": 81.85,
+      "return20": -3.68,
+      "return50": -3.55
+    },
+    "XLV": {
+      "ok": true,
+      "close": 170.73,
+      "return20": 0.11,
+      "return50": 7.21
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 41.34,
+      "return20": -6.28,
+      "return50": -8.6
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.47,
+      "return20": 0.01,
+      "return50": 0.6
+    },
+    "SMH": {
+      "ok": true,
+      "close": 606.9,
+      "return20": 9.03,
+      "return50": 8.6
+    },
+    "IBB": {
+      "ok": true,
+      "close": 211.04,
+      "return20": 0.95,
+      "return50": 13.14
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "THAAD",
+      "ok": false,
+      "error": "Polygon response missing candle data (DELAYED)"
+    },
+    {
+      "symbol": "AAPL",
+      "ok": true,
+      "snapshot": "AAPL.svg",
+      "score": 17,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Mixed",
+      "close": 329.4,
+      "sma20": 330.96,
+      "sma50": 321.98,
+      "atr14": 6.78,
+      "avgVolume20": 42465669,
+      "volumeRatio": 0.91,
+      "support20": 309.9,
+      "resistance20": 345.34,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 15,
+      "pullbackScore": 60,
+      "relativeStrengthScore": 49,
+      "relativeStrengthLabel": "In line",
+      "sectorProxy": "XLK",
+      "sectorRelativeStrengthScore": 30,
+      "sectorRelativeStrengthLabel": "Lagging sector badly",
+      "rsSector20": -0.33,
+      "rsSector50": -9.83,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 34,
+      "rsSpy20": 4.33,
+      "rsSpy50": -2.12,
+      "rsQqq20": 1.01,
+      "rsQqq50": -5.16,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 308.2.",
+      "target": "Initial target near 339.58 with 2R minimum.",
+      "notes": [
+        "Mixed with close 329.4 versus SMA20 330.96 and SMA50 321.98.",
+        "Volume ran at 0.91x the 20-day average.",
+        "Relative strength is in line versus SPY/QQQ.",
+        "Sector check versus XLK: lagging sector badly.",
+        "Structure quality 34 with setup freshness tagged workable.",
+        "Breakout score 15 | Pullback score 60.",
+        "Narrative: * The five largest companies in the world are Apple , Amazon , Alphabet , Meta , and Anthropic."
+      ]
+    }
+  ]
+}
