@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-01",
+  "generatedAt": "2026-10-01T12:00:41.156Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 762.63,
+      "return20": 0.11,
+      "return50": 1.92
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 739.77,
+      "return20": 4.54,
+      "return50": 4.34
+    },
+    "XLK": {
+      "ok": true,
+      "close": 195.75,
+      "return20": 6.59,
+      "return50": 8.28
+    },
+    "XLF": {
+      "ok": true,
+      "close": 53.4,
+      "return20": -6.64,
+      "return50": -4.83
+    },
+    "XLE": {
+      "ok": true,
+      "close": 61.5,
+      "return20": -5.05,
+      "return50": 5.13
+    },
+    "XLI": {
+      "ok": true,
+      "close": 166.98,
+      "return20": -3.33,
+      "return50": -6.54
+    },
+    "XLY": {
+      "ok": true,
+      "close": 108.84,
+      "return20": -5.02,
+      "return50": -5.25
+    },
+    "XLP": {
+      "ok": true,
+      "close": 80.6,
+      "return20": -5.45,
+      "return50": -4.12
+    },
+    "XLV": {
+      "ok": true,
+      "close": 168.42,
+      "return20": -1.89,
+      "return50": 5.1
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 40.91,
+      "return20": -7.11,
+      "return50": -9.49
+    },
+    "XLC": {
+      "ok": true,
+      "close": 110.97,
+      "return20": 0.08,
+      "return50": 0.85
+    },
+    "SMH": {
+      "ok": true,
+      "close": 609,
+      "return20": 11.7,
+      "return50": 4.27
+    },
+    "IBB": {
+      "ok": true,
+      "close": 210.53,
+      "return20": -0.14,
+      "return50": 11.21
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NFLX",
+      "ok": true,
+      "snapshot": "NFLX.svg",
+      "score": 11,
+      "pattern": "No major pattern",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Pullback",
+      "trend": "Downtrend",
+      "close": 69.58,
+      "sma20": 75.02,
+      "sma50": 75.61,
+      "atr14": 2.1,
+      "avgVolume20": 34101230,
+      "volumeRatio": 1.07,
+      "support20": 68.88,
+      "resistance20": 83.6,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 9,
+      "pullbackScore": 30,
+      "relativeStrengthScore": 23,
+      "relativeStrengthLabel": "Laggard",
+      "sectorProxy": "XLC",
+      "sectorRelativeStrengthScore": 23,
+      "sectorRelativeStrengthLabel": "Lagging sector badly",
+      "rsSector20": -13.98,
+      "rsSector50": 0.48,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 53,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 34,
+      "rsSpy20": -14.01,
+      "rsSpy50": -0.59,
+      "rsQqq20": -18.44,
+      "rsQqq50": -3.01,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 68.35.",
+      "target": "Initial target near 72.73 with 2R minimum.",
+      "notes": [
+        "Downtrend with close 69.58 versus SMA20 75.02 and SMA50 75.61.",
+        "Volume ran at 1.07x the 20-day average.",
+        "Relative strength is laggard versus SPY/QQQ.",
+        "Sector check versus XLC: lagging sector badly.",
+        "Structure quality 34 with setup freshness tagged workable.",
+        "Breakout score 9 | Pullback score 30.",
+        "Narrative: Netflix is Buffering ----------------------- Netflix is Buffering Netflix co-CEO Ted Sarandos told Bloomberg’s Screentime event that the streamer is “not growi…"
+      ]
+    }
+  ]
+}
