@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-05",
+  "generatedAt": "2026-10-05T12:00:23.116Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 769.64,
+      "return20": -0.46,
+      "return50": 4.26
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 749.58,
+      "return20": 4.45,
+      "return50": 8.33
+    },
+    "XLK": {
+      "ok": true,
+      "close": 199.81,
+      "return20": 7.44,
+      "return50": 11.97
+    },
+    "XLF": {
+      "ok": true,
+      "close": 53.49,
+      "return20": -8.66,
+      "return50": -4.19
+    },
+    "XLE": {
+      "ok": true,
+      "close": 62.82,
+      "return20": -2.79,
+      "return50": 5.79
+    },
+    "XLI": {
+      "ok": true,
+      "close": 169.95,
+      "return20": -2.64,
+      "return50": -6.59
+    },
+    "XLY": {
+      "ok": true,
+      "close": 110.04,
+      "return20": -5.51,
+      "return50": 1.18
+    },
+    "XLP": {
+      "ok": true,
+      "close": 80.53,
+      "return20": -5.55,
+      "return50": -3.22
+    },
+    "XLV": {
+      "ok": true,
+      "close": 166.18,
+      "return20": -4.09,
+      "return50": 2.94
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 40.81,
+      "return20": -7.77,
+      "return50": -9.21
+    },
+    "XLC": {
+      "ok": true,
+      "close": 110.32,
+      "return20": -2.7,
+      "return50": 4.69
+    },
+    "SMH": {
+      "ok": true,
+      "close": 630.6,
+      "return20": 14.12,
+      "return50": 8.69
+    },
+    "IBB": {
+      "ok": true,
+      "close": 205.29,
+      "return20": -3.98,
+      "return50": 8.63
+    }
+  },
+  "tickers": []
+}
