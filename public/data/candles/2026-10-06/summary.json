@@ -1,0 +1,192 @@
+{
+  "date": "2026-10-06",
+  "generatedAt": "2026-10-06T12:00:43.489Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 774.83,
+      "return20": 0.6,
+      "return50": 4.86
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 756.2,
+      "return20": 5.18,
+      "return50": 10.52
+    },
+    "XLK": {
+      "ok": true,
+      "close": 200.93,
+      "return20": 7.29,
+      "return50": 14.24
+    },
+    "XLF": {
+      "ok": true,
+      "close": 53.88,
+      "return20": -7.26,
+      "return50": -4.32
+    },
+    "XLE": {
+      "ok": true,
+      "close": 63.45,
+      "return20": -0.95,
+      "return50": 6.42
+    },
+    "XLI": {
+      "ok": true,
+      "close": 170.1,
+      "return20": -2.95,
+      "return50": -6.88
+    },
+    "XLY": {
+      "ok": true,
+      "close": 110.42,
+      "return20": -3.91,
+      "return50": 0.92
+    },
+    "XLP": {
+      "ok": true,
+      "close": 81.04,
+      "return20": -4.19,
+      "return50": -3.67
+    },
+    "XLV": {
+      "ok": true,
+      "close": 167.37,
+      "return20": -2.38,
+      "return50": 2.95
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 40.67,
+      "return20": -7.42,
+      "return50": -11.49
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.61,
+      "return20": -0.37,
+      "return50": 5
+    },
+    "SMH": {
+      "ok": true,
+      "close": 633.9,
+      "return20": 11.8,
+      "return50": 12.96
+    },
+    "IBB": {
+      "ok": true,
+      "close": 207.96,
+      "return20": -1.87,
+      "return50": 10.53
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 88,
+      "pattern": "20-Day Breakout Close",
+      "setup": "Breakout Candidate",
+      "primaryStrategy": "Breakout",
+      "trend": "Uptrend",
+      "close": 238.9,
+      "sma20": 224.21,
+      "sma50": 218.92,
+      "atr14": 5.38,
+      "avgVolume20": 109548353,
+      "volumeRatio": 1.16,
+      "support20": 208.93,
+      "resistance20": 237.88,
+      "relativeLocation": "Above resistance",
+      "breakoutScore": 79,
+      "pullbackScore": 62,
+      "relativeStrengthScore": 63,
+      "relativeStrengthLabel": "Outperforming",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 39,
+      "sectorRelativeStrengthLabel": "Lagging sector",
+      "rsSector20": -8.09,
+      "rsSector50": 2.54,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 65,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 68,
+      "rsSpy20": 3.11,
+      "rsSpy50": 10.64,
+      "rsQqq20": -1.47,
+      "rsQqq50": 4.98,
+      "premarketMove": null,
+      "trigger": "Buy only above 240.1 with follow-through volume.",
+      "invalidation": "Stop below 232.46.",
+      "target": "First target 249.65; next area beyond 248.63.",
+      "notes": [
+        "Detected 20-Day Breakout Close.",
+        "Uptrend with close 238.9 versus SMA20 224.21 and SMA50 218.92.",
+        "Volume ran at 1.16x the 20-day average.",
+        "Relative strength is outperforming versus SPY/QQQ.",
+        "Sector check versus SMH: lagging sector.",
+        "Structure quality 68 with setup freshness tagged fresh.",
+        "Breakout score 79 | Pullback score 62.",
+        "Latest close improved versus the prior session.",
+        "Narrative: Nvidia Hits New Record, Eyes $6 Trillion ------------------------------------------- Nvidia stock cruised to a fresh intraday record yesterday, pushing its mar…"
+      ]
+    },
+    {
+      "symbol": "BWXT",
+      "ok": true,
+      "snapshot": "BWXT.svg",
+      "score": 19,
+      "pattern": "Inside Day",
+      "setup": "Needs More Confirmation",
+      "primaryStrategy": "Breakout",
+      "trend": "Downtrend",
+      "close": 135.35,
+      "sma20": 144.09,
+      "sma50": 155.72,
+      "atr14": 4.52,
+      "avgVolume20": 1205300,
+      "volumeRatio": 1.26,
+      "support20": 131.86,
+      "resistance20": 162.91,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 40,
+      "pullbackScore": 31,
+      "relativeStrengthScore": 0,
+      "relativeStrengthLabel": "Laggard",
+      "sectorProxy": null,
+      "sectorRelativeStrengthScore": 50,
+      "sectorRelativeStrengthLabel": "Unknown",
+      "rsSector20": null,
+      "rsSector50": null,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 45,
+      "extensionLabel": "Workable",
+      "structureQualityScore": 52,
+      "rsSpy20": -14.71,
+      "rsSpy50": -27.3,
+      "rsQqq20": -19.29,
+      "rsQqq50": -32.96,
+      "premarketMove": null,
+      "trigger": "No long trigger yet.",
+      "invalidation": "Stop below 130.73.",
+      "target": "Initial target near 142.13 with 2R minimum.",
+      "notes": [
+        "Detected Inside Day.",
+        "Downtrend with close 135.35 versus SMA20 144.09 and SMA50 155.72.",
+        "Volume ran at 1.26x the 20-day average.",
+        "Relative strength is laggard versus SPY/QQQ.",
+        "Structure quality 52 with setup freshness tagged workable.",
+        "Breakout score 40 | Pullback score 31.",
+        "Latest close improved versus the prior session.",
+        "Narrative: naval reactor monopoly and Team Rule Breakers recommendation, BWXT , will supply its BANR reactor for the G7’s first transportable nuclear plant."
+      ]
+    }
+  ]
+}
