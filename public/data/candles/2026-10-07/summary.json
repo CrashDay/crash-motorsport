@@ -1,0 +1,139 @@
+{
+  "date": "2026-10-07",
+  "generatedAt": "2026-10-07T12:00:36.823Z",
+  "provider": "Polygon.io",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 779.09,
+      "return20": 1.71,
+      "return50": 5.41
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 759.66,
+      "return20": 5.75,
+      "return50": 11.37
+    },
+    "XLK": {
+      "ok": true,
+      "close": 202,
+      "return20": 7.52,
+      "return50": 15.89
+    },
+    "XLF": {
+      "ok": true,
+      "close": 54.01,
+      "return20": -5.74,
+      "return50": -5.05
+    },
+    "XLE": {
+      "ok": true,
+      "close": 63.75,
+      "return20": -1.57,
+      "return50": 9.24
+    },
+    "XLI": {
+      "ok": true,
+      "close": 171.58,
+      "return20": -1.63,
+      "return50": -6.34
+    },
+    "XLY": {
+      "ok": true,
+      "close": 111.72,
+      "return20": -1.99,
+      "return50": 0.79
+    },
+    "XLP": {
+      "ok": true,
+      "close": 81.8,
+      "return20": -2.64,
+      "return50": -4.17
+    },
+    "XLV": {
+      "ok": true,
+      "close": 167.09,
+      "return20": -0.02,
+      "return50": 2.26
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 41.1,
+      "return20": -6.38,
+      "return50": -10.18
+    },
+    "XLC": {
+      "ok": true,
+      "close": 111.65,
+      "return20": 0.12,
+      "return50": 3.71
+    },
+    "SMH": {
+      "ok": true,
+      "close": 632.5,
+      "return20": 10.24,
+      "return50": 15.3
+    },
+    "IBB": {
+      "ok": true,
+      "close": 203.1,
+      "return20": -2.04,
+      "return50": 7.84
+    }
+  },
+  "tickers": [
+    {
+      "symbol": "NVDA",
+      "ok": true,
+      "snapshot": "NVDA.svg",
+      "score": 62,
+      "pattern": "No major pattern",
+      "setup": "Trend Pullback Watch",
+      "primaryStrategy": "Breakout",
+      "trend": "Uptrend",
+      "close": 239.24,
+      "sma20": 224.89,
+      "sma50": 219.77,
+      "atr14": 5.37,
+      "avgVolume20": 108493892,
+      "volumeRatio": 0.94,
+      "support20": 208.93,
+      "resistance20": 240.1,
+      "relativeLocation": "Inside range",
+      "breakoutScore": 64,
+      "pullbackScore": 64,
+      "relativeStrengthScore": 73,
+      "relativeStrengthLabel": "Leader",
+      "sectorProxy": "SMH",
+      "sectorRelativeStrengthScore": 54,
+      "sectorRelativeStrengthLabel": "Beating sector",
+      "rsSector20": -4.25,
+      "rsSector50": 6.44,
+      "eventRiskScore": 8,
+      "eventRiskLabel": "Low event risk",
+      "eventRiskFlags": [],
+      "extensionScore": 65,
+      "extensionLabel": "Fresh",
+      "structureQualityScore": 68,
+      "rsSpy20": 4.28,
+      "rsSpy50": 16.33,
+      "rsQqq20": 0.24,
+      "rsQqq50": 10.37,
+      "premarketMove": null,
+      "trigger": "Watch for support near 208.93 and a higher low before entry.",
+      "invalidation": "Stop below 207.59.",
+      "target": "Initial target near 247.29 with 2R minimum.",
+      "notes": [
+        "Uptrend with close 239.24 versus SMA20 224.89 and SMA50 219.77.",
+        "Volume ran at 0.94x the 20-day average.",
+        "Relative strength is leader versus SPY/QQQ.",
+        "Sector check versus SMH: beating sector.",
+        "Structure quality 68 with setup freshness tagged fresh.",
+        "Breakout score 64 | Pullback score 64.",
+        "Latest close improved versus the prior session.",
+        "Narrative: SpaceX Wants $40B for Nvidia Chips ------------------------------------- Space Exploration Technologies plans to borrow about $40 billion to pay for a large or…"
+      ]
+    }
+  ]
+}
