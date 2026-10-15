@@ -1,0 +1,1788 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Premarket Research Dashboard - 2026-10-15</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #5e6a78;
+      --line: #d6dee8;
+      --soft: #edf4fb;
+      --panel: rgba(255, 255, 255, 0.94);
+      --panel-strong: #ffffff;
+      --accent: #0f766e;
+      --accent-2: #c65b3d;
+      --accent-3: #7a8f27;
+      --accent-deep: #113b52;
+      --highlight: #d9a441;
+      --bg: #eef2f6;
+      --bg-glow: rgba(25, 118, 210, 0.09);
+      --bg-warm: rgba(217, 164, 65, 0.11);
+      --shadow: 0 18px 42px rgba(17, 33, 48, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, var(--bg-glow), transparent 28%),
+        radial-gradient(circle at top right, var(--bg-warm), transparent 24%),
+        linear-gradient(180deg, #f5f8fb 0%, var(--bg) 100%);
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+      line-height: 1.45;
+    }
+
+    header {
+      position: relative;
+      z-index: 30;
+      overflow: visible;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(17, 59, 82, 0.96), rgba(15, 118, 110, 0.9)),
+        linear-gradient(180deg, #ffffff, #f6f9fc);
+      color: #f8fbfd;
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+    }
+
+    main,
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header .wrap {
+      padding: 28px 0 22px;
+      position: relative;
+      z-index: 2;
+      overflow: visible;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.1;
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 20px;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-underline-offset: 2px;
+    }
+
+    .subhead {
+      color: var(--muted);
+      margin-top: 10px;
+      max-width: 860px;
+    }
+
+    .header-summary {
+      color: rgba(244, 250, 252, 0.86);
+      margin-top: 12px;
+      max-width: 860px;
+      font-size: 15px;
+    }
+
+    .header-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .header-pill,
+    .panel,
+    .item {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+    }
+
+    .item {
+      border-color: rgba(182, 196, 211, 0.85);
+      box-shadow: 0 10px 26px rgba(24, 32, 42, 0.05);
+    }
+
+    .header-pill {
+      padding: 9px 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .header-pill strong {
+      font-size: 13px;
+      line-height: 1;
+      color: #ffffff;
+    }
+
+    .header-pill span {
+      color: rgba(243, 248, 251, 0.74);
+      font-size: 13px;
+    }
+
+    .header-pill-tooltip {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 10px);
+      width: min(320px, 70vw);
+      padding: 12px 13px;
+      border-radius: 12px;
+      border: 1px solid rgba(17, 59, 82, 0.18);
+      background: rgba(255, 255, 255, 0.98);
+      color: var(--ink);
+      box-shadow: 0 16px 38px rgba(17, 33, 48, 0.14);
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .header-pill-tooltip strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent-deep);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .header-pill.has-tooltip:hover .header-pill-tooltip,
+    .header-pill.has-tooltip:focus-within .header-pill-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      padding: 24px 0 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .grid > section,
+    .grid > aside {
+      min-width: 0;
+    }
+
+    .panel {
+      padding: 18px;
+      margin-bottom: 18px;
+      min-width: 0;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 6px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(208, 219, 230, 0.9);
+      box-shadow: 0 12px 26px rgba(17, 33, 48, 0.04);
+    }
+
+    .tab-button {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 12px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease;
+    }
+
+    .tab-button:hover {
+      border-color: #b8c7d8;
+      color: var(--accent-deep);
+      transform: translateY(-1px);
+    }
+
+    .tab-button.active {
+      background: linear-gradient(135deg, rgba(17, 59, 82, 0.95), rgba(15, 118, 110, 0.92));
+      color: #ffffff;
+      border-color: rgba(17, 59, 82, 0.92);
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .tab-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      padding: 12px;
+      position: relative;
+    }
+
+    .item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      border-radius: 14px 0 0 14px;
+      background: linear-gradient(180deg, var(--highlight), var(--accent));
+    }
+
+    .row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .ticker {
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .tag {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 8px;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 4px 5px 0 0;
+      background: linear-gradient(180deg, #f8fbfe, var(--soft));
+    }
+
+    .tag-positive {
+      border-color: rgba(15, 118, 110, 0.22);
+      color: #0f766e;
+      background: linear-gradient(180deg, #f2fbf9, #e5f6f2);
+    }
+
+    .tag-negative {
+      border-color: rgba(198, 91, 61, 0.2);
+      color: #b64a2e;
+      background: linear-gradient(180deg, #fff7f5, #fdebe6);
+    }
+
+    .tag-neutral {
+      border-color: rgba(88, 112, 139, 0.18);
+      color: #5d7288;
+      background: linear-gradient(180deg, #fafcfe, #eef4f9);
+    }
+
+    .move {
+      color: var(--accent-3);
+      font-weight: 700;
+    }
+
+    .score {
+      min-width: 52px;
+      border-radius: 999px;
+      padding: 5px 8px;
+      text-align: center;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+      font-weight: 700;
+      box-shadow: 0 10px 22px rgba(15, 118, 110, 0.18);
+    }
+
+    .stance {
+      color: var(--accent-2);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .trade-plan {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .trade-plan div {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 9px;
+      background: linear-gradient(180deg, #ffffff, #f7fafc);
+    }
+
+    .trade-plan strong,
+    .checklist strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .quality {
+      background: #22313f;
+    }
+
+    .panel > h2,
+    .section-head h2 {
+      letter-spacing: 0;
+    }
+
+    .aside-title,
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: #58708b;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section-label::before,
+    .aside-title::before {
+      content: "";
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--highlight), var(--accent));
+    }
+
+    .checklist {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .checklist li + li {
+      margin-top: 5px;
+    }
+
+    .snapshot-toggle {
+      margin-top: 12px;
+      border: 1px solid #d8e2ec;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f7fafc);
+      overflow: hidden;
+    }
+
+    .snapshot-toggle summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 12px;
+      cursor: pointer;
+      list-style: none;
+      color: #35506b;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .snapshot-toggle summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .snapshot-body {
+      border-top: 1px solid #e7edf4;
+      padding: 12px;
+      background: #fbfdff;
+    }
+
+    .snapshot-lede {
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border: 1px solid #dce6ef;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f4f9fd);
+      color: #2e4357;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .snapshot-lede strong {
+      color: var(--accent-deep);
+    }
+
+    .chart-snapshot {
+      display: block;
+      width: 100%;
+      border: 1px solid #d9e3ec;
+      border-radius: 12px;
+      background: #f5f8fb;
+    }
+
+    .chart-snapshot-inline {
+      overflow: hidden;
+    }
+
+    .chart-snapshot-inline svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid #d9e3ec;
+      border-radius: 12px;
+      background: #f5f8fb;
+    }
+
+    .snapshot-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .snapshot-actions a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-deep);
+    }
+
+    .snapshot-status {
+      margin-top: 10px;
+      padding: 9px 11px;
+      border: 1px solid #f0d7d0;
+      border-radius: 10px;
+      background: #fff7f4;
+      color: #8a3f2d;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .schwab-feed-status {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+
+    .schwab-feed-status.LIVE {
+      background: #dcfce7;
+      color: #16794c;
+    }
+
+    .schwab-feed-status.STALE {
+      background: #fef3c7;
+      color: #9a6700;
+    }
+
+    .schwab-feed-status.OFFLINE {
+      background: #fee4e2;
+      color: #b42318;
+    }
+
+    .source-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .calendar-compact {
+      display: grid;
+      gap: 10px;
+    }
+
+    .calendar-day {
+      border-top: 1px solid rgba(212, 221, 230, 0.85);
+      padding-top: 8px;
+    }
+
+    .calendar-day:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .calendar-day-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .calendar-day-head strong {
+      font-size: 13px;
+      color: var(--accent-deep);
+    }
+
+    .calendar-count {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .calendar-lines {
+      display: grid;
+      gap: 4px;
+    }
+
+    .calendar-line {
+      display: grid;
+      grid-template-columns: 68px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      font-size: 13px;
+    }
+
+    .calendar-time {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .calendar-title {
+      min-width: 0;
+    }
+
+    .calendar-kind {
+      color: var(--muted);
+      font-size: 11px;
+      margin-left: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .macro-explainer {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid #d8e2ec;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fbfdff, #f4f9fd);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .macro-legend {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .macro-legend-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfd;
+    }
+
+    .macro-legend-item strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+    }
+
+    .agent-brief {
+      margin-top: 10px;
+      border: 1px solid #d8e2ec;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,251,253,0.95));
+      overflow: hidden;
+    }
+
+    .agent-brief summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .agent-brief summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .agent-brief-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #466078;
+    }
+
+    .agent-brief-body {
+      border-top: 1px solid #e7edf4;
+      padding: 12px;
+      background: linear-gradient(180deg, #fbfdff, #f5f9fc);
+    }
+
+    .agent-brief-copy {
+      margin-top: 10px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .sidebar-disclosure {
+      border: 1px solid #d8e2ec;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,251,253,0.95));
+      overflow: hidden;
+    }
+
+    .sidebar-disclosure summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .sidebar-disclosure summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .sidebar-disclosure-title {
+      margin: 0;
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    .sidebar-disclosure-body {
+      border-top: 1px solid #e7edf4;
+      padding: 12px;
+      background: linear-gradient(180deg, #fbfdff, #f5f9fc);
+    }
+
+    .agent-brief-text {
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #243241;
+    }
+
+    .verification-panel {
+      margin-top: 10px;
+      border: 1px solid #d8e2ec;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fcfeff 0%, #f8fbfd 100%);
+      padding: 12px;
+    }
+
+    .verification-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .verification-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #466078;
+    }
+
+    .verification-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .verification-badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid #d0dae5;
+      background: #f2f5f8;
+      color: #425466;
+    }
+
+    .verification-badge.actionable-now {
+      background: #e8f7ef;
+      border-color: #b5dfc4;
+      color: #1f6a39;
+    }
+
+    .verification-badge.watchlist-only {
+      background: #fff8e6;
+      border-color: #e8d69b;
+      color: #7b5a00;
+    }
+
+    .verification-badge.pass {
+      background: #fdecec;
+      border-color: #e5b9b9;
+      color: #8a2d2d;
+    }
+
+    .verification-badge.error,
+    .verification-badge.stale {
+      background: #eef2f6;
+      border-color: #d6dde6;
+      color: #5e6873;
+    }
+
+    .verification-timestamp {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .verification-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .button[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .verification-summary {
+      margin-top: 10px;
+      color: var(--ink);
+    }
+
+    .verification-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .verification-list {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .verification-list li + li {
+      margin-top: 5px;
+    }
+
+    .theme-bars {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 8px;
+      background: var(--soft);
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: var(--accent);
+    }
+
+    .empty {
+      color: var(--muted);
+      background: var(--soft);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .button:hover {
+      background: #f8fbfd;
+    }
+
+    .section-head {
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e6edf4;
+    }
+
+    .section-head .note {
+      max-width: 820px;
+    }
+
+    .panel > h2 {
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e6edf4;
+    }
+
+    .briefing {
+      display: grid;
+      gap: 16px;
+      color: var(--ink);
+      min-width: 0;
+    }
+
+    .briefing-section {
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fcfdff;
+      padding: 14px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .briefing-kicker {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .briefing h1,
+    .briefing h2,
+    .briefing h3 {
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .briefing h1 {
+      font-size: 26px;
+      margin-bottom: 4px;
+    }
+
+    .briefing h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .briefing h3 {
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .briefing p + p,
+    .briefing ul + p,
+    .briefing ol + p,
+    .briefing table + p,
+    .briefing blockquote + p {
+      margin-top: 10px;
+    }
+
+    .briefing ul,
+    .briefing ol {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .briefing li + li {
+      margin-top: 6px;
+    }
+
+    .briefing blockquote {
+      margin: 0;
+      padding: 10px 12px;
+      background: var(--soft);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      color: var(--muted);
+    }
+
+    .briefing code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+      background: #eef2f6;
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+
+    .briefing table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .briefing th,
+    .briefing td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .briefing th {
+      background: #f4f7fa;
+      font-weight: 700;
+    }
+
+    .briefing strong {
+      color: var(--ink);
+    }
+
+    .swing-board-view .briefing-section {
+      background: #f8fbff;
+      padding: 18px;
+    }
+
+    .swing-board-view h2 {
+      margin-bottom: 14px;
+    }
+
+    .swing-board-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .swing-glossary {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .swing-glossary-block {
+      border: 1px solid #d8e2ec;
+      border-radius: 8px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .swing-glossary-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding: 14px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .swing-glossary-toggle::-webkit-details-marker {
+      display: none;
+    }
+
+    .swing-glossary-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #466078;
+    }
+
+    .swing-glossary-icon {
+      color: #6d7f91;
+      font-size: 16px;
+      line-height: 1;
+      transition: transform 120ms ease;
+    }
+
+    .swing-glossary-block[open] .swing-glossary-icon {
+      transform: rotate(180deg);
+    }
+
+    .swing-glossary-body {
+      padding: 0 14px 14px;
+      border-top: 1px solid #e7edf4;
+    }
+
+    .swing-glossary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 14px;
+    }
+
+    .swing-glossary-item dt {
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 4px;
+    }
+
+    .swing-glossary-item dd {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .swing-card {
+      border: 1px solid #cfdae6;
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .swing-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .swing-card-symbol {
+      font-size: 20px;
+      line-height: 1.1;
+      font-weight: 700;
+    }
+
+    .swing-card-class {
+      display: inline-block;
+      margin-top: 5px;
+      border: 1px solid #cfe0ec;
+      background: #eef5fb;
+      color: #35506b;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .swing-card-fields {
+      display: grid;
+      gap: 10px;
+    }
+
+    .swing-card-field {
+      border-top: 1px solid #e6edf4;
+      padding-top: 10px;
+    }
+
+    .swing-card-label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .swing-card-value {
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 860px) {
+      .grid,
+      .header-pills {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      .trade-plan {
+        grid-template-columns: 1fr;
+      }
+
+      .swing-board-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .swing-glossary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Day-Trading Premarket Brief</h1>
+      <p class="header-summary">Mixed tone with no scheduled earnings extracted and no macro events extracted.</p>
+      <div class="header-pills">
+        <div class="header-pill"><strong>Oct 15</strong><span>session</span></div>
+        <div class="header-pill has-tooltip" tabindex="0">
+          <strong>Mixed</strong>
+          <span>tone</span>
+          <div class="header-pill-tooltip">
+            <strong>What this means</strong>
+            Recommendation: stay balanced. Let price action prove itself, focus on the cleanest setups, and avoid forcing trades from mixed signals.
+          </div>
+        </div>
+        <div class="header-pill"><strong>3</strong><span>key events</span></div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="grid">
+      <section>
+        <div class="panel">
+          <div class="tabs" role="tablist" aria-label="Dashboard views">
+            <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab-target="live-holdings">Live Holdings</button>
+            <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab-target="paper-portfolio">Paper Portfolio</button>
+            <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab-target="research">Research</button>
+            <button class="tab-button active" type="button" role="tab" aria-selected="true" data-tab-target="briefing">Briefing</button>
+          </div>
+
+
+
+
+
+
+
+
+
+          <section class="tab-panel" data-tab-panel="live-holdings">
+            <div class="section-head">
+              <div class="section-label">Live Account Context</div>
+              <h2>Live Holdings</h2>
+              <p class="note">This view is scoped to the selected Schwab account so live holdings stay separate from your simulated paper portfolio.</p>
+            </div>
+            <div class="list">
+    <article class="item">
+      <div class="row">
+        <div>
+          <span class="ticker">Contributory</span>
+          <span class="tag">••••1566</span>
+          <span class="tag">MARGIN</span>
+        </div>
+        <span class="score">$393,214</span>
+      </div>
+      <p class="note"><strong>Cash:</strong> $5,010</p>
+      <p class="note"><strong>Buying power:</strong> $5,010</p>
+      <p class="note"><strong>Positions:</strong> 3</p>
+    </article>
+    <article class="item">
+              <div class="row">
+                <div>
+                  <span class="ticker">SPYG</span>
+                  <span class="tag">COLLECTIVE_INVESTMENT</span>
+                </div>
+                <span class="score">$201,280</span>
+              </div>
+              <p class="note">State Street SPDR Port S&amp;P 500 Gr ETF</p>
+              <div class="trade-plan">
+                <div><strong>Shares</strong>1652</div>
+                <div><strong>Average price</strong>$100</div>
+                <div><strong>Day P/L</strong>-$1,470</div>
+                <div><strong>Day P/L %</strong>-0.73%</div>
+              </div>
+            </article><article class="item">
+              <div class="row">
+                <div>
+                  <span class="ticker">FNDF</span>
+                  <span class="tag">COLLECTIVE_INVESTMENT</span>
+                </div>
+                <span class="score">$108,002</span>
+              </div>
+              <p class="note">Schwab Fundamental International Eq ETF</p>
+              <div class="trade-plan">
+                <div><strong>Shares</strong>2021</div>
+                <div><strong>Average price</strong>$40</div>
+                <div><strong>Day P/L</strong>$0</div>
+                <div><strong>Day P/L %</strong>0%</div>
+              </div>
+            </article><article class="item">
+              <div class="row">
+                <div>
+                  <span class="ticker">SPSM</span>
+                  <span class="tag">COLLECTIVE_INVESTMENT</span>
+                </div>
+                <span class="score">$78,922</span>
+              </div>
+              <p class="note">State Street SPDR Port S&amp;P 600 Sm CpETF</p>
+              <div class="trade-plan">
+                <div><strong>Shares</strong>1499</div>
+                <div><strong>Average price</strong>$43</div>
+                <div><strong>Day P/L</strong>$0</div>
+                <div><strong>Day P/L %</strong>0%</div>
+              </div>
+            </article>
+  </div>
+          </section>
+
+          <section class="tab-panel" data-tab-panel="paper-portfolio">
+            <div class="section-head">
+              <div class="section-label">Simulated Account</div>
+              <h2>Paper Portfolio</h2>
+              <p class="note">This portfolio is local to the dashboard. It is separate from Schwab and gives us a clean place to track simulated positions.</p>
+            </div>
+            <div class="list">
+    <article class="item">
+      <div class="row">
+        <div>
+          <span class="ticker">Paper Trading Portfolio</span>
+          <span class="tag">Simulated</span>
+        </div>
+        <span class="score">$100,000</span>
+      </div>
+      <p class="note"><strong>Cash:</strong> $100,000</p>
+      <p class="note"><strong>Market value:</strong> $0</p>
+      <p class="note"><strong>Positions:</strong> 0</p>
+      <p class="note"><strong>Notes:</strong> Started with $100,000 of simulated play money. This portfolio is separate from Schwab and records paper trades only.</p>
+    </article>
+      <p class="empty">No simulated positions are currently tracked.</p>
+    <article class="item">
+      <div class="row">
+        <div>
+          <span class="ticker">Simulated Trade Ledger</span>
+          <span class="tag">0 entries</span>
+        </div>
+      </div>
+      <p class="empty">No simulated trades have been recorded yet.</p>
+    </article>
+  </div>
+          </section>
+
+          <section class="tab-panel" data-tab-panel="research">
+            <div class="tab-stack">
+              <div>
+                <div class="section-head">
+                  <div class="section-label">Source Extraction</div>
+                  <h2>Evidence Board</h2>
+                </div>
+                <div class="list"><article class="item">
+        <div class="row">
+          <span class="ticker">AAPL</span>
+          <span>1 source</span>
+        </div>
+        <p class="note">Apple ’s global shipments fell 4.3%, but its market share rose four percentage points to 22.4%. Get Fools’ takes on AAPL’s folding phone Get Fools’ takes on AAPL’s folding phone A message from The Motley Fool &lt;p&gt;&lt;strong&gt;&quot;The money that I&#39;ve invested has grown on top of itself and is making more money than I make now.&quot;&lt;/strong&gt;&lt;/p&gt; &lt;p&gt;That&#39;s a real Motley Fool member.</p>
+        <div class="list" style="margin-top: 10px;"><article class="item">
+                    <p class="note"><strong>Breakfast News: Chips Are Hot, Phones Are Not</strong> | Item 3</p>
+                    <p class="note">Phones Are Running Out of Memory ----------------------------------- Global chip stocks are selling off as investors question whether the AI-driven rally has overextended. CoreWeave fell 15% Wednesday after the yield on its 2032 bonds touched 15%. Its debt had reached about $52 billion in June, up from about $15 billion a year earlier. The selling spread across AI stocks. Nvidia , Broadcom and Intel all closed more than 3% lower Wednesday and were down at least 1% before Thursday’s open. * Phone makers are paying the bill: IDC reported a 22% year-over-year drop in global smartphone shipments in Q3. China’s shipments fell for the sixth straight quarter, down 15.4% to 57.9 million units. Apple ’s global shipments fell 4.3%, but its market share rose four percentage points to 22.4%. AI data centers are eating up memory supply, driving up phone prices and causing consumers to delay purchases. * Scarcity is the memory makers’ edge: The sell-off reflects two distinct pressures. There are AI credit and valuation concerns, plus a deteriorating smartphone end market. Memory pricing is a key indicator to watch now. Memory suppliers are winning today because prices are high, but those same high prices are hurting their customers. If that continues, today’s margin tailwind can become tomorrow’s volume headwind. Get Fools’ takes on AAPL’s folding phone Get Fools’ takes on AAPL’s folding phone A message from The Motley Fool &lt;p&gt;&lt;strong&gt;&quot;The money that I&#39;ve invested has grown on top of itself and is making more money than I make now.&quot;&lt;/strong&gt;&lt;/p&gt; &lt;p&gt;That&#39;s a real Motley Fool member. And it&#39;s exactly what a well-built portfolio is supposed to do &amp;mdash; get out of your way and compound.&lt;/p&gt; &lt;p&gt;Tom Gardner built a complete 50-stock portfolio designed to do just that. And The Motley Fool is investing $100,000 of its own money alongside the Motley Fool members who follow it.&lt;/p&gt; &lt;p&gt;Two investing teams. Every risk level in mind. Equal weights across all 50 stocks so anyone can follow along.&lt;/p&gt; &lt;p&gt;&lt;a href=&quot; what&amp;rsquo;s inside &amp;rarr;&lt;/a&gt;&lt;/p&gt; ------------------------------</p>
+                    <div class="links"><a class="button" href="https://clicks.fool.com/f/a/OW9kOW7RcrFtFFMN5-dmeQ~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUys_H4tfejSTE8vLNETAj1tjfSmZvJD4tfe7WldKM0rLe3AmYJfmimWjURN5xdUFDAX61u48uY1rsir3otiHIpnBnyAd-UfivWsnwjCH_oftNOEVrRsVMysPnR7A9DPsKkbBS-yMRGuqzrAKL2nElzL6Swf70X-Y72w_RISuKTzw_W4icKsGdle-bE1RCVrXfXCt5KNPeBOtRekbIHgDKQS5M0Zq2xH13MHKBlEKV3gp9BXBQ_k-X_1BXT75KjqLAayiABr9bbgTFlnjymFAuJp8TeN-phOj3nx0jsSHHYKcDii99Swyn_kzD6fOUE5Tg8hIAJ0fVqQqESm7nApbSbfRNTFnGFWBQfwARmduz0B5sB7YQKD6cQtUdvfs56kXm-k" target="_blank" rel="noreferrer">Phones Are Running Out of Memory</a><a class="button" href="https://clicks.fool.com/f/a/87Nq1kiQgvrQ-iKKT_0UAg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysdaaLUe6nppS5nLMy2w6y4KhDObkVl6XdwMq_0q35F-7k6Q3MbQ2ZsLquK7TU8Ow0XDmNW0bhdEfXcJXzfW2p7qZ0K4CzfUR48CAP_3D8GtE7hiJ5WjMfJUHstJV3dYU7OSuqCWqFLdiI9hG6dSLgzmHKfPFQsF-fNNtWtrMYrG5qa8G2rSAbV1PlK8UcwIDLAZ-XueUV-kqY3SwuaUi8uHVYCyIFhq3rJSUpMGERoS_d2Ww6ZJJCOFCD0rgoDd8xlYtp-AmTkcvECej99xoad1J9l3iB005CV26GnFQ0OuHHTJQyE3XCjin6Nz1hqj6mH_4c2wVK5vpR_R7OxGymWFdbwRnAO6GYKe14hZvPzCknhdMe1P95eyeJZ8NlPbT6" target="_blank" rel="noreferrer">Nvidia</a><a class="button" href="https://clicks.fool.com/f/a/tOrzhx3PisTvKEzfR0bBPg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUyskbcAzP7uB3K-szfAgialOgDpWoGm9MwdIKGrewK1V7z8WUoP8xabQ8QVIwub58YctmqhQnpA8iCAKNGXUuw5a_yFy0dS7GplOtGBKdqMcH9x5QTszok7Nn7fTm0N5jeA7zBft4qKmMykgCb9AEX4cjEK4EBNUEtQBAN2OsUMSitXLsrPfHK2o8VI07iDxsV1VbC3Lv8Q_RPNbbJzpDW61TwZOQclLahKqDWXHZxuo1yMCpCW1JCUoBteKispNov3vFmySmqQ-CsaEoPfp2z6iO7L2xbwf7Y6EXqkfbkDjVHmgmMSfBB18xHkYxfUHYc1of8fKkWjg0nJulDLjfrPP347V3boQ3n8DmEYmS62faNhsVrSZs7Oy-1cI6OWxiYq" target="_blank" rel="noreferrer">Broadcom</a></div>
+                  </article></div>
+        <div><span class="tag">Breakfast News: Chips Are Hot, Phones Are Not</span></div>
+      </article><article class="item">
+        <div class="row">
+          <span class="ticker">NVDA</span>
+          <span>1 source</span>
+        </div>
+        <p class="note">Nvidia , Broadcom and Intel all closed more than 3% lower Wednesday and were down at least 1% before Thursday’s open.</p>
+        <div class="list" style="margin-top: 10px;"><article class="item">
+                    <p class="note"><strong>Breakfast News: Chips Are Hot, Phones Are Not</strong> | Item 3</p>
+                    <p class="note">Phones Are Running Out of Memory ----------------------------------- Global chip stocks are selling off as investors question whether the AI-driven rally has overextended. CoreWeave fell 15% Wednesday after the yield on its 2032 bonds touched 15%. Its debt had reached about $52 billion in June, up from about $15 billion a year earlier. The selling spread across AI stocks. Nvidia , Broadcom and Intel all closed more than 3% lower Wednesday and were down at least 1% before Thursday’s open. * Phone makers are paying the bill: IDC reported a 22% year-over-year drop in global smartphone shipments in Q3. China’s shipments fell for the sixth straight quarter, down 15.4% to 57.9 million units. Apple ’s global shipments fell 4.3%, but its market share rose four percentage points to 22.4%. AI data centers are eating up memory supply, driving up phone prices and causing consumers to delay purchases. * Scarcity is the memory makers’ edge: The sell-off reflects two distinct pressures. There are AI credit and valuation concerns, plus a deteriorating smartphone end market. Memory pricing is a key indicator to watch now. Memory suppliers are winning today because prices are high, but those same high prices are hurting their customers. If that continues, today’s margin tailwind can become tomorrow’s volume headwind. Get Fools’ takes on AAPL’s folding phone Get Fools’ takes on AAPL’s folding phone A message from The Motley Fool &lt;p&gt;&lt;strong&gt;&quot;The money that I&#39;ve invested has grown on top of itself and is making more money than I make now.&quot;&lt;/strong&gt;&lt;/p&gt; &lt;p&gt;That&#39;s a real Motley Fool member. And it&#39;s exactly what a well-built portfolio is supposed to do &amp;mdash; get out of your way and compound.&lt;/p&gt; &lt;p&gt;Tom Gardner built a complete 50-stock portfolio designed to do just that. And The Motley Fool is investing $100,000 of its own money alongside the Motley Fool members who follow it.&lt;/p&gt; &lt;p&gt;Two investing teams. Every risk level in mind. Equal weights across all 50 stocks so anyone can follow along.&lt;/p&gt; &lt;p&gt;&lt;a href=&quot; what&amp;rsquo;s inside &amp;rarr;&lt;/a&gt;&lt;/p&gt; ------------------------------</p>
+                    <div class="links"><a class="button" href="https://clicks.fool.com/f/a/OW9kOW7RcrFtFFMN5-dmeQ~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUys_H4tfejSTE8vLNETAj1tjfSmZvJD4tfe7WldKM0rLe3AmYJfmimWjURN5xdUFDAX61u48uY1rsir3otiHIpnBnyAd-UfivWsnwjCH_oftNOEVrRsVMysPnR7A9DPsKkbBS-yMRGuqzrAKL2nElzL6Swf70X-Y72w_RISuKTzw_W4icKsGdle-bE1RCVrXfXCt5KNPeBOtRekbIHgDKQS5M0Zq2xH13MHKBlEKV3gp9BXBQ_k-X_1BXT75KjqLAayiABr9bbgTFlnjymFAuJp8TeN-phOj3nx0jsSHHYKcDii99Swyn_kzD6fOUE5Tg8hIAJ0fVqQqESm7nApbSbfRNTFnGFWBQfwARmduz0B5sB7YQKD6cQtUdvfs56kXm-k" target="_blank" rel="noreferrer">Phones Are Running Out of Memory</a><a class="button" href="https://clicks.fool.com/f/a/87Nq1kiQgvrQ-iKKT_0UAg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysdaaLUe6nppS5nLMy2w6y4KhDObkVl6XdwMq_0q35F-7k6Q3MbQ2ZsLquK7TU8Ow0XDmNW0bhdEfXcJXzfW2p7qZ0K4CzfUR48CAP_3D8GtE7hiJ5WjMfJUHstJV3dYU7OSuqCWqFLdiI9hG6dSLgzmHKfPFQsF-fNNtWtrMYrG5qa8G2rSAbV1PlK8UcwIDLAZ-XueUV-kqY3SwuaUi8uHVYCyIFhq3rJSUpMGERoS_d2Ww6ZJJCOFCD0rgoDd8xlYtp-AmTkcvECej99xoad1J9l3iB005CV26GnFQ0OuHHTJQyE3XCjin6Nz1hqj6mH_4c2wVK5vpR_R7OxGymWFdbwRnAO6GYKe14hZvPzCknhdMe1P95eyeJZ8NlPbT6" target="_blank" rel="noreferrer">Nvidia</a><a class="button" href="https://clicks.fool.com/f/a/tOrzhx3PisTvKEzfR0bBPg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUyskbcAzP7uB3K-szfAgialOgDpWoGm9MwdIKGrewK1V7z8WUoP8xabQ8QVIwub58YctmqhQnpA8iCAKNGXUuw5a_yFy0dS7GplOtGBKdqMcH9x5QTszok7Nn7fTm0N5jeA7zBft4qKmMykgCb9AEX4cjEK4EBNUEtQBAN2OsUMSitXLsrPfHK2o8VI07iDxsV1VbC3Lv8Q_RPNbbJzpDW61TwZOQclLahKqDWXHZxuo1yMCpCW1JCUoBteKispNov3vFmySmqQ-CsaEoPfp2z6iO7L2xbwf7Y6EXqkfbkDjVHmgmMSfBB18xHkYxfUHYc1of8fKkWjg0nJulDLjfrPP347V3boQ3n8DmEYmS62faNhsVrSZs7Oy-1cI6OWxiYq" target="_blank" rel="noreferrer">Broadcom</a></div>
+                  </article><article class="item">
+                    <p class="note"><strong>Breakfast News: Chips Are Hot, Phones Are Not</strong> | Item 5</p>
+                    <p class="note">Losing to Win: A VC Lens Will Find the Next Nvidia ----------------------------------------------------- TEAM RULE BREAKERS In the second half of 2009, Chief Rule Breaker David Gardner made four recommendations in Stock Advisor. Judged individually, most look unremarkable today. Adobe , selected that August, lags the S&amp;P 500 by roughly 320%. Dassault Systèmes , recommended the following month, trails the market by more than 500%. Hasbro , picked that October, lags by roughly 420%. * Winners were in the minority… and that’s more than fine: Nvidia, recommended that December at a split-adjusted $0.38, trades today at $221.30. That’s an outperformance of more than 54,000 percentage points. * The math proves the point: Average the other three names and the basket lags the S&amp;P 500 by roughly 415%. Add Nvidia, and that average rockets past 13,000%. As David puts it, “We lose to win.” We don’t need most recommendations to work. We need one or two in every five to work enormously, the venture-capital mindset of expecting most of a portfolio to fail so a single winner pays for everything else. It’s why The Motley Fool recommends holding at least 50 stocks across many industries: the wider the net, the better the odds of landing the next Nvidia. We’ll keep recommending stocks other analysts call too early, too small, or too strange. That’s exactly where the next 54,000%-outperformer is hiding. --------------------</p>
+                    <div class="links"><a class="button" href="https://clicks.fool.com/f/a/87Nq1kiQgvrQ-iKKT_0UAg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysdaaLUe6nppS5nLMy2w6y4KhDObkVl6XdwMq_0q35F-7k6Q3MbQ2ZsLquK7TU8Ow0XDmNW0bhdEfXcJXzfW2p7qZ0K4CzfUR48CAP_3D8GtE7hiJ5WjMfJUHstJV3dYU7OSuqCWqFLdiI9hG6dSLgzmHKfPFQsF-fNNtWtrMYrG5qa8G2rSAbV1PlK8UcwIDLAZ-XueUV-kqY3SwuaUi8uHVYCyIFhq3rJSUpMGERoS_d2Ww6ZJJCOFCD0rgoDd8xlYtp-AmTkcvECej99xoad1J9l3iB005CV26GnFQ0OuHHTJQyE3XCjin6Nz1hqj6mH_4c2wVK5vpR_R7OxGymWFdbwRnAO6GYKe14hZvPzCknhdMe1P95eyeJZ8NlPbT6" target="_blank" rel="noreferrer">Nvidia</a></div>
+                  </article></div>
+        <div><span class="tag">Breakfast News: Chips Are Hot, Phones Are Not</span></div>
+      </article><article class="item">
+        <div class="row">
+          <span class="ticker">PLD</span>
+          <span>1 source</span>
+        </div>
+        <p class="note">* Prologis , the warehouse and logistics landlord, reports before the opening bell.</p>
+        
+        <div><span class="tag">Breakfast News: Chips Are Hot, Phones Are Not</span></div>
+      </article></div>
+              </div>
+              <div>
+                <div>
+                  <div class="section-head">
+                    <div class="section-label">Email Inputs</div>
+                    <h2>Source Cards</h2>
+                    <p class="note">Raw source summaries and extracted links for audit/reference.</p>
+                  </div>
+                  <div class="list"><article class="item">
+        <h3>Breakfast News: Chips Are Hot, Phones Are Not</h3>
+        <p class="source-meta">&quot;The Motley Fool&quot; &lt;fool@motley.fool.com&gt; | Thu, 15 Oct 2026 11:32:31 +0000 | 1433 words</p>
+        <p class="source-meta">Motley Fool Breakfast News | pre-market market setup | weight 14</p>
+        <p>TSMC posts a sixth consecutive record profit, Rocket Lab falls 10%, and more...</p>
+        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/Ey2UBlklFeTO1CnAZAimJA~~/AAQRxRA~/cc0QHtyuZwwEbg6NXYCCUHIs3sJ57S6iMCkyPXBTwFV9rA4o9iU5smRlHMpvOs_qpaOEobhhQTBivccCqKrYCIikeUFJppClgXBcRJnYyPB5j-dWPVqN1ACnfA5cubWXJDkkBEn2VVCCgXvdiWZYXr7b2AH5kU4yvYPRsqbVNkXHtpk-FGm7q3DY26-01M9pESjh34eLv3OmZXfw24mP9D4BypZ2lnTk2EwLVmv1vkyBtc_sn41WqCZhjEJRTkDeTQL2Ia6XZekbEiN2QSOdG3ZmOpapZmEXxAqOA5_cZdTz9b8fh03MT1ahhUe_bUyrX5P7ndyjXhYd7ExoFXIA1gyq18Ky9yieNzsNFdalvvjTM9OiodxF75xCaBub9HObuHZtiPI2cP4P5sM2vMI4lYeN1vEdYvDs3OQQICsCBah9epJuOW0BvxwfTRWRK_I5" target="_blank" rel="noreferrer">Taiwan Semiconductor Manufacturing</a><a class="button" href="https://clicks.fool.com/f/a/xMoIKd_ZfyC3VX8ed2MmtQ~~/AAQRxRA~/bIuaPWes3K4F_K40cM103q6x5qi5BEeek6n8qdJRC_JDdugM5kEBP4flDR9j4UGYm3QgrbUF1icuiCK0BRlqI8PBL49qcCx3_snQ1DKYex-7JOpTIxiTZPbh2HVcHeKkY6qJuoYbk7nWfsmpv9Q1RZ9bJCMDUD8ShwvSpWQ2I5bd_bJ4ajfbfo0nBXiGSxqKN1o1inCiowPDKsuuK_OEI5AMhJ_Vwv9fy2siHJ7zHbWa_qzvo9lYCQN1X2Z5pu_SBDbGUck-b3pmg7Sgd2e_g2evmC_vrdlXh0huv_ATHyw2CIqQrO8aFJIjBZmUSq_F-Zri32EeqWYyqAOon5tUKZhas6CA5afS29QO12IjEBC4P-uTYRbN8T5_c35Cfi8wuRq4KUyrBzxlxTfaQ0exrjxIRYVFLqqt9dA0pURfeCI~" target="_blank" rel="noreferrer">Could TSM’s peer be worth $1 trillion?</a><a class="button" href="https://clicks.fool.com/f/a/3xr-sEWi3Y4t20QYvA8z8A~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysISxSustwvT9JFHUTS5ZNfbnEgb6Xiq760X4Jmj7KUxRA8t9wu4BEFV987DRfoxu2g41lAuM-_tFLSbDtYS7ctwGmAsZorNknR2opas6EiBnIPDfC59TaAr0B0K8WBHh_3QdmUyfjhYDAjNOlyehufkJ0Ka--kFjpoIbcb_WxGh0qqkkKbYtO6LDc9g_PXxWWZNPeKPGwM6F3XDJ6qikx5QaY_4lsSOeL2Mgd6HJ_0FyoykuU6LCbxLt6nRIFuU_2SmNiKe1wdiQS0bhLiTYNvW4Ed1lRq5vGPcHikdzPjiQ62hBzg_-gksHczwRuaxgP-dhbUvaXR7gCF6TAVwjLG5M0OazQiGQI3H8bK7Qu8QhF1pQbKHXiOQMvApLM6W0_" target="_blank" rel="noreferrer">Rocket Lab Dives 10% as Neutron Slips to 2027</a><a class="button" href="https://clicks.fool.com/f/a/WYg4oGXvQCS2BI-Jlhtf2A~~/AAQRxRA~/t8mxZ8ivs9NZgwXykeRvKADpz8DByo32BPektRClK_ApwUO88QrIoNPxkQhGqR-M01DzF0QubU6DUWHpJ2pMujD_xyvlNt2Y5i-NMkuhBS911Ap6ButV4HoNcbuMDqWGjvnJE30ew35h5sdhpT58-L7PsIB3NpEeg4EZZZ0XJ34pPTvWf-R-18GE2XybwK4_ZOQyJ6n1dKFsJPNTATVuzANAYHrKmros37UDQncEo9RKXFCc8O1z2DxP_Khd1ZziSoeWgU36pefiRVi46OLZewE_SykyPcwop6Vq576G1axSGUmn060DucYrTVg0Y0g-5NUm_109bEkgiA0G7Izh3C-_9TQT2c1FNnJL9sKrN8ESg5vlcaXeoezHPhqhwjbR9JxgfuBYvB2VtE8tH12k8l9sczkuAK2CHT3PbNsxkmjIpXHIgA5Uc0cxPAkNaAgtcapfEzatiSE081L-_xrhNg~~" target="_blank" rel="noreferrer">Digest Lou’s RKLB comments in full</a><a class="button" href="https://clicks.fool.com/f/a/OW9kOW7RcrFtFFMN5-dmeQ~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUys_H4tfejSTE8vLNETAj1tjfSmZvJD4tfe7WldKM0rLe3AmYJfmimWjURN5xdUFDAX61u48uY1rsir3otiHIpnBnyAd-UfivWsnwjCH_oftNOEVrRsVMysPnR7A9DPsKkbBS-yMRGuqzrAKL2nElzL6Swf70X-Y72w_RISuKTzw_W4icKsGdle-bE1RCVrXfXCt5KNPeBOtRekbIHgDKQS5M0Zq2xH13MHKBlEKV3gp9BXBQ_k-X_1BXT75KjqLAayiABr9bbgTFlnjymFAuJp8TeN-phOj3nx0jsSHHYKcDii99Swyn_kzD6fOUE5Tg8hIAJ0fVqQqESm7nApbSbfRNTFnGFWBQfwARmduz0B5sB7YQKD6cQtUdvfs56kXm-k" target="_blank" rel="noreferrer">Phones Are Running Out of Memory</a><a class="button" href="https://clicks.fool.com/f/a/87Nq1kiQgvrQ-iKKT_0UAg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysdaaLUe6nppS5nLMy2w6y4KhDObkVl6XdwMq_0q35F-7k6Q3MbQ2ZsLquK7TU8Ow0XDmNW0bhdEfXcJXzfW2p7qZ0K4CzfUR48CAP_3D8GtE7hiJ5WjMfJUHstJV3dYU7OSuqCWqFLdiI9hG6dSLgzmHKfPFQsF-fNNtWtrMYrG5qa8G2rSAbV1PlK8UcwIDLAZ-XueUV-kqY3SwuaUi8uHVYCyIFhq3rJSUpMGERoS_d2Ww6ZJJCOFCD0rgoDd8xlYtp-AmTkcvECej99xoad1J9l3iB005CV26GnFQ0OuHHTJQyE3XCjin6Nz1hqj6mH_4c2wVK5vpR_R7OxGymWFdbwRnAO6GYKe14hZvPzCknhdMe1P95eyeJZ8NlPbT6" target="_blank" rel="noreferrer">Nvidia</a><a class="button" href="https://clicks.fool.com/f/a/tOrzhx3PisTvKEzfR0bBPg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUyskbcAzP7uB3K-szfAgialOgDpWoGm9MwdIKGrewK1V7z8WUoP8xabQ8QVIwub58YctmqhQnpA8iCAKNGXUuw5a_yFy0dS7GplOtGBKdqMcH9x5QTszok7Nn7fTm0N5jeA7zBft4qKmMykgCb9AEX4cjEK4EBNUEtQBAN2OsUMSitXLsrPfHK2o8VI07iDxsV1VbC3Lv8Q_RPNbbJzpDW61TwZOQclLahKqDWXHZxuo1yMCpCW1JCUoBteKispNov3vFmySmqQ-CsaEoPfp2z6iO7L2xbwf7Y6EXqkfbkDjVHmgmMSfBB18xHkYxfUHYc1of8fKkWjg0nJulDLjfrPP347V3boQ3n8DmEYmS62faNhsVrSZs7Oy-1cI6OWxiYq" target="_blank" rel="noreferrer">Broadcom</a></div>
+        <details class="agent-brief" style="margin-top: 12px;">
+                <summary>
+                  <span class="agent-brief-title">Extracted article links</span>
+                  <span class="swing-glossary-icon" aria-hidden="true">▾</span>
+                </summary>
+                <div class="agent-brief-body">
+                  <div class="list"><article class="item">
+                        <p class="note"><strong>Item 1</strong></p>
+                        <p class="note">TSMC: Chips, Cash, and American Soil --------------------------------------- TSMC: Chips, Cash, and American Soil Taiwan Semiconductor Manufacturing just booked its sixth straight quarter of record profit. The world’s largest contract chipmaker builds the advanced processors most of the tech industry designs but doesn’t make. Third-quarter revenue topped management’s guidance while net income jumped 69% to a record NT$763.1 billion (about $23.9 billion). The broader sell-off in artificial intelligence (AI) stocks still sent the Team Hidden Gems recommendation down over 1% ahead of the open. * A margin beat during a ramp: As TSMC ramped up its new 2-nanometer process, gross margin dipped slightly. Operating margin of 58.7%, however, topped TSMC’s 58% guidance range. A manufacturer that keeps more than half of each sales dollar as operating profit holds incredible pricing power. AI customers have few other places to take their orders. High-performance computing, the chips behind AI and data centers, made up 68% of revenue. * Cash is funding the U.S. build-out: TSMC plans to invest $265 billion in Arizona and is reportedly weighing Texas as well. Management still expects Q4 operating margin of 56.5% to 58.5%. TSMC has the cash (its free cash flow jumped almost 66% in Q3), is racing to meet global demand, and is confident it will earn big margins throughout. Could TSM’s peer be worth $1 trillion? Could TSM’s peer be worth $1 trillion? ------------------------------------------------</p>
+                        
+                        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/Ey2UBlklFeTO1CnAZAimJA~~/AAQRxRA~/cc0QHtyuZwwEbg6NXYCCUHIs3sJ57S6iMCkyPXBTwFV9rA4o9iU5smRlHMpvOs_qpaOEobhhQTBivccCqKrYCIikeUFJppClgXBcRJnYyPB5j-dWPVqN1ACnfA5cubWXJDkkBEn2VVCCgXvdiWZYXr7b2AH5kU4yvYPRsqbVNkXHtpk-FGm7q3DY26-01M9pESjh34eLv3OmZXfw24mP9D4BypZ2lnTk2EwLVmv1vkyBtc_sn41WqCZhjEJRTkDeTQL2Ia6XZekbEiN2QSOdG3ZmOpapZmEXxAqOA5_cZdTz9b8fh03MT1ahhUe_bUyrX5P7ndyjXhYd7ExoFXIA1gyq18Ky9yieNzsNFdalvvjTM9OiodxF75xCaBub9HObuHZtiPI2cP4P5sM2vMI4lYeN1vEdYvDs3OQQICsCBah9epJuOW0BvxwfTRWRK_I5" target="_blank" rel="noreferrer">Taiwan Semiconductor Manufacturing</a><a class="button" href="https://clicks.fool.com/f/a/xMoIKd_ZfyC3VX8ed2MmtQ~~/AAQRxRA~/bIuaPWes3K4F_K40cM103q6x5qi5BEeek6n8qdJRC_JDdugM5kEBP4flDR9j4UGYm3QgrbUF1icuiCK0BRlqI8PBL49qcCx3_snQ1DKYex-7JOpTIxiTZPbh2HVcHeKkY6qJuoYbk7nWfsmpv9Q1RZ9bJCMDUD8ShwvSpWQ2I5bd_bJ4ajfbfo0nBXiGSxqKN1o1inCiowPDKsuuK_OEI5AMhJ_Vwv9fy2siHJ7zHbWa_qzvo9lYCQN1X2Z5pu_SBDbGUck-b3pmg7Sgd2e_g2evmC_vrdlXh0huv_ATHyw2CIqQrO8aFJIjBZmUSq_F-Zri32EeqWYyqAOon5tUKZhas6CA5afS29QO12IjEBC4P-uTYRbN8T5_c35Cfi8wuRq4KUyrBzxlxTfaQ0exrjxIRYVFLqqt9dA0pURfeCI~" target="_blank" rel="noreferrer">Could TSM’s peer be worth $1 trillion?</a></div>
+                      </article><article class="item">
+                        <p class="note"><strong>Item 2</strong></p>
+                        <p class="note">Rocket Lab Dives 10% as Neutron Slips to 2027 ------------------------------------------------ Rocket Lab ’s big rocket isn’t taking off just yet. On Wednesday, it said Neutron’s first flight has slipped to 2027. Neutron is a reusable medium-lift rocket that lets Rocket Lab bid for larger commercial, civil-space, and national-security contracts than its small Electron can carry. The Team Hidden Gems recommendation fell 10% in pre-market trading. * The slip was telegraphed in August: In August, Rocket Lab said it aimed to get Neutron to the launch pad in the fourth quarter. Rocket Lab plans to charge about $55 million per Neutron flight, compared with around $8.5 million per Electron flight. Each delay pushes that revenue further out. * Worth waiting for: Fool contributing analyst Lou Whiteman praised Rocket Lab’s transparency about its progress. He concluded, “Nothing is certain, but the long-range risk/reward hasn’t changed. If Neutron eventually flies, the quarter won’t matter, but until it does, it is the biggest single risk facing the stock.” The stock has outperformed the S&amp;P 500 by 20% since the August 2025 Stock Advisor recommendation from Team Hidden Gems. Digest Lou’s RKLB comments in full Digest Lou’s RKLB comments in full -----------------------------------</p>
+                        
+                        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/3xr-sEWi3Y4t20QYvA8z8A~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysISxSustwvT9JFHUTS5ZNfbnEgb6Xiq760X4Jmj7KUxRA8t9wu4BEFV987DRfoxu2g41lAuM-_tFLSbDtYS7ctwGmAsZorNknR2opas6EiBnIPDfC59TaAr0B0K8WBHh_3QdmUyfjhYDAjNOlyehufkJ0Ka--kFjpoIbcb_WxGh0qqkkKbYtO6LDc9g_PXxWWZNPeKPGwM6F3XDJ6qikx5QaY_4lsSOeL2Mgd6HJ_0FyoykuU6LCbxLt6nRIFuU_2SmNiKe1wdiQS0bhLiTYNvW4Ed1lRq5vGPcHikdzPjiQ62hBzg_-gksHczwRuaxgP-dhbUvaXR7gCF6TAVwjLG5M0OazQiGQI3H8bK7Qu8QhF1pQbKHXiOQMvApLM6W0_" target="_blank" rel="noreferrer">Rocket Lab Dives 10% as Neutron Slips to 2027</a><a class="button" href="https://clicks.fool.com/f/a/WYg4oGXvQCS2BI-Jlhtf2A~~/AAQRxRA~/t8mxZ8ivs9NZgwXykeRvKADpz8DByo32BPektRClK_ApwUO88QrIoNPxkQhGqR-M01DzF0QubU6DUWHpJ2pMujD_xyvlNt2Y5i-NMkuhBS911Ap6ButV4HoNcbuMDqWGjvnJE30ew35h5sdhpT58-L7PsIB3NpEeg4EZZZ0XJ34pPTvWf-R-18GE2XybwK4_ZOQyJ6n1dKFsJPNTATVuzANAYHrKmros37UDQncEo9RKXFCc8O1z2DxP_Khd1ZziSoeWgU36pefiRVi46OLZewE_SykyPcwop6Vq576G1axSGUmn060DucYrTVg0Y0g-5NUm_109bEkgiA0G7Izh3C-_9TQT2c1FNnJL9sKrN8ESg5vlcaXeoezHPhqhwjbR9JxgfuBYvB2VtE8tH12k8l9sczkuAK2CHT3PbNsxkmjIpXHIgA5Uc0cxPAkNaAgtcapfEzatiSE081L-_xrhNg~~" target="_blank" rel="noreferrer">Digest Lou’s RKLB comments in full</a></div>
+                      </article><article class="item">
+                        <p class="note"><strong>Item 3</strong></p>
+                        <p class="note">Phones Are Running Out of Memory ----------------------------------- Global chip stocks are selling off as investors question whether the AI-driven rally has overextended. CoreWeave fell 15% Wednesday after the yield on its 2032 bonds touched 15%. Its debt had reached about $52 billion in June, up from about $15 billion a year earlier. The selling spread across AI stocks. Nvidia , Broadcom and Intel all closed more than 3% lower Wednesday and were down at least 1% before Thursday’s open. * Phone makers are paying the bill: IDC reported a 22% year-over-year drop in global smartphone shipments in Q3. China’s shipments fell for the sixth straight quarter, down 15.4% to 57.9 million units. Apple ’s global shipments fell 4.3%, but its market share rose four percentage points to 22.4%. AI data centers are eating up memory supply, driving up phone prices and causing consumers to delay purchases. * Scarcity is the memory makers’ edge: The sell-off reflects two distinct pressures. There are AI credit and valuation concerns, plus a deteriorating smartphone end market. Memory pricing is a key indicator to watch now. Memory suppliers are winning today because prices are high, but those same high prices are hurting their customers. If that continues, today’s margin tailwind can become tomorrow’s volume headwind. Get Fools’ takes on AAPL’s folding phone Get Fools’ takes on AAPL’s folding phone A message from The Motley Fool &lt;p&gt;&lt;strong&gt;&quot;The money that I&#39;ve invested has grown on top of itself and is making more money than I make now.&quot;&lt;/strong&gt;&lt;/p&gt; &lt;p&gt;That&#39;s a real Motley Fool member. And it&#39;s exactly what a well-built portfolio is supposed to do &amp;mdash; get out of your way and compound.&lt;/p&gt; &lt;p&gt;Tom Gardner built a complete 50-stock portfolio designed to do just that. And The Motley Fool is investing $100,000 of its own money alongside the Motley Fool members who follow it.&lt;/p&gt; &lt;p&gt;Two investing teams. Every risk level in mind. Equal weights across all 50 stocks so anyone can follow along.&lt;/p&gt; &lt;p&gt;&lt;a href=&quot; what&amp;rsquo;s inside &amp;rarr;&lt;/a&gt;&lt;/p&gt; ------------------------------</p>
+                        <p class="source-meta">AAPL, NVDA</p>
+                        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/OW9kOW7RcrFtFFMN5-dmeQ~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUys_H4tfejSTE8vLNETAj1tjfSmZvJD4tfe7WldKM0rLe3AmYJfmimWjURN5xdUFDAX61u48uY1rsir3otiHIpnBnyAd-UfivWsnwjCH_oftNOEVrRsVMysPnR7A9DPsKkbBS-yMRGuqzrAKL2nElzL6Swf70X-Y72w_RISuKTzw_W4icKsGdle-bE1RCVrXfXCt5KNPeBOtRekbIHgDKQS5M0Zq2xH13MHKBlEKV3gp9BXBQ_k-X_1BXT75KjqLAayiABr9bbgTFlnjymFAuJp8TeN-phOj3nx0jsSHHYKcDii99Swyn_kzD6fOUE5Tg8hIAJ0fVqQqESm7nApbSbfRNTFnGFWBQfwARmduz0B5sB7YQKD6cQtUdvfs56kXm-k" target="_blank" rel="noreferrer">Phones Are Running Out of Memory</a><a class="button" href="https://clicks.fool.com/f/a/87Nq1kiQgvrQ-iKKT_0UAg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysdaaLUe6nppS5nLMy2w6y4KhDObkVl6XdwMq_0q35F-7k6Q3MbQ2ZsLquK7TU8Ow0XDmNW0bhdEfXcJXzfW2p7qZ0K4CzfUR48CAP_3D8GtE7hiJ5WjMfJUHstJV3dYU7OSuqCWqFLdiI9hG6dSLgzmHKfPFQsF-fNNtWtrMYrG5qa8G2rSAbV1PlK8UcwIDLAZ-XueUV-kqY3SwuaUi8uHVYCyIFhq3rJSUpMGERoS_d2Ww6ZJJCOFCD0rgoDd8xlYtp-AmTkcvECej99xoad1J9l3iB005CV26GnFQ0OuHHTJQyE3XCjin6Nz1hqj6mH_4c2wVK5vpR_R7OxGymWFdbwRnAO6GYKe14hZvPzCknhdMe1P95eyeJZ8NlPbT6" target="_blank" rel="noreferrer">Nvidia</a><a class="button" href="https://clicks.fool.com/f/a/tOrzhx3PisTvKEzfR0bBPg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUyskbcAzP7uB3K-szfAgialOgDpWoGm9MwdIKGrewK1V7z8WUoP8xabQ8QVIwub58YctmqhQnpA8iCAKNGXUuw5a_yFy0dS7GplOtGBKdqMcH9x5QTszok7Nn7fTm0N5jeA7zBft4qKmMykgCb9AEX4cjEK4EBNUEtQBAN2OsUMSitXLsrPfHK2o8VI07iDxsV1VbC3Lv8Q_RPNbbJzpDW61TwZOQclLahKqDWXHZxuo1yMCpCW1JCUoBteKispNov3vFmySmqQ-CsaEoPfp2z6iO7L2xbwf7Y6EXqkfbkDjVHmgmMSfBB18xHkYxfUHYc1of8fKkWjg0nJulDLjfrPP347V3boQ3n8DmEYmS62faNhsVrSZs7Oy-1cI6OWxiYq" target="_blank" rel="noreferrer">Broadcom</a></div>
+                      </article><article class="item">
+                        <p class="note"><strong>Item 5</strong></p>
+                        <p class="note">Losing to Win: A VC Lens Will Find the Next Nvidia ----------------------------------------------------- TEAM RULE BREAKERS In the second half of 2009, Chief Rule Breaker David Gardner made four recommendations in Stock Advisor. Judged individually, most look unremarkable today. Adobe , selected that August, lags the S&amp;P 500 by roughly 320%. Dassault Systèmes , recommended the following month, trails the market by more than 500%. Hasbro , picked that October, lags by roughly 420%. * Winners were in the minority… and that’s more than fine: Nvidia, recommended that December at a split-adjusted $0.38, trades today at $221.30. That’s an outperformance of more than 54,000 percentage points. * The math proves the point: Average the other three names and the basket lags the S&amp;P 500 by roughly 415%. Add Nvidia, and that average rockets past 13,000%. As David puts it, “We lose to win.” We don’t need most recommendations to work. We need one or two in every five to work enormously, the venture-capital mindset of expecting most of a portfolio to fail so a single winner pays for everything else. It’s why The Motley Fool recommends holding at least 50 stocks across many industries: the wider the net, the better the odds of landing the next Nvidia. We’ll keep recommending stocks other analysts call too early, too small, or too strange. That’s exactly where the next 54,000%-outperformer is hiding. --------------------</p>
+                        <p class="source-meta">NVDA</p>
+                        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/87Nq1kiQgvrQ-iKKT_0UAg~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysdaaLUe6nppS5nLMy2w6y4KhDObkVl6XdwMq_0q35F-7k6Q3MbQ2ZsLquK7TU8Ow0XDmNW0bhdEfXcJXzfW2p7qZ0K4CzfUR48CAP_3D8GtE7hiJ5WjMfJUHstJV3dYU7OSuqCWqFLdiI9hG6dSLgzmHKfPFQsF-fNNtWtrMYrG5qa8G2rSAbV1PlK8UcwIDLAZ-XueUV-kqY3SwuaUi8uHVYCyIFhq3rJSUpMGERoS_d2Ww6ZJJCOFCD0rgoDd8xlYtp-AmTkcvECej99xoad1J9l3iB005CV26GnFQ0OuHHTJQyE3XCjin6Nz1hqj6mH_4c2wVK5vpR_R7OxGymWFdbwRnAO6GYKe14hZvPzCknhdMe1P95eyeJZ8NlPbT6" target="_blank" rel="noreferrer">Nvidia</a></div>
+                      </article></div>
+                </div>
+              </details>
+      </article></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+
+
+          <section class="tab-panel active" data-tab-panel="briefing">
+            <div class="briefing"><article class="briefing-section"><div class="briefing-kicker">AI Generated Morning Read</div><h2>1. Market Tone</h2><ul><li><strong>Confirmed:</strong> Pre-market tone is mixed-to-lower. Source: *The Motley Fool, Breakfast News* reported <strong>S&amp;P 500</strong> at 7,752 (-0.2%), <strong>Nasdaq-100</strong> at 29,861 (-0.9%), <strong>Dow</strong> at 52,069 (+0.4%), and <strong>Bitcoin</strong> at $81,157 (-2.6%).</li><li><strong>Confirmed:</strong> AI-related and chip names were under pressure. Source: *The Motley Fool, Breakfast News* said global chip stocks sold off as investors questioned whether the AI rally had overextended.</li><li><strong>Confirmed:</strong> <strong>Nvidia</strong>, <strong>Broadcom</strong>, and <strong>Intel</strong> all closed more than 3% lower Wednesday and were down at least 1% before Thursday’s open. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> <strong>CoreWeave</strong> fell 15% Wednesday after its 2032 bond yield touched 15%. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Interpretation:</strong> The early tone favors defensive caution around high-multiple AI and semiconductor names, while broad index direction is uneven rather than uniformly risk-off. Source basis: *The Motley Fool, Breakfast News*.</li></ul></article><article class="briefing-section"><h2>2. Macro And Calendar</h2><ul><li><strong>Confirmed:</strong> No major macro data releases or central-bank events were listed in the provided email sources for the pre-market window. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> The main calendar item highlighted was earnings. <strong>Prologis</strong> reports before the opening bell, and <strong>Interactive Brokers</strong> reports after the close today. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> For <strong>Prologis</strong>, the email noted it has met or beaten EPS estimates in each of the past four quarters, and that any full-year guidance update matters most. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> For <strong>Interactive Brokers</strong>, analysts expect 67 cents per share, roughly 17.5% growth year over year, with September trading activity already up 6% year over year. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Interpretation:</strong> The session’s most actionable scheduled catalysts in the provided sources are earnings and guidance, especially anything that can move REIT and brokerage sentiment before and after the cash open. Source basis: *The Motley Fool, Breakfast News*.</li></ul></article><article class="briefing-section"><h2>3. Earnings And Company News</h2><ul><li><strong>Confirmed:</strong> <strong>TSM</strong> posted a sixth straight quarter of record profit. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> <strong>Taiwan Semiconductor Manufacturing</strong> reported third-quarter revenue above guidance and net income up 69% to a record NT$763.1 billion, about $23.9 billion. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> <strong>TSM</strong> operating margin was 58.7%, above its 58% guidance range, while gross margin dipped slightly during its 2-nanometer ramp. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> High-performance computing accounted for 68% of <strong>TSM</strong> revenue. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> <strong>TSM</strong> plans to invest $265 billion in Arizona and is reportedly weighing Texas as well. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Interpretation:</strong> <strong>TSM</strong> is the cleanest positive catalyst in the source set: strong earnings, strong margins, and continued U.S. capacity build-out. Source basis: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> <strong>RKLB</strong> fell 10% in pre-market trading after saying <strong>Neutron</strong>’s first flight has slipped to 2027. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> The email said Rocket Lab had previously aimed for Neutron to reach the launch pad in Q4, and it plans to charge about $55 million per Neutron flight versus around $8.5 million per Electron flight. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Interpretation:</strong> The delay pushes expected higher-value Neutron revenue further out and keeps execution risk front and center for <strong>RKLB</strong> into the open. Source basis: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> <strong>Prologis</strong> reports before the open; the email said management’s full-year guidance and any comment on the SEGRO takeover matter most. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> <strong>Interactive Brokers</strong> reports after the close; the email highlighted expected EPS of 67 cents, September trading activity up 6% year over year, and focus on net interest income and margin lending. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Confirmed:</strong> Broad weakness hit several AI-related names, including <strong>Nvidia</strong>, <strong>Broadcom</strong>, <strong>Intel</strong>, and <strong>CoreWeave</strong>. Source: *The Motley Fool, Breakfast News*.</li><li><strong>Interpretation:</strong> The company-news backdrop is split: earnings strength from <strong>TSM</strong> versus sentiment pressure and execution delays for <strong>RKLB</strong>, with AI-chip weakness still likely to color early trading. Source basis: *The Motley Fool, Breakfast News*.</li></ul></article><article class="briefing-section"><h2>4. SAC Pre-Market Top Movers</h2><p>Each candidate includes a link to its SEC filing history for review. Check the company identity and filing dates; a link does not mean a new filing or catalyst was detected.</p><p>Source: SAC Live Scanner. Snapshot: 10/15/2026, 8:00:37 AM EDT. This is a saved pre-market view, not a streaming quote list. Ranked by gain versus prior regular-session close.</p><p>Shares outstanding is a conservative substitute for float. Verify news catalysts in Schwab.</p><table><thead><tr><th>Symbol</th><th>Price</th><th>Gain</th><th>Daily Vol Ratio</th><th>Shares outstanding (M)</th><th>Grade</th><th>Review</th></tr></thead><tbody><tr><td><strong>SPRC</strong></td><td>$5.08</td><td>38.04%</td><td>624.36</td><td>0.58</td><td>B</td><td><a href="https://www.sec.gov/edgar/browse/?CIK=SPRC&amp;owner=exclude" target="_blank" rel="noopener noreferrer">SEC filings</a></td></tr><tr><td><strong>NCPL</strong></td><td>$1.97</td><td>23.9%</td><td>0.26</td><td>7.85</td><td>C</td><td><a href="https://www.sec.gov/edgar/browse/?CIK=NCPL&amp;owner=exclude" target="_blank" rel="noopener noreferrer">SEC filings</a></td></tr></tbody></table></article><article class="briefing-section"><h2>5. Day-Trading Setup Watches</h2><p>Conditional watch plans for the same SAC candidates. These are not detected setups or entry signals; verify the live 1-minute and 5-minute charts. Numeric trigger, stop, VWAP, and pre-market-high levels are unavailable in this snapshot.</p><h3>SPRC — watch from the $5.08 snapshot</h3><ul><li><strong>Filings review:</strong> <a href="https://www.sec.gov/edgar/browse/?CIK=SPRC&amp;owner=exclude" target="_blank" rel="noopener noreferrer">SEC filings</a> — review recent disclosures for financing/offering terms, split announcements, and company updates.</li><li><strong>Pre-market-high break/retest:</strong> mark the actual pre-market high; watch for a break with increasing volume and a retest that holds. Pass on a failed retest or a stretched move without support.</li><li><strong>First pullback:</strong> after an opening impulse, watch for a controlled pullback with lighter volume, then a break of the pullback high. Invalidation is loss of the observed pullback low.</li><li><strong>VWAP reclaim:</strong> if price falls below VWAP, watch for a reclaim and hold with renewed buying. Pass if price repeatedly loses VWAP.</li><li><strong>Before acting:</strong> confirm the catalyst, fresh quotes, tradable spread, and chart-based stop distance. Avoid treating the pre-market ranking as a buy signal.</li></ul><h3>NCPL — watch from the $1.97 snapshot</h3><ul><li><strong>Filings review:</strong> <a href="https://www.sec.gov/edgar/browse/?CIK=NCPL&amp;owner=exclude" target="_blank" rel="noopener noreferrer">SEC filings</a> — review recent disclosures for financing/offering terms, split announcements, and company updates.</li><li><strong>Pre-market-high break/retest:</strong> mark the actual pre-market high; watch for a break with increasing volume and a retest that holds. Pass on a failed retest or a stretched move without support.</li><li><strong>First pullback:</strong> after an opening impulse, watch for a controlled pullback with lighter volume, then a break of the pullback high. Invalidation is loss of the observed pullback low.</li><li><strong>VWAP reclaim:</strong> if price falls below VWAP, watch for a reclaim and hold with renewed buying. Pass if price repeatedly loses VWAP.</li><li><strong>Before acting:</strong> confirm the catalyst, fresh quotes, tradable spread, and chart-based stop distance. Avoid treating the pre-market ranking as a buy signal.</li></ul></article></div>
+          </section>
+        </div>
+      </section>
+      <aside>
+        <div class="panel">
+          <h2>This Week</h2>
+          <div class="calendar-compact"><div class="calendar-day">
+        <div class="calendar-day-head">
+          <strong>Tue, Oct 13</strong>
+          <span class="calendar-count">3 events</span>
+        </div>
+        <div class="calendar-lines"><div class="calendar-line">
+              <span class="calendar-time">8:15 AM</span>
+              <div class="calendar-title">ADP Employment Change Weekly<span class="calendar-kind">Economic report</span></div>
+            </div><div class="calendar-line">
+              <span class="calendar-time">10:00 AM</span>
+              <div class="calendar-title">Existing Home Sales<span class="calendar-kind">Economic report</span></div>
+            </div><div class="calendar-line">
+              <span class="calendar-time">2:00 PM</span>
+              <div class="calendar-title">Monthly Budget Statement<span class="calendar-kind">Economic report</span></div>
+            </div></div>
+      </div></div>
+        </div>
+        <div class="panel">
+          <h2>Top Catalysts</h2>
+          <div class="list"><article class="item">
+        <h3>Phones Are Running Out of Memory</h3>
+        <p class="note">Phones Are Running Out of Memory ----------------------------------- Global chip stocks are selling off as investors question whether the AI-driven rally has overextended. CoreWea…</p>
+        <p class="source-meta">1 source | AAPL, NVDA</p>
+        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/OW9kOW7RcrFtFFMN5-dmeQ~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUys_H4tfejSTE8vLNETAj1tjfSmZvJD4tfe7WldKM0rLe3AmYJfmimWjURN5xdUFDAX61u48uY1rsir3otiHIpnBnyAd-UfivWsnwjCH_oftNOEVrRsVMysPnR7A9DPsKkbBS-yMRGuqzrAKL2nElzL6Swf70X-Y72w_RISuKTzw_W4icKsGdle-bE1RCVrXfXCt5KNPeBOtRekbIHgDKQS5M0Zq2xH13MHKBlEKV3gp9BXBQ_k-X_1BXT75KjqLAayiABr9bbgTFlnjymFAuJp8TeN-phOj3nx0jsSHHYKcDii99Swyn_kzD6fOUE5Tg8hIAJ0fVqQqESm7nApbSbfRNTFnGFWBQfwARmduz0B5sB7YQKD6cQtUdvfs56kXm-k" target="_blank" rel="noreferrer">Phones Are Running Out of Memory</a></div>
+      </article><article class="item">
+        <h3>Rocket Lab Dives 10% as Neutron Slips to 2027</h3>
+        <p class="note">Rocket Lab Dives 10% as Neutron Slips to 2027 ------------------------------------------------ Rocket Lab ’s big rocket isn’t taking off just yet. On Wednesday, it said Neutron’s…</p>
+        <p class="source-meta">1 source</p>
+        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/3xr-sEWi3Y4t20QYvA8z8A~~/AAQRxRA~/2-tSpcdZ35h-noyMKB3IiWF74d3tHOYQZwiamCoHhbyigg_OeLefM7gCE1r7WUysISxSustwvT9JFHUTS5ZNfbnEgb6Xiq760X4Jmj7KUxRA8t9wu4BEFV987DRfoxu2g41lAuM-_tFLSbDtYS7ctwGmAsZorNknR2opas6EiBnIPDfC59TaAr0B0K8WBHh_3QdmUyfjhYDAjNOlyehufkJ0Ka--kFjpoIbcb_WxGh0qqkkKbYtO6LDc9g_PXxWWZNPeKPGwM6F3XDJ6qikx5QaY_4lsSOeL2Mgd6HJ_0FyoykuU6LCbxLt6nRIFuU_2SmNiKe1wdiQS0bhLiTYNvW4Ed1lRq5vGPcHikdzPjiQ62hBzg_-gksHczwRuaxgP-dhbUvaXR7gCF6TAVwjLG5M0OazQiGQI3H8bK7Qu8QhF1pQbKHXiOQMvApLM6W0_" target="_blank" rel="noreferrer">Rocket Lab Dives 10% as Neutron Slips to 2027</a><a class="button" href="https://clicks.fool.com/f/a/WYg4oGXvQCS2BI-Jlhtf2A~~/AAQRxRA~/t8mxZ8ivs9NZgwXykeRvKADpz8DByo32BPektRClK_ApwUO88QrIoNPxkQhGqR-M01DzF0QubU6DUWHpJ2pMujD_xyvlNt2Y5i-NMkuhBS911Ap6ButV4HoNcbuMDqWGjvnJE30ew35h5sdhpT58-L7PsIB3NpEeg4EZZZ0XJ34pPTvWf-R-18GE2XybwK4_ZOQyJ6n1dKFsJPNTATVuzANAYHrKmros37UDQncEo9RKXFCc8O1z2DxP_Khd1ZziSoeWgU36pefiRVi46OLZewE_SykyPcwop6Vq576G1axSGUmn060DucYrTVg0Y0g-5NUm_109bEkgiA0G7Izh3C-_9TQT2c1FNnJL9sKrN8ESg5vlcaXeoezHPhqhwjbR9JxgfuBYvB2VtE8tH12k8l9sczkuAK2CHT3PbNsxkmjIpXHIgA5Uc0cxPAkNaAgtcapfEzatiSE081L-_xrhNg~~" target="_blank" rel="noreferrer">Digest Lou’s RKLB comments in full</a></div>
+      </article><article class="item">
+        <h3>Taiwan Semiconductor Manufacturing</h3>
+        <p class="note">TSMC: Chips, Cash, and American Soil --------------------------------------- TSMC: Chips, Cash, and American Soil Taiwan Semiconductor Manufacturing just booked its sixth straight…</p>
+        <p class="source-meta">1 source</p>
+        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/Ey2UBlklFeTO1CnAZAimJA~~/AAQRxRA~/cc0QHtyuZwwEbg6NXYCCUHIs3sJ57S6iMCkyPXBTwFV9rA4o9iU5smRlHMpvOs_qpaOEobhhQTBivccCqKrYCIikeUFJppClgXBcRJnYyPB5j-dWPVqN1ACnfA5cubWXJDkkBEn2VVCCgXvdiWZYXr7b2AH5kU4yvYPRsqbVNkXHtpk-FGm7q3DY26-01M9pESjh34eLv3OmZXfw24mP9D4BypZ2lnTk2EwLVmv1vkyBtc_sn41WqCZhjEJRTkDeTQL2Ia6XZekbEiN2QSOdG3ZmOpapZmEXxAqOA5_cZdTz9b8fh03MT1ahhUe_bUyrX5P7ndyjXhYd7ExoFXIA1gyq18Ky9yieNzsNFdalvvjTM9OiodxF75xCaBub9HObuHZtiPI2cP4P5sM2vMI4lYeN1vEdYvDs3OQQICsCBah9epJuOW0BvxwfTRWRK_I5" target="_blank" rel="noreferrer">Taiwan Semiconductor Manufacturing</a><a class="button" href="https://clicks.fool.com/f/a/xMoIKd_ZfyC3VX8ed2MmtQ~~/AAQRxRA~/bIuaPWes3K4F_K40cM103q6x5qi5BEeek6n8qdJRC_JDdugM5kEBP4flDR9j4UGYm3QgrbUF1icuiCK0BRlqI8PBL49qcCx3_snQ1DKYex-7JOpTIxiTZPbh2HVcHeKkY6qJuoYbk7nWfsmpv9Q1RZ9bJCMDUD8ShwvSpWQ2I5bd_bJ4ajfbfo0nBXiGSxqKN1o1inCiowPDKsuuK_OEI5AMhJ_Vwv9fy2siHJ7zHbWa_qzvo9lYCQN1X2Z5pu_SBDbGUck-b3pmg7Sgd2e_g2evmC_vrdlXh0huv_ATHyw2CIqQrO8aFJIjBZmUSq_F-Zri32EeqWYyqAOon5tUKZhas6CA5afS29QO12IjEBC4P-uTYRbN8T5_c35Cfi8wuRq4KUyrBzxlxTfaQ0exrjxIRYVFLqqt9dA0pURfeCI~" target="_blank" rel="noreferrer">Could TSM’s peer be worth $1 trillion?</a></div>
+      </article></div>
+        </div>
+        <div class="panel">
+          <h2>Macro Pressure</h2>
+          <div>
+    <div class="row">
+      <strong>Mixed</strong>
+      <span class="score">2</span>
+    </div>
+    <div class="macro-explainer">This says the market backdrop is mixed rather than clearly supportive or clearly defensive. Stock selection matters more, and confirmation becomes more important.</div>
+    <div class="list" style="margin-top: 12px;">
+      <article class="item"><p>Watch oil, defense, transports, and broad-index reaction before adding risk.</p></article><article class="item"><p>Treat import/export and margin-sensitive names with extra caution.</p></article>
+    </div>
+    <div class="list" style="margin-top: 12px;">
+      <article class="item">
+        <div class="row"><strong>AI / Semis</strong><span>support</span></div>
+        <div class="checklist"><div>TSMC: Chips, Cash, and American Soil --------------------------------------- TSMC: Chips, Cash, and American Soil Taiwan Semiconductor Manufacturing just booked its sixth straight quarter of record profit. The world’s l…</div><div>Phones Are Running Out of Memory ----------------------------------- Global chip stocks are selling off as investors question whether the AI-driven rally has overextended. CoreWeave fell 15% Wednesday after the yield on…</div><div>Losing to Win: A VC Lens Will Find the Next Nvidia ----------------------------------------------------- TEAM RULE BREAKERS In the second half of 2009, Chief Rule Breaker David Gardner made four recommendations in Stock…</div></div>
+        <div class="links"><a class="button" href="https://clicks.fool.com/f/a/Ey2UBlklFeTO1CnAZAimJA~~/AAQRxRA~/cc0QHtyuZwwEbg6NXYCCUHIs3sJ57S6iMCkyPXBTwFV9rA4o9iU5smRlHMpvOs_qpaOEobhhQTBivccCqKrYCIikeUFJppClgXBcRJnYyPB5j-dWPVqN1ACnfA5cubWXJDkkBEn2VVCCgXvdiWZYXr7b2AH5kU4yvYPRsqbVNkXHtpk-FGm7q3DY26-01M9pESjh34eLv3OmZXfw24mP9D4BypZ2lnTk2EwLVmv1vkyBtc_sn41WqCZhjEJRTkDeTQL2Ia6XZekbEiN2QSOdG3ZmOpapZmEXxAqOA5_cZdTz9b8fh03MT1ahhUe_bUyrX5P7ndyjXhYd7ExoFXIA1gyq18Ky9yieNzsNFdalvvjTM9OiodxF75xCaBub9HObuHZtiPI2cP4P5sM2vMI4lYeN1vEdYvDs3OQQICsCBah9epJuOW0BvxwfTRWRK_I5" target="_blank" rel="noreferrer">Taiwan Semiconductor Manufacturing</a></div>
+      </article>
+    </div>
+  </div>
+        </div>
+        <div class="panel">
+          <details class="sidebar-disclosure">
+            <summary>
+              <h2 class="sidebar-disclosure-title">Schwab Account</h2>
+              <span class="swing-glossary-icon" aria-hidden="true">▾</span>
+            </summary>
+            <div class="sidebar-disclosure-body">
+              <div>
+    <p><span class="schwab-feed-status LIVE">LIVE</span></p>
+    <div class="list">
+      <article class="item">
+        <div class="row"><strong>Contributory (••••1566)</strong><span class="score">$393,214</span></div>
+        <div class="checklist">
+          <div>Cash: $5,010</div>
+          <div>Buying power: $5,010</div>
+          <div>3 position(s) in focus</div>
+        </div>
+      </article>
+    </div>
+    <div class="list" style="margin-top: 12px;">
+            <article class="item">
+                  <div class="row"><strong>FNDF</strong><span>$108,002</span></div>
+                  <p class="note">Schwab Fundamental International Eq ETF</p>
+                  <div class="checklist">
+                    <div>Shares: 2021</div>
+                    <div>Day P/L: $0</div>
+                  </div>
+                </article><article class="item">
+                  <div class="row"><strong>SPSM</strong><span>$78,922</span></div>
+                  <p class="note">State Street SPDR Port S&amp;P 600 Sm CpETF</p>
+                  <div class="checklist">
+                    <div>Shares: 1499</div>
+                    <div>Day P/L: $0</div>
+                  </div>
+                </article><article class="item">
+                  <div class="row"><strong>SPYG</strong><span>$201,280</span></div>
+                  <p class="note">State Street SPDR Port S&amp;P 500 Gr ETF</p>
+                  <div class="checklist">
+                    <div>Shares: 1652</div>
+                    <div>Day P/L: -$1,470</div>
+                  </div>
+                </article>
+          </div>
+    <p class="note" style="margin-top: 12px;">Last synced 10/15/2026, 6:00:36 AM</p>
+  </div>
+            </div>
+          </details>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <script>
+    const tabButtons = [...document.querySelectorAll("[data-tab-target]")];
+    const tabPanels = [...document.querySelectorAll("[data-tab-panel]")];
+    const dashboardDate = "2026-10-15";
+
+    for (const button of tabButtons) {
+      button.addEventListener("click", () => {
+        const target = button.getAttribute("data-tab-target");
+
+        for (const item of tabButtons) {
+          item.classList.toggle("active", item === button);
+          item.setAttribute("aria-selected", item === button ? "true" : "false");
+        }
+
+        for (const panel of tabPanels) {
+          panel.classList.toggle("active", panel.getAttribute("data-tab-panel") === target);
+        }
+      });
+    }
+
+    function verificationBadgeClass(state) {
+      return String(state || "not_run")
+        .replaceAll("_", "-")
+        .toLowerCase();
+    }
+
+    function formatVerificationLabel(state) {
+      if (state === "actionable_now") return "Actionable now";
+      if (state === "watchlist_only") return "Watchlist only";
+      if (state === "pass") return "Pass";
+      if (state === "running") return "Running";
+      if (state === "error") return "Error";
+      if (state === "stale") return "Stale";
+      return "Not run";
+    }
+
+    function formatCompactCurrency(value) {
+      const amount = Number(value);
+      if (!Number.isFinite(amount)) return "n/a";
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      }).format(amount);
+    }
+
+    function formatHoldingQuantity(value) {
+      const quantity = Number(value);
+      if (!Number.isFinite(quantity)) return "0";
+      return Math.abs(quantity % 1) < 0.000001 ? String(Math.abs(quantity)) : String(Math.abs(Math.round(quantity * 100) / 100));
+    }
+
+    function formatHoldingSummary(holding) {
+      if (!holding) return "Not currently held.";
+      const accounts = Array.isArray(holding.accounts) ? holding.accounts.length : 0;
+      const accountLabel = accounts === 1 ? "1 account" : accounts + " accounts";
+      return formatHoldingQuantity(holding.totalQuantity) + " shares, about " + formatCompactCurrency(holding.totalMarketValue) + " across " + accountLabel + ".";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function renderVerificationDetails(record) {
+      const details = [];
+
+      if (record.summary) details.push('<p class="verification-summary">' + escapeHtml(record.summary) + '</p>');
+      if (Array.isArray(record.why) && record.why.length) {
+        details.push('<ul class="verification-list">' + record.why.map((item) => '<li>' + escapeHtml(item) + '</li>').join("") + '</ul>');
+      }
+
+      if (record.orderPlan) {
+        const orderFields = record.orderPlan.ok
+          ? [
+              ["Order ticket", "Executable now"],
+              ["Entry style", record.orderPlan.style],
+              ["Entry", record.orderPlan.entry],
+              ["Stop", record.orderPlan.stop],
+              ["First target", record.orderPlan.target],
+            ]
+          : [
+              ["Order ticket", "Not executable"],
+              ["Rejection reason", record.orderPlan.reason],
+            ];
+
+        details.push('<div class="trade-plan">' + orderFields.map(([label, value]) => '<div><strong>' + escapeHtml(label) + '</strong>' + escapeHtml(String(value ?? "")) + '</div>').join("") + '</div>');
+
+        if (!record.orderPlan.ok && Array.isArray(record.orderPlan.reasons) && record.orderPlan.reasons.length > 1) {
+          details.push('<ul class="verification-list">' + record.orderPlan.reasons.slice(1).map((item) => '<li>' + escapeHtml(item) + '</li>').join("") + '</ul>');
+        }
+      }
+
+      const fields = [
+        ["Entry plan", record.entryPlan],
+        ["Risk plan", record.riskPlan],
+        ["Target plan", record.targetPlan],
+        ["Blocking issue", record.blockingIssue],
+        ["Freshness", record.freshness],
+        ["Account context", record.schwabHolding ? formatHoldingSummary(record.schwabHolding) : ""],
+      ].filter(([, value]) => value);
+
+      if (fields.length) {
+        details.push('<div class="trade-plan">' + fields.map(([label, value]) => '<div><strong>' + escapeHtml(label) + '</strong>' + escapeHtml(value) + '</div>').join("") + '</div>');
+      }
+
+      if (Array.isArray(record.sourcesUsed) && record.sourcesUsed.length) {
+        details.push('<p class="verification-meta"><strong>Sources checked:</strong> ' + escapeHtml(record.sourcesUsed.join(", ")) + '</p>');
+      }
+
+      return details.join("") || '<p class="verification-meta">No verification result yet.</p>';
+    }
+
+    function applyVerificationRecord(symbol, record) {
+      const root = document.querySelector('[data-verification-card="' + symbol + '"]');
+      if (!root) return;
+
+      const badge = root.querySelector("[data-verification-badge]");
+      const timestamp = root.querySelector("[data-verification-timestamp]");
+      const body = root.querySelector("[data-verification-body]");
+
+      const state = record?.state || "not_run";
+      badge.className = "verification-badge " + verificationBadgeClass(state);
+      badge.textContent = formatVerificationLabel(state);
+      timestamp.textContent = record?.verifiedAtLabel || "";
+      body.innerHTML = renderVerificationDetails(record || {});
+    }
+
+    function showDashboardNotice(message) {
+      let notice = document.querySelector("[data-dashboard-notice]");
+      if (!notice) {
+        notice = document.createElement("p");
+        notice.className = "empty";
+        notice.setAttribute("data-dashboard-notice", "true");
+        const anchor = document.querySelector("main .wrap, main");
+        if (!anchor) return;
+        anchor.insertAdjacentElement("afterbegin", notice);
+      }
+
+      notice.textContent = message;
+    }
+
+    function appendVersion(url, version) {
+      if (!url) return "";
+      return url + (url.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(version);
+    }
+
+    function initSnapshotRecovery() {
+      for (const image of document.querySelectorAll(".chart-snapshot")) {
+        image.addEventListener("load", () => {
+          const body = image.closest(".snapshot-body");
+          const status = body?.querySelector("[data-snapshot-status]");
+          if (status) status.remove();
+        });
+
+        image.addEventListener("error", () => {
+          const body = image.closest(".snapshot-body");
+          const baseSrc = image.getAttribute("data-base-src") || image.getAttribute("src") || "";
+          const link = body?.querySelector("[data-full-size-link]");
+
+          if (!image.dataset.retryAttempted) {
+            image.dataset.retryAttempted = "true";
+            const retrySrc = appendVersion(baseSrc, String(Date.now()));
+            image.src = retrySrc;
+            if (link && baseSrc) link.href = retrySrc;
+            return;
+          }
+
+          if (!body) return;
+
+          let status = body.querySelector("[data-snapshot-status]");
+          if (!status) {
+            status = document.createElement("p");
+            status.className = "snapshot-status";
+            status.setAttribute("data-snapshot-status", "true");
+            body.appendChild(status);
+          }
+
+          status.textContent = "Chart snapshot could not be loaded. Refresh the page after the next dashboard rebuild, or open the latest candle SVG directly once the data file is available.";
+        });
+      }
+    }
+
+    async function refreshVerifications() {
+      if (!window.location.protocol.startsWith("http")) return;
+
+      try {
+        const response = await fetch('/api/verifications?date=' + encodeURIComponent(dashboardDate));
+        if (!response.ok) {
+          showDashboardNotice("Live verification refresh is unavailable right now. Showing the last saved verification state.");
+          return;
+        }
+        const payload = await response.json();
+        for (const record of payload.records || []) applyVerificationRecord(record.symbol, record);
+      } catch {
+        showDashboardNotice("Live verification refresh is unavailable right now. Showing the last saved verification state.");
+      }
+    }
+
+    for (const button of document.querySelectorAll("[data-copy-agent-brief]")) {
+      button.addEventListener("click", async () => {
+        const targetId = button.getAttribute("data-copy-agent-brief");
+        const source = document.getElementById(targetId);
+        if (!source) return;
+
+        const text = source.textContent || "";
+
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = button.textContent;
+          button.textContent = "Copied agent brief";
+          window.setTimeout(() => {
+            button.textContent = original;
+          }, 1200);
+        } catch {
+          button.textContent = "Copy failed";
+        }
+      });
+    }
+
+    for (const button of document.querySelectorAll("[data-run-verification]")) {
+      if (!window.location.protocol.startsWith("http")) {
+        button.disabled = true;
+        button.title = "Open the dashboard through the local verification server to run agents.";
+        continue;
+      }
+
+      button.addEventListener("click", async () => {
+        const symbol = button.getAttribute("data-run-verification");
+        button.disabled = true;
+        const original = button.textContent;
+        button.textContent = "Running verification...";
+        applyVerificationRecord(symbol, { state: "running", summary: "Verification agent is checking chart, trigger, and fresh news." });
+
+        try {
+          const response = await fetch("/api/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ symbol, date: dashboardDate }),
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Verification failed");
+          applyVerificationRecord(symbol, payload.record);
+        } catch (error) {
+          applyVerificationRecord(symbol, {
+            state: "error",
+            summary: error.message || "Verification failed.",
+            blockingIssue: "Local verification runner did not return a usable result.",
+          });
+        } finally {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      });
+    }
+
+    initSnapshotRecovery();
+    refreshVerifications();
+  </script>
+</body>
+</html>
