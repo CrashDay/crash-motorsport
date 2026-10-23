@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-23",
+  "generatedAt": "2026-10-23T12:00:41.973Z",
+  "provider": "Schwab",
+  "benchmarks": {
+    "SPY": {
+      "ok": true,
+      "close": 763.96,
+      "return20": -0.42,
+      "return50": -1.1
+    },
+    "QQQ": {
+      "ok": true,
+      "close": 704.47,
+      "return20": -4.94,
+      "return50": -2.66
+    },
+    "XLK": {
+      "ok": true,
+      "close": 182.34,
+      "return20": -6.35,
+      "return50": -3.45
+    },
+    "XLF": {
+      "ok": true,
+      "close": 56.65,
+      "return20": 3.89,
+      "return50": -2.19
+    },
+    "XLE": {
+      "ok": true,
+      "close": 67.57,
+      "return20": 7.94,
+      "return50": 10.72
+    },
+    "XLI": {
+      "ok": true,
+      "close": 166.73,
+      "return20": -1.24,
+      "return50": -10.3
+    },
+    "XLY": {
+      "ok": true,
+      "close": 115.01,
+      "return20": 4.25,
+      "return50": -2.44
+    },
+    "XLP": {
+      "ok": true,
+      "close": 89.99,
+      "return20": 10.15,
+      "return50": 5.77
+    },
+    "XLV": {
+      "ok": true,
+      "close": 181.3,
+      "return20": 6.73,
+      "return50": 7.63
+    },
+    "XLRE": {
+      "ok": true,
+      "close": 42.52,
+      "return20": 2.09,
+      "return50": -4.43
+    },
+    "XLC": {
+      "ok": true,
+      "close": 107.42,
+      "return20": -5.76,
+      "return50": -2.58
+    },
+    "SMH": {
+      "ok": true,
+      "close": 523.35,
+      "return20": -12.85,
+      "return50": -10.51
+    },
+    "IBB": {
+      "ok": true,
+      "close": 209.54,
+      "return20": 0.14,
+      "return50": 4.39
+    }
+  },
+  "tickers": []
+}
