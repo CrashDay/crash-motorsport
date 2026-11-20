@@ -1,85 +1,88 @@
 {
   "date": "2026-11-20",
-  "generatedAt": "2026-11-20T07:35:58.096Z",
+  "generatedAt": "2026-11-20T13:00:22.136Z",
   "provider": "Schwab",
   "benchmarks": {
     "SPY": {
       "ok": true,
       "close": 715.87,
-      "return20": -5.8,
-      "return50": -6.34
+      "return20": -6.29,
+      "return50": -5.54
     },
     "QQQ": {
       "ok": true,
       "close": 645.04,
-      "return20": -8.43,
-      "return50": -9.77
+      "return20": -8.44,
+      "return50": -8.98
     },
     "XLK": {
       "ok": true,
       "close": 160.69,
-      "return20": -12.3,
-      "return50": -14.38
+      "return20": -11.87,
+      "return50": -13.24
     },
     "XLF": {
       "ok": true,
       "close": 55.58,
-      "return20": -0.57,
-      "return50": -2.92
+      "return20": -1.89,
+      "return50": -2.27
     },
     "XLE": {
       "ok": true,
       "close": 60.89,
-      "return20": -12.17,
-      "return50": -6.52
+      "return20": -9.89,
+      "return50": -6.22
     },
     "XLI": {
       "ok": true,
       "close": 161.36,
       "return20": -1.98,
-      "return50": -6.39
+      "return50": -6.39,
+      "stale": true,
+      "staleSourceDate": "2026-11-20",
+      "staleReason": "fetch failed"
     },
     "XLY": {
       "ok": true,
       "close": 115.88,
-      "return20": 2.46,
-      "return50": 2.58
+      "return20": 0.76,
+      "return50": 3.5
     },
     "XLP": {
       "ok": true,
       "close": 89.86,
-      "return20": 1.81,
-      "return50": 7.77
+      "return20": -0.14,
+      "return50": 8.15
     },
     "XLV": {
       "ok": true,
       "close": 177.46,
-      "return20": -1.02,
-      "return50": 7.32
+      "return20": -2.12,
+      "return50": 7.12
     },
     "XLRE": {
       "ok": true,
       "close": 42.88,
-      "return20": 0.73,
-      "return50": -1.24
+      "return20": 0.85,
+      "return50": -0.39
     },
     "XLC": {
       "ok": true,
       "close": 102.76,
-      "return20": -2.61,
-      "return50": -8.74
+      "return20": -4.34,
+      "return50": -7.84
     },
     "SMH": {
       "ok": true,
       "close": 447.48,
-      "return20": -15.12,
-      "return50": -21.29
+      "return20": -14.5,
+      "return50": -20.13
     },
     "IBB": {
       "ok": true,
       "close": 203.72,
-      "return20": -1.94,
-      "return50": 0.39
+      "return20": -2.78,
+      "return50": 0.53
     }
   },
   "tickers": []
